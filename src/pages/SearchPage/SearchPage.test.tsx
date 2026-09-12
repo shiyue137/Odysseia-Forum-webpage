@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { toast } from 'sonner';
 import { render } from '@/tests/test-utils';
 import { SearchPage } from './index';
 import {
@@ -17,6 +18,8 @@ vi.mock('@/features/search/hooks/useSearchResults', () => ({
 vi.mock('@/features/preferences/hooks/useUserPreferences', () => ({
   useUserPreferences: vi.fn(),
 }));
+
+vi.mock('@/shared/hooks/useChannels', () => ({ useChannels: () => ({ data: { channels: [] } }) }));
 
 // Mock 子组件和动画以简化环境
 vi.mock('motion/react', () => ({
@@ -110,6 +113,52 @@ describe('SearchPage 交互测试', () => {
     fireEvent.click(screen.getByRole('button', { name: '书单' }));
 
     expect(mockSetParams).toHaveBeenCalledWith({ type: 'booklist' });
+  });
+
+  it('设为默认保留其他偏好，并固定当前排序而不切换结果', async () => {
+    const preferences = {
+      user_id: 123,
+      preferred_channels: ['123456789012345678'],
+      include_authors: ['234567890123456789'],
+      exclude_authors: ['345678901234567890'],
+      include_tags: ['标签'],
+      include_keywords: '关键词',
+      exclude_keywords: '排除',
+      exclude_keyword_exemption_markers: ['🈲'],
+      preview_image_mode: 'full',
+      results_per_page: 5,
+      ui_page_size: 48,
+      sort_method: 'last_active',
+      custom_base_sort: 'reaction_count',
+      created_after: '-7d',
+    };
+    const savePreferences = vi.fn().mockResolvedValue({ ...preferences, sort_method: 'created_at' });
+    vi.mocked(useUserPreferences).mockReturnValue({
+      ...vi.mocked(useUserPreferences)(), preferences, savePreferences,
+    });
+    render(<SearchPage />);
+    fireEvent.click(screen.getByLabelText('选择排序方式'));
+    fireEvent.click(screen.getByRole('button', { name: '将最新发布设为默认排序' }));
+    const { user_id: _userId, ...expected } = preferences;
+    await waitFor(() => expect(savePreferences).toHaveBeenCalledWith({ ...expected, sort_method: 'created_at' }));
+    expect(mockSetParams).toHaveBeenCalledWith({ sortMethod: 'last_active_desc' });
+    expect(mockSetParams).not.toHaveBeenCalledWith({ sortMethod: 'created_desc' });
+  });
+
+  it('默认排序保存失败时反馈错误，不显示为已保存', async () => {
+    const errorToast = vi.spyOn(toast, 'error').mockImplementation(() => 'error');
+    vi.mocked(useUserPreferences).mockReturnValue({
+      ...vi.mocked(useUserPreferences)(),
+      preferences: { sort_method: 'last_active' } as never,
+      savePreferences: vi.fn().mockRejectedValue(new Error('保存失败')),
+    });
+    render(<SearchPage />);
+    fireEvent.click(screen.getByLabelText('选择排序方式'));
+    fireEvent.click(screen.getByRole('button', { name: '将最新发布设为默认排序' }));
+    await waitFor(() => expect(errorToast).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: '将最近活跃设为默认排序' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '将最新发布设为默认排序' })).toHaveTextContent('设为默认');
+    errorToast.mockRestore();
   });
 
   it('切换到赛事时应该更新搜索类型', async () => {

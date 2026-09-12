@@ -5,6 +5,7 @@ import { authorKeys } from "@/features/authors/lib/queryKeys";
 import { searchApi, type UISortMethod } from "@/features/search/api/searchApi";
 
 const PROFILE_STALE_TIME = 5 * 60 * 1000;
+export const AUTHOR_THREADS_PAGE_SIZE = 48;
 
 export function useAuthorProfile(
   authorId: string | undefined,
@@ -21,12 +22,13 @@ export function useAuthorProfile(
 /** 作者主页的帖子列表（可按频道筛选、切换排序）。 */
 export function useAuthorThreads(
   authorId: string | undefined,
-  params: { sortMethod: UISortMethod; channelIds: string[] },
+  params: { sortMethod: UISortMethod; channelIds: string[]; page: number },
 ) {
   return useQuery({
     queryKey: authorKeys.threads(authorId ?? "", {
       sortMethod: params.sortMethod,
       channelIds: params.channelIds,
+      page: params.page,
     }),
     enabled: Boolean(authorId),
     queryFn: () =>
@@ -36,7 +38,8 @@ export function useAuthorThreads(
         sort_method: params.sortMethod,
         channel_ids:
           params.channelIds.length > 0 ? params.channelIds : undefined,
-        limit: 48,
+        limit: AUTHOR_THREADS_PAGE_SIZE,
+        offset: (params.page - 1) * AUTHOR_THREADS_PAGE_SIZE,
       }),
     staleTime: 60 * 1000,
   });

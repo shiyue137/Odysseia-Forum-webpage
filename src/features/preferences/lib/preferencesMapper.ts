@@ -32,7 +32,7 @@ const sortApiToUiMap: Record<string, PreferencesSortUi> = {
   reaction_count: 'reaction_desc',
 };
 
-const sortUiToApiMap: Record<PreferencesSortUi, string> = {
+export const sortUiToApiMap: Record<PreferencesSortUi, string> = {
   relevance: 'comprehensive',
   last_active_desc: 'last_active',
   created_desc: 'created_at',

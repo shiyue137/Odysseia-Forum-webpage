@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/shared/api/client';
 import type { Thread } from '@/entities/thread/types';
+import { SearchSortMenu } from '@/features/search/components/SearchSortMenu';
+import type { PreferencesSortUi } from '@/features/preferences/lib/preferencesMapper';
 
 interface DevMockState {
   threads: Thread[];
@@ -10,6 +12,8 @@ interface DevMockState {
 }
 
 export function TestPage() {
+  const [sortPreview, setSortPreview] = useState<PreferencesSortUi>('last_active_desc');
+  const [defaultSortPreview, setDefaultSortPreview] = useState<PreferencesSortUi>('created_desc');
   const [token, setToken] = useState<string | null>(null);
   const isMocking = import.meta.env.VITE_API_MOCKING === 'true';
   const queryClient = useQueryClient();
@@ -72,6 +76,17 @@ export function TestPage() {
   return (
     <div className="min-h-screen bg-(--od-bg) px-6 py-6 text-(--od-text-primary)">
       <h1 className="mb-6 text-2xl font-bold">开发模式测试页面</h1>
+      <section aria-label="排序面板预览" className="mb-6">
+        <p className="mb-2 text-sm">排序面板预览：仅更新此处的临时状态。</p>
+        <SearchSortMenu
+          value={sortPreview}
+          defaultValue={defaultSortPreview}
+          saving={false}
+          saveDisabled={false}
+          onChange={setSortPreview}
+          onSaveDefault={setDefaultSortPreview}
+        />
+      </section>
 
       {/* 环境信息 */}
       <div className="space-y-3 rounded-xl border border-(--od-border) bg-(--od-card) p-4 text-sm">

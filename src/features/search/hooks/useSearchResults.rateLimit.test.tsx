@@ -94,6 +94,27 @@ describe("useSearchResults 限流分层", () => {
     vi.restoreAllMocks();
   });
 
+  it("跳转后从目标页继续无限滚动，页码和结束条件包含跳过的结果", async () => {
+    settings.preload = { enabled: false, pages: 1 };
+    const targetPageIds = Array.from({ length: 24 }, (_, index) => String(index + 25));
+    vi.mocked(searchApi.search)
+      .mockResolvedValueOnce(page(targetPageIds, 50))
+      .mockResolvedValueOnce(page(['49', '50'], 26));
+    const { result } = renderHook(
+      () => useSearchResults({ params: { ...params, page: 2 }, preferences: null }),
+      { wrapper: createWrapper() },
+    );
+    await waitFor(() => expect(result.current.results).toHaveLength(24));
+    expect(searchApi.search).toHaveBeenNthCalledWith(1, expect.objectContaining({ offset: 24, exclude_thread_ids: [] }), expect.anything(), 'foreground');
+    expect(result.current.viewedPage).toBe(2);
+    expect(result.current.pageByThreadId.get('25')).toBe(2);
+    act(() => result.current.requestNextPage());
+    await waitFor(() => expect(result.current.results).toHaveLength(26));
+    expect(searchApi.search).toHaveBeenNthCalledWith(2, expect.objectContaining({ offset: 24, exclude_thread_ids: targetPageIds }), expect.anything(), 'foreground');
+    expect(result.current.pageByThreadId.get('49')).toBe(3);
+    expect(result.current.infiniteQueryState.hasNextPage).toBe(false);
+  });
+
   it("后台预加载 429 时保留当前结果并静默暂停", async () => {
     vi.mocked(searchApi.search)
       .mockResolvedValueOnce(page(["1"]))
@@ -160,7 +181,8 @@ describe("useSearchResults 限流分层", () => {
     currentParams = { ...params, page: 2 };
     rerender();
     await waitFor(() =>
-      expect(result.current.infiniteQueryState.isFetchNextPageError).toBe(true),
+      // 普通分页以页码分缓存键，失败属于新查询，而非追加下一批结果。
+      expect(result.current.infiniteQueryState.isError).toBe(true),
     );
 
     currentParams = params;

@@ -89,6 +89,7 @@ export function Select({
       left: rect.left,
       width: variant === 'inline' ? 'auto' : rect.width,
       minWidth: variant === 'inline' ? Math.max(rect.width, 128) : rect.width,
+      maxHeight: Math.max(0, window.innerHeight - rect.bottom - 12),
     });
   }, [variant]);
 
@@ -163,7 +164,7 @@ export function Select({
           exit={{ opacity: 0, y: -4, scaleY: 0.96 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
           style={{ ...panelStyle, transformOrigin: 'top' }}
-          className="od-floating-panel-solid fixed z-[9999] overflow-hidden rounded-xl py-1"
+          className="od-floating-panel-solid fixed z-[9999] overflow-y-auto rounded-xl py-1"
         >
           {options.map((option, index) => {
             const isSelected = option.value === value;

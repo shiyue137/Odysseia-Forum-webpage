@@ -9,6 +9,7 @@ import { ThreadListItem } from "@/features/threads/components/ThreadListItem";
 import type { FollowedThread, Thread } from "@/entities/thread/types";
 import type { FollowSort } from "@/features/follows/lib/sortFollows";
 import { useListEntranceAnimation } from "@/shared/hooks/useListEntranceAnimation";
+import { Select } from "@/shared/ui/Select";
 
 type FollowStatusFilter = "current" | "past" | "all";
 
@@ -89,34 +90,30 @@ export function MeFollowsSection({
           <label htmlFor="follow-channel-filter" className="sr-only">
             频道筛选
           </label>
-          <select
+          <Select
             id="follow-channel-filter"
             value={selectedChannel || ""}
-            onChange={(event) => onSetChannel(event.target.value || null)}
-            className="od-ghost-input min-h-10 w-full px-1 text-sm"
-          >
-            <option value="">全频道</option>
-            {channelOptions.map((channel) => (
-              <option key={channel.id} value={channel.id}>
-                {channel.name}
-              </option>
-            ))}
-          </select>
+            aria-label="频道筛选"
+            onChange={(value) => onSetChannel(value || null)}
+            options={[{ value: "", label: "全频道" }, ...channelOptions.map((channel) => ({ value: channel.id, label: channel.name }))]}
+          />
           <label htmlFor="follow-sort" className="sr-only">
             关注排序
           </label>
-          <select
+          <Select
             id="follow-sort"
             value={sort}
-            onChange={(event) => onSortChange(event.target.value as FollowSort)}
-            className="od-ghost-input mt-2 min-h-10 w-full px-1 text-sm"
-          >
-            <option value="updated">最近更新</option>
-            <option value="unread">有更新优先</option>
-            <option value="followed-newest">最近关注</option>
-            <option value="followed-oldest">最早关注</option>
-            <option value="created">最近创建</option>
-          </select>
+            aria-label="关注排序"
+            onChange={(value) => onSortChange(value as FollowSort)}
+            className="mt-2"
+            options={[
+              { value: "updated", label: "最近更新" },
+              { value: "unread", label: "有更新优先" },
+              { value: "followed-newest", label: "最近关注" },
+              { value: "followed-oldest", label: "最早关注" },
+              { value: "created", label: "最近创建" },
+            ]}
+          />
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
           {(

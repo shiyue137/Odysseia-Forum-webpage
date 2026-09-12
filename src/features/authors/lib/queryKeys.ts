@@ -4,7 +4,7 @@ export const authorKeys = {
     [...authorKeys.all, "profile", authorId] as const,
   threads: (
     authorId: string,
-    params: { sortMethod: string; channelIds: string[] },
+    params: { sortMethod: string; channelIds: string[]; page: number },
   ) => [...authorKeys.all, "threads", authorId, params] as const,
   recentWorks: (authorId: string, excludeThreadId?: string) =>
     [...authorKeys.all, "recent-works", authorId, excludeThreadId ?? null] as const,

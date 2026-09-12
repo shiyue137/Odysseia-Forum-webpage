@@ -1,5 +1,4 @@
 import { MascotBar } from "@/features/mascot/components/MascotBar";
-import { DynamicFavicon } from "@/features/mascot/components/DynamicFavicon";
 import { showMascotToast } from "@/features/mascot/lib/mascotToast";
 import { EasterEggLayer } from "@/features/mascot/components/EasterEggLayer";
 import { GlobalEasterEggLayer } from "@/features/easter-eggs/components/GlobalEasterEggLayer";
@@ -278,7 +277,6 @@ export function RootLayout() {
       <GlobalThreadPreview />
       <EasterEggLayer />
       <GlobalEasterEggLayer />
-      <DynamicFavicon />
       <MascotBar />
       <ScrollToTop />
       <OnboardingManager />

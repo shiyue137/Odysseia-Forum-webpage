@@ -1,4 +1,5 @@
 import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
+import { DynamicFavicon } from "@/features/mascot/components/DynamicFavicon";
 import { useUserPreferences } from "@/features/preferences/hooks/useUserPreferences";
 import { getDiscoveryPreferenceContext } from "@/features/preferences/lib/discoveryPreferences";
 import type { SearchSuggestionAction } from "@/features/search/components/SearchSuggestions";
@@ -765,6 +766,7 @@ export function TopBar({
               );
             }}
           />
+          <DynamicFavicon hasUnread={hasUnreadNotifications} />
         </div>
       </div>
     </header>

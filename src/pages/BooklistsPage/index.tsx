@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw, Search, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Select } from "@/shared/ui/Select";
+import { scrollPageToTop } from "@/shared/lib/pageScroll";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { BooklistCard } from "@/entities/booklist/BooklistCard";
@@ -95,7 +96,14 @@ export function BooklistsPage() {
     if (totalPages > 1) {
       window.dispatchEvent(
         new CustomEvent("odysseia:active-page-info", {
-          detail: { currentPage: page, totalPages },
+          detail: {
+            currentPage: page,
+            totalPages,
+            onJump: (targetPage: number) => {
+              setParams({ page: targetPage });
+              scrollPageToTop('auto');
+            },
+          },
         }),
       );
     } else {
@@ -105,14 +113,11 @@ export function BooklistsPage() {
         }),
       );
     }
-    return () => {
-      window.dispatchEvent(
-        new CustomEvent("odysseia:active-page-info", {
-          detail: null,
-        }),
-      );
-    };
-  }, [page, totalPages]);
+  }, [page, totalPages, setParams]);
+
+  useEffect(() => () => {
+    window.dispatchEvent(new CustomEvent("odysseia:active-page-info", { detail: null }));
+  }, []);
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col gap-8 p-4 sm:p-6 lg:gap-10 lg:p-8">

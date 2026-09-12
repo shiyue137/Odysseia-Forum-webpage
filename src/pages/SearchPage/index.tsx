@@ -34,7 +34,13 @@ import {
   parseSearchQuery,
   tokenizeSearchPayload,
 } from "@/shared/lib/searchTokenizer";
-import { Select } from "@/shared/ui/Select";
+import { SearchSortMenu } from "@/features/search/components/SearchSortMenu";
+import {
+  sortUiToApiMap,
+  type PreferencesSortUi,
+} from "@/features/preferences/lib/preferencesMapper";
+import { extractErrorMessage } from "@/shared/lib/notify";
+import { toast } from "sonner";
 import { AnimatedPagination } from "@/shared/ui/AnimatedPagination";
 import {
   buildYesterdayPopularQuery,
@@ -52,14 +58,6 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
-const searchSortOptions = [
-  { value: "last_active_desc", label: "最近活跃" },
-  { value: "created_desc", label: "最新发布" },
-  { value: "reply_desc", label: "回复数" },
-  { value: "reaction_desc", label: "反应数" },
-  { value: "relevance", label: "相关度" },
-];
 
 function SearchRateLimitNotice({
   remaining,
@@ -112,9 +110,24 @@ export function SearchPage() {
     [query],
   );
 
-  const { preferences, isLoading: arePreferencesLoading } = useUserPreferences({
-    guildId: GUILD_ID,
-  });
+  const {
+    preferences,
+    isLoading: arePreferencesLoading,
+    isError: preferencesError,
+    savePreferences,
+    isSaving: isSavingPreferences,
+  } = useUserPreferences({ guildId: GUILD_ID });
+  const saveDefaultSort = async (sortMethod: PreferencesSortUi) => {
+    // 把当前排序显式留在 URL，保存偏好后不让默认值同步改变当前结果。
+    setParams({ sortMethod: params.sortMethod });
+    try {
+      const { user_id: _userId, ...current } = preferences!;
+      await savePreferences({ ...current, sort_method: sortUiToApiMap[sortMethod] });
+      toast.success("默认排序已保存");
+    } catch (error) {
+      toast.error(extractErrorMessage(error, "默认排序保存失败"));
+    }
+  };
   const collectBooklistMutation = useToggleBooklistCollection();
   const { data: channelsData } = useChannels();
   const { openPreview } = usePreviewThread();
@@ -278,7 +291,15 @@ export function SearchPage() {
     if (totalPages > 1) {
       window.dispatchEvent(
         new CustomEvent("odysseia:active-page-info", {
-          detail: { currentPage, totalPages },
+          detail: {
+            currentPage,
+            totalPages,
+            onJump: (page: number) => {
+              if (isThreadTab && !preparePageRequest(page)) return false;
+              setParams({ page });
+              scrollPageToTop('auto');
+            },
+          },
         }),
       );
     } else {
@@ -288,13 +309,6 @@ export function SearchPage() {
         }),
       );
     }
-    return () => {
-      window.dispatchEvent(
-        new CustomEvent("odysseia:active-page-info", {
-          detail: null,
-        }),
-      );
-    };
   }, [
     params.page,
     searchTotalPages,
@@ -302,7 +316,13 @@ export function SearchPage() {
     isThreadTab,
     isInfiniteMode,
     viewedPage,
+    preparePageRequest,
+    setParams,
   ]);
+
+  useEffect(() => () => {
+    window.dispatchEvent(new CustomEvent("odysseia:active-page-info", { detail: null }));
+  }, []);
 
   // 标题栏与偏好同步共用的解析结果，按 query 缓存
   const queryTokens = useMemo(() => parseSearchQuery(query), [query]);
@@ -463,16 +483,13 @@ export function SearchPage() {
             {isThreadTab && (
               <div className="inline-flex min-h-10 items-center gap-2 px-2 text-xs font-medium text-(--od-text-secondary)">
                 <ArrowUpDown className="h-3.5 w-3.5" />
-                <Select
-                  aria-label="选择排序方式"
+                <SearchSortMenu
                   value={params.sortMethod}
-                  options={searchSortOptions}
-                  onChange={(v) =>
-                    setParams({
-                      sortMethod: v as typeof params.sortMethod,
-                    })
-                  }
-                  variant="inline"
+                  defaultValue={Object.entries(sortUiToApiMap).find(([, apiValue]) => apiValue === preferences?.sort_method)?.[0]}
+                  saving={isSavingPreferences}
+                  saveDisabled={arePreferencesLoading || preferencesError || !preferences}
+                  onChange={(v) => setParams({ sortMethod: v })}
+                  onSaveDefault={saveDefaultSort}
                 />
                 <button
                   type="button"

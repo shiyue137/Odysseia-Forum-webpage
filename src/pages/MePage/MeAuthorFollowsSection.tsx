@@ -16,6 +16,7 @@ import {
   type AuthorFollowSort,
 } from "@/features/follows/lib/sortAuthorFollows";
 import { formatRelativeDateTime } from "@/shared/lib/dateTime";
+import { Select } from "@/shared/ui/Select";
 
 export type AuthorFollowStatusFilter = "current" | "past" | "all";
 
@@ -153,17 +154,18 @@ export function MeAuthorFollowsSection({
           <label htmlFor="author-follow-sort" className="sr-only">
             作者关注排序
           </label>
-          <select
+          <Select
             id="author-follow-sort"
             value={sort}
-            onChange={(event) => setSort(event.target.value as AuthorFollowSort)}
-            className="od-ghost-input min-h-10 w-full px-1 text-sm"
-          >
-            <option value="followed-newest">最近关注</option>
-            <option value="followed-oldest">最早关注</option>
-            <option value="name-asc">作者名称 A–Z</option>
-            <option value="name-desc">作者名称 Z–A</option>
-          </select>
+            aria-label="作者关注排序"
+            onChange={(value) => setSort(value as AuthorFollowSort)}
+            options={[
+              { value: "followed-newest", label: "最近关注" },
+              { value: "followed-oldest", label: "最早关注" },
+              { value: "name-asc", label: "作者名称 A–Z" },
+              { value: "name-desc", label: "作者名称 Z–A" },
+            ]}
+          />
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-2">

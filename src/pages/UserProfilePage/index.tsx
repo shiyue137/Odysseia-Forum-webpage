@@ -14,7 +14,7 @@ import {
   Share2,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
@@ -27,6 +27,7 @@ import { UserStatsGrid } from "@/entities/user/UserStatsGrid";
 import {
   useAuthorProfile,
   useAuthorThreads,
+  AUTHOR_THREADS_PAGE_SIZE,
 } from "@/features/authors/hooks/useAuthorsData";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
@@ -50,6 +51,7 @@ import {
 import { FluidDivider } from "@/shared/ui/FluidDivider";
 import { AnimatedPagination } from "@/shared/ui/AnimatedPagination";
 import { ShareTextDialog } from "@/shared/ui/ShareTextDialog";
+import { scrollPageToTop } from "@/shared/lib/pageScroll";
 
 // ─── 排序选项 ───────────────────────────────────────────────
 const SORT_OPTIONS: { value: UISortMethod; label: string }[] = [
@@ -108,6 +110,18 @@ export function UserProfilePage() {
 
   // ─── 从 URL 读取排序 & 频道筛选状态 ──────────────────────
   const sortMethod = parseSortParam(searchParams.get("sort"));
+  const rawPage = Number(searchParams.get("page"));
+  const threadPage = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const threadsSectionRef = useRef<HTMLElement>(null);
+  const setThreadPage = useCallback((page: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (page === 1) next.delete("page");
+      else next.set("page", String(page));
+      return next;
+    });
+    threadsSectionRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [setSearchParams]);
   const selectedChannelIds = useMemo(
     () => parseChannelsParam(searchParams.get("channels")),
     [searchParams],
@@ -154,6 +168,7 @@ export function UserProfilePage() {
           const p = new URLSearchParams(prev);
           if (next === DEFAULT_SORT) p.delete("sort");
           else p.set("sort", next);
+          p.delete("page");
           return p;
         },
         { replace: true },
@@ -173,6 +188,7 @@ export function UserProfilePage() {
             : [...current, channelId];
           if (next.length === 0) p.delete("channels");
           else p.set("channels", serializeChannels(next));
+          p.delete("page");
           return p;
         },
         { replace: true },
@@ -186,6 +202,7 @@ export function UserProfilePage() {
       (prev) => {
         const p = new URLSearchParams(prev);
         p.delete("channels");
+        p.delete("page");
         return p;
       },
       { replace: true },
@@ -196,6 +213,7 @@ export function UserProfilePage() {
   const threadsQuery = useAuthorThreads(userId, {
     sortMethod,
     channelIds: selectedChannelIds,
+    page: threadPage,
   });
   const animateIn = useListEntranceAnimation(threadsQuery.isLoading);
 
@@ -229,6 +247,28 @@ export function UserProfilePage() {
   const booklists = booklistsQuery.data?.results || [];
   const booklistTotal = booklistsQuery.data?.total || 0;
   const booklistTotalPages = Math.max(1, Math.ceil(booklistTotal / 12));
+  const threadTotalPages = Math.max(1, Math.ceil((threadsQuery.data?.total ?? 0) / AUTHOR_THREADS_PAGE_SIZE));
+
+  useEffect(() => {
+    const totalPages = activeTab === 'threads' ? threadTotalPages : booklistTotalPages;
+    window.dispatchEvent(new CustomEvent('odysseia:active-page-info', {
+      detail: totalPages > 1 ? {
+        currentPage: activeTab === 'threads' ? threadPage : booklistPage,
+        totalPages,
+        onJump: (page: number) => {
+          if (activeTab === 'threads') setThreadPage(page);
+          else {
+            setBooklistPage(page);
+            scrollPageToTop('auto');
+          }
+        },
+      } : null,
+    }));
+  }, [activeTab, threadTotalPages, booklistTotalPages, threadPage, booklistPage, setThreadPage, setBooklistPage]);
+
+  useEffect(() => () => {
+    window.dispatchEvent(new CustomEvent('odysseia:active-page-info', { detail: null }));
+  }, []);
 
   // 优先使用 profile 接口返回的权威元数据
   const profile = profileQuery.data;
@@ -512,7 +552,7 @@ export function UserProfilePage() {
         </div>
 
         {activeTab === "threads" ? (
-          <section className="px-1">
+          <section ref={threadsSectionRef} className="px-1">
             <FluidDivider label="Threads" className="mb-8" />
 
             {/* ─── 排序 & 频道筛选工具条 ─────────────────────── */}
@@ -625,7 +665,12 @@ export function UserProfilePage() {
               </p>
             ) : threads.length === 0 ? (
               <p className="text-sm text-(--od-text-secondary)">
-                这位作者还没有发布过帖子。
+                当前页没有符合条件的作品。
+                {threadPage > 1 && (
+                  <button type="button" onClick={() => setThreadPage(1)} className="ml-2 text-(--od-accent) hover:underline">
+                    返回第一页
+                  </button>
+                )}
               </p>
             ) : (
               <ThreadResultsCollection
@@ -634,6 +679,16 @@ export function UserProfilePage() {
                 animateIn={animateIn}
                 onApplyBanner={isOwnProfile ? setBannerThread : undefined}
               />
+            )}
+            {!threadsQuery.isLoading && !threadsQuery.isError && (
+              <div className="mt-8">
+                <AnimatedPagination
+                  currentPage={threadPage}
+                  totalPages={threadTotalPages}
+                  totalItems={threadsQuery.data?.total ?? 0}
+                  onChange={setThreadPage}
+                />
+              </div>
             )}
           </section>
         ) : (
