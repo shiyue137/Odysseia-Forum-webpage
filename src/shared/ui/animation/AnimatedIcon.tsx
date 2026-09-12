@@ -1,10 +1,10 @@
-import { motion, useAnimation } from 'motion/react';
+import { motion, useAnimation, type Transition } from 'motion/react';
 import { LucideIcon, LucideProps } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { springs } from './variants';
 
 interface AnimatedIconProps extends Omit<LucideProps, 'ref'> {
-    icon: LucideIcon | React.ComponentType<any>;
+    icon: LucideIcon | React.ComponentType<Omit<LucideProps, 'ref'>>;
     animation?: 'scale' | 'rotate' | 'shake' | 'pulse' | 'bounce' | 'spin' | 'flyUp';
     trigger?: 'hover' | 'click' | 'visible' | 'none';
     duration?: number;
@@ -112,7 +112,7 @@ export function AnimatedIcon({
         return controls;
     };
 
-    const getTransition = (): any => {
+    const getTransition = (): Transition => {
         if (animation === 'spin') {
             return { duration: 1, ease: "linear", repeat: Infinity };
         }

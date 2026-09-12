@@ -5,9 +5,7 @@ import {
   BookOpen,
   FileText,
   Filter,
-  Hash,
   Heart,
-  LayoutGrid,
   Loader2,
   MessageCircle,
   RefreshCw,
@@ -52,6 +50,7 @@ import { FluidDivider } from "@/shared/ui/FluidDivider";
 import { AnimatedPagination } from "@/shared/ui/AnimatedPagination";
 import { ShareTextDialog } from "@/shared/ui/ShareTextDialog";
 import { scrollPageToTop } from "@/shared/lib/pageScroll";
+import { UserContentProfile } from "./UserContentProfile";
 
 // ─── 排序选项 ───────────────────────────────────────────────
 const SORT_OPTIONS: { value: UISortMethod; label: string }[] = [
@@ -374,10 +373,6 @@ export function UserProfilePage() {
     };
   }, [channelNameMap, threads]);
 
-  const hasContentProfile =
-    authorContentProfile.tags.length > 0 ||
-    authorContentProfile.channels.length > 0;
-
   return (
     <>
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col gap-10 p-4 sm:p-6 lg:gap-14 lg:p-8">
@@ -474,39 +469,11 @@ export function UserProfilePage() {
             </div>
 
             <div className="mx-auto h-px w-16 bg-[color-mix(in_srgb,var(--od-text-secondary)_12%,transparent)]" />
-            {hasContentProfile && (
-              <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center">
-                <p className="text-[11px] font-medium text-(--od-text-tertiary)">
-                  基于当前加载的 {threads.length} 篇作品
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {authorContentProfile.tags.map(([tag, count]) => (
-                    <span
-                      key={`tag-${tag}`}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-(--od-surface-soft) px-3 py-1.5 text-xs text-(--od-text-secondary)"
-                    >
-                      <Hash className="h-3 w-3 text-(--od-accent)" />
-                      <span className="max-w-36 truncate">{tag}</span>
-                      <span className="tabular-nums text-(--od-text-tertiary)">
-                        {count}
-                      </span>
-                    </span>
-                  ))}
-                  {authorContentProfile.channels.map(([channel, count]) => (
-                    <span
-                      key={`channel-${channel}`}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-(--od-surface-soft) px-3 py-1.5 text-xs text-(--od-text-secondary)"
-                    >
-                      <LayoutGrid className="h-3 w-3 text-(--od-accent)" />
-                      <span className="max-w-36 truncate">{channel}</span>
-                      <span className="tabular-nums text-(--od-text-tertiary)">
-                        {count}
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+            <UserContentProfile
+              threadsCount={threads.length}
+              tags={authorContentProfile.tags}
+              channels={authorContentProfile.channels}
+            />
             <div data-tour="user-stats">
               <UserStatsGrid key={userId} items={stats} />
             </div>

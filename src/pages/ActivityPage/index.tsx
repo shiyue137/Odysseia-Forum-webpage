@@ -62,6 +62,7 @@ export function ActivityPage() {
     ? searchParams.get("author") ?? undefined
     : undefined;
   const [selectedStaticId, setSelectedStaticId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const hasAutoReadDynamicRef = useRef(false);
   const hasAutoReadStaticRef = useRef(false);
   const {
@@ -243,6 +244,44 @@ export function ActivityPage() {
     setSelectedStaticId(notification.id);
   };
 
+  const refreshPending = isRefreshing || authorsQuery.isFetching ||
+    (!systemOnly && notificationsQuery.isFetching) || staticQuery.isFetching;
+
+  const handleRefresh = async () => {
+    if (refreshPending) return;
+    setIsRefreshing(true);
+    const results = await Promise.allSettled([
+      ...(isAuthenticated ? [authorsQuery.refetch({ throwOnError: true })] : []),
+      ...(isAuthenticated && !systemOnly
+        ? [notificationsQuery.refetch({ throwOnError: true })]
+        : []),
+      staticQuery.refetch({ throwOnError: true }),
+    ]);
+    setIsRefreshing(false);
+    const failure = results.find((result) => result.status === "rejected");
+    if (failure?.status === "rejected") {
+      notifyError(extractErrorMessage(failure.reason, "刷新动态失败，请稍后重试"));
+    }
+  };
+
+  const handleLoadMoreAuthors = async () => {
+    if (authorsQuery.isFetching || !authorsQuery.hasNextPage) return;
+    try {
+      await authorsQuery.fetchNextPage({ throwOnError: true });
+    } catch (error) {
+      notifyError(extractErrorMessage(error, "加载更多作者失败，请重试"));
+    }
+  };
+
+  const handleRetryNotifications = async () => {
+    if (notificationsQuery.isFetching || !notificationsQuery.hasNextPage) return;
+    try {
+      await notificationsQuery.fetchNextPage({ throwOnError: true });
+    } catch (error) {
+      notifyError(extractErrorMessage(error, "加载更多动态失败，请重试"));
+    }
+  };
+
   const handleAnnouncementClose = () => {
     if (!selectedStaticNotification) return;
     if (
@@ -274,14 +313,11 @@ export function ActivityPage() {
             </Link>
             <button
               type="button"
-              onClick={() => {
-                void authorsQuery.refetch();
-                if (!systemOnly) void notificationsQuery.refetch();
-                void staticQuery.refetch();
-              }}
+              onClick={() => void handleRefresh()}
+              disabled={refreshPending}
               className="od-inline-action od-inline-action-ghost"
             >
-              <RefreshCw className="h-3.5 w-3.5" />
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshPending ? "animate-spin" : ""}`} />
               刷新
             </button>
             <button
@@ -371,7 +407,7 @@ export function ActivityPage() {
                   </span>
                 </button>
 
-                {!authorsQuery.isLoading && !authorsQuery.isError && followedAuthors.map((item) => {
+                {!authorsQuery.isLoading && followedAuthors.map((item) => {
                   const name =
                     item.author.display_name ||
                     item.author.global_name ||
@@ -420,11 +456,11 @@ export function ActivityPage() {
                     </div>
                   ))}
 
-                {!authorsQuery.isError && authorsQuery.hasNextPage && (
+                {authorsQuery.hasNextPage && (
                   <button
                     type="button"
-                    disabled={authorsQuery.isFetchingNextPage}
-                    onClick={() => void authorsQuery.fetchNextPage()}
+                    disabled={authorsQuery.isFetching}
+                    onClick={() => void handleLoadMoreAuthors()}
                     className="group flex w-18 shrink-0 flex-col items-center gap-2 text-center disabled:opacity-50"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-(--od-border-strong) text-(--od-text-tertiary) transition-colors group-hover:border-(--od-accent) group-hover:text-(--od-accent)">
@@ -507,7 +543,7 @@ export function ActivityPage() {
                 </div>
               ))}
             </div>
-          ) : (systemOnly ? staticQuery.isError : notificationsQuery.isError && staticQuery.isError) ? (
+          ) : feedItems.length === 0 && (systemOnly ? staticQuery.isError : notificationsQuery.isError && staticQuery.isError) ? (
             <div className="py-12 text-center text-sm text-(--od-text-secondary)">
               动态暂时没有加载出来，稍后再试一次。
             </div>
@@ -563,7 +599,8 @@ export function ActivityPage() {
             {!systemOnly && notificationsQuery.isFetchNextPageError && (
               <button
                 type="button"
-                onClick={() => void notificationsQuery.fetchNextPage()}
+                onClick={() => void handleRetryNotifications()}
+                disabled={notificationsQuery.isFetching}
                 className="od-inline-action od-inline-action-ghost"
               >
                 继续加载失败，点击重试

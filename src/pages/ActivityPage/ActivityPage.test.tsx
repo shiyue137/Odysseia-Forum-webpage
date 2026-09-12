@@ -438,6 +438,45 @@ describe("ActivityPage", () => {
     expect(mocks.markAllMutateAsync).not.toHaveBeenCalled();
   });
 
+  it("刷新期间禁止重复操作，失败提示且保留已加载内容", async () => {
+    let rejectRefresh!: (error: Error) => void;
+    const refetch = vi.fn(() => new Promise((_, reject) => {
+      rejectRefresh = reject;
+    }));
+    mocks.useNotificationsList.mockReturnValue({
+      ...mocks.useNotificationsList(),
+      refetch,
+    });
+    render(<ActivityPage />);
+    await screen.findByText("关注喜欢的作者与作品");
+    const refresh = screen.getByRole("button", { name: "刷新" });
+    await waitFor(() => expect(refresh).toBeEnabled());
+    fireEvent.click(refresh);
+    expect(refresh).toBeDisabled();
+    fireEvent.click(refresh);
+    expect(refetch).toHaveBeenCalledTimes(1);
+    rejectRefresh(new Error("刷新网络异常"));
+    await waitFor(() => expect(mocks.notifyError).toHaveBeenCalledWith("刷新网络异常"));
+    expect(refresh).toBeEnabled();
+    expect(screen.getByText("作品更新标题")).toBeInTheDocument();
+  });
+
+  it("作者分页失败提示错误，保留列表和重试按钮", async () => {
+    const fetchNextPage = vi.fn().mockRejectedValue(new Error("分页网络异常"));
+    mocks.useAuthorFollowsList.mockReturnValue({
+      ...mocks.useAuthorFollowsList(),
+      hasNextPage: true,
+      isError: true,
+      fetchNextPage,
+    });
+    render(<ActivityPage />);
+    await screen.findByText("关注喜欢的作者与作品");
+    fireEvent.click(screen.getByRole("button", { name: /加载更多/ }));
+    await waitFor(() => expect(mocks.notifyError).toHaveBeenCalledWith("分页网络异常"));
+    expect(screen.getByTitle("只看 测试作者 的动态")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /加载更多/ })).toBeEnabled();
+  });
+
   it("自动处理失败时提示错误，不循环重试，保留手动重试入口", async () => {
     mocks.markAllMutateAsync.mockRejectedValueOnce(new Error("网络异常"));
     const view = render(<ActivityPage />);

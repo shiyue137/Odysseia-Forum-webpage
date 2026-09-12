@@ -21,6 +21,8 @@ import { useBooklistURLParams } from "@/features/booklists/hooks/useBooklistURLP
 import { useCardGridClass, useSettings } from "@/shared/hooks/useSettings";
 import { useLayoutPreference } from "@/shared/hooks/useLayoutPreference";
 import { LayoutModeToggle } from "@/shared/ui/LayoutModeToggle";
+import { notifyError } from "@/features/mascot/lib/notify";
+import { extractErrorMessage } from "@/shared/lib/notify";
 
 type BooklistScope = "public" | "mine" | "collected";
 
@@ -67,6 +69,19 @@ export function BooklistsPage() {
   const updateMutation = useUpdateBooklist(undefined, () => setEditing(null));
   const deleteMutation = useDeleteBooklist();
   const collectMutation = useToggleBooklistCollection();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await listQuery.refetch();
+    } catch (error) {
+      notifyError(extractErrorMessage(error, "刷新书单失败"));
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const results = listQuery.data?.results ?? [];
   const normalizedResults = useMemo(
@@ -195,11 +210,12 @@ export function BooklistsPage() {
 
               <button
                 type="button"
-                onClick={() => listQuery.refetch()}
+                onClick={() => void handleRefresh()}
+                disabled={isRefreshing}
                 className="od-inline-action od-inline-action-ghost justify-center"
               >
-                <RefreshCw className="h-4 w-4" />
-                刷新
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                {isRefreshing ? "刷新中…" : "刷新"}
               </button>
             </div>
           </div>

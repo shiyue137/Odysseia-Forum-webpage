@@ -156,8 +156,13 @@ export function TournamentDetailPage() {
       <PageStatusMessage tone="error">
         <div className="space-y-3">
           <p>赛事加载出错了，可能不存在或已经被删除了</p>
-          <button type="button" onClick={() => void detailQuery.refetch()} className="underline">
-            重试
+          <button
+            type="button"
+            onClick={() => void detailQuery.refetch()}
+            disabled={detailQuery.isFetching}
+            className="underline disabled:opacity-50"
+          >
+            {detailQuery.isFetching ? "重试中..." : "重试"}
           </button>
         </div>
       </PageStatusMessage>
@@ -345,8 +350,9 @@ export function TournamentDetailPage() {
 
                 <button
                   type="button"
-                  onClick={() => detailQuery.refetch()}
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-(--od-text-secondary) transition-colors hover:text-(--od-accent)"
+                  onClick={() => void detailQuery.refetch()}
+                  disabled={detailQuery.isFetching}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-1.5 text-xs text-(--od-text-secondary) transition-colors hover:text-(--od-accent) disabled:pointer-events-none disabled:opacity-50"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   刷新
@@ -401,8 +407,13 @@ export function TournamentDetailPage() {
             {itemsQuery.isError ? (
               <div className="rounded-xl border border-(--od-error)/40 bg-(--od-card) p-10 text-center">
                 <p className="text-base font-semibold text-(--od-error)">参赛作品加载失败</p>
-                <button type="button" onClick={() => void itemsQuery.refetch()} className="mt-3 text-sm text-(--od-accent) underline">
-                  重试作品列表
+                <button
+                  type="button"
+                  onClick={() => void itemsQuery.refetch()}
+                  disabled={itemsQuery.isFetching}
+                  className="mt-3 text-sm text-(--od-accent) underline disabled:opacity-50"
+                >
+                  {itemsQuery.isFetching ? "重试中..." : "重试作品列表"}
                 </button>
               </div>
             ) : items.length === 0 ? (
@@ -454,8 +465,13 @@ export function TournamentDetailPage() {
             {itemsQuery.hasNextPage && (
               <div ref={loadMoreRef} className="flex justify-center py-8">
                 {itemsQuery.isFetchNextPageError ? (
-                  <button type="button" onClick={() => void itemsQuery.fetchNextPage()} className="text-sm text-(--od-accent) underline">
-                    加载更多失败，点击重试
+                  <button
+                    type="button"
+                    onClick={() => void itemsQuery.fetchNextPage()}
+                    disabled={itemsQuery.isFetchingNextPage}
+                    className="text-sm text-(--od-accent) underline disabled:opacity-50"
+                  >
+                    {itemsQuery.isFetchingNextPage ? "重试中..." : "加载更多失败，点击重试"}
                   </button>
                 ) : (
                   <RefreshCw className="h-6 w-6 animate-spin text-(--od-text-tertiary)" />

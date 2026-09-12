@@ -152,7 +152,12 @@ export function DrawRevealOverlay({
   const activeThread = results[currentIndex] || null;
 
   // Animation constants matching reference `sine.inOut` and timing
-  const SINE_EASE = [0.445, 0.05, 0.55, 0.95] as any;
+  const SINE_EASE: [number, number, number, number] = [
+    0.445,
+    0.05,
+    0.55,
+    0.95,
+  ];
 
   return createPortal(
     <LayoutGroup>

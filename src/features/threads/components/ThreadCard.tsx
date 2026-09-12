@@ -119,14 +119,13 @@ function ThreadCardImpl({
     [thread.thumbnail_urls, imageMode],
   );
   const [thumbnailSrc, setThumbnailSrc] = useState(initialThumbnail);
-  const [naturalAspectRatio, setNaturalAspectRatio] = useState<number | null>(
-    () => thumbnailAspectRatioCache.get(initialThumbnail) || null,
-  );
+  const [naturalAspectRatioOverride, setNaturalAspectRatioOverride] =
+    useState<number | null>(null);
+  const naturalAspectRatio =
+    naturalAspectRatioOverride ?? thumbnailAspectRatioCache.get(thumbnailSrc) ?? null;
   useEffect(() => {
     setThumbnailSrc(initialThumbnail);
-    setNaturalAspectRatio(
-      thumbnailAspectRatioCache.get(initialThumbnail) || null,
-    );
+    setNaturalAspectRatioOverride(null);
   }, [initialThumbnail, thread.thread_id]);
 
   useEffect(() => {
@@ -232,7 +231,7 @@ function ThreadCardImpl({
                     // ponytail: 瀑布流按图片自然比例排布，但限制极端长图，避免单卡占满整列。
                     const ratio = Math.min(1.5, Math.max(0.5, width / height));
                     thumbnailAspectRatioCache.set(thumbnailSrc, ratio);
-                    setNaturalAspectRatio(ratio);
+                    setNaturalAspectRatioOverride(ratio);
                   }}
                 />
               ) : (

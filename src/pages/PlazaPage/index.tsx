@@ -63,7 +63,7 @@ export function PlazaPage() {
   const setPreviewThread = usePreviewStore((state) => state.setPreviewThread);
   const { preferences } = useUserPreferences({ guildId: GUILD_ID });
   const [ignorePreferenceFilter, setIgnorePreferenceFilter] = useState(false);
-  const [railThreadsMap, setRailThreadsMap] = useState<
+  const [railRefreshMap, setRailRefreshMap] = useState<
     Record<string, Thread[]>
   >({});
   const [refreshingKeys, setRefreshingKeys] = useState<Record<string, boolean>>(
@@ -100,25 +100,40 @@ export function PlazaPage() {
   const railsQuery = useDiscoveryRails(!ignorePreferenceFilter, rankingDays);
   const dailyCardsQuery = useDiscoveryRail("latest", !ignorePreferenceFilter, 1);
 
-  useEffect(() => {
-    if (!railsQuery.data) return;
-
+  const railThreadsMap = useMemo<Record<string, Thread[]>>(() => {
     const applyFilter = (threads: Thread[]) =>
       !ignorePreferenceFilter
         ? filterThreadsByPreferences(threads, discoveryPreferenceContext)
         : threads;
 
-    setRailThreadsMap({
-      reaction_surge: applyFilter(railsQuery.data.reaction_surge || []),
-      discussion_surge: applyFilter(railsQuery.data.discussion_surge || []),
-      collection_surge: applyFilter(railsQuery.data.collection_surge || []),
-    });
+    return {
+      reaction_surge:
+        railRefreshMap.reaction_surge ??
+        applyFilter(railsQuery.data?.reaction_surge || []),
+      discussion_surge:
+        railRefreshMap.discussion_surge ??
+        applyFilter(railsQuery.data?.discussion_surge || []),
+      collection_surge:
+        railRefreshMap.collection_surge ??
+        applyFilter(railsQuery.data?.collection_surge || []),
+    };
+  }, [
+    discoveryPreferenceContext,
+    ignorePreferenceFilter,
+    railRefreshMap,
+    railsQuery.data,
+  ]);
+
+  useEffect(() => {
+    if (!railsQuery.data) return;
+
+    setRailRefreshMap({});
     setRailOffsets({
       reaction_surge: railsQuery.data.reaction_surge?.length || 0,
       discussion_surge: railsQuery.data.discussion_surge?.length || 0,
       collection_surge: railsQuery.data.collection_surge?.length || 0,
     });
-  }, [railsQuery.data, ignorePreferenceFilter, discoveryPreferenceContext]);
+  }, [discoveryPreferenceContext, ignorePreferenceFilter, railsQuery.data]);
 
   const handleRefreshRail = useCallback(
     async (key: DiscoveryRailKey) => {
@@ -151,7 +166,7 @@ export function PlazaPage() {
           ? filterThreadsByPreferences(nextThreads, discoveryPreferenceContext)
           : nextThreads;
 
-        setRailThreadsMap((previous) => ({
+        setRailRefreshMap((previous) => ({
           ...previous,
           [key]: filteredThreads,
         }));

@@ -44,7 +44,12 @@ export function normalizeDiscordThreadUrl(value: string): string {
   return url.toString();
 }
 
-export function BooklistPublishModal({
+export function BooklistPublishModal(props: BooklistPublishModalProps) {
+  if (!props.isOpen) return null;
+  return <BooklistPublishModalContent key={props.initialUrl || ""} {...props} />;
+}
+
+function BooklistPublishModalContent({
   isOpen,
   initialUrl,
   submitting = false,
@@ -54,12 +59,6 @@ export function BooklistPublishModal({
   const [threadUrl, setThreadUrl] = useState(initialUrl || "");
   const [error, setError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setThreadUrl(initialUrl || "");
-    setError(null);
-  }, [initialUrl, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;

@@ -17,23 +17,52 @@ interface QuickAddToBooklistModalProps {
   onClose: () => void;
 }
 
+type BooklistsQuery = ReturnType<typeof useMyBooklistsList>;
+interface QuickAddBooklistContentProps {
+  isOpen: boolean;
+  threadId: string;
+  threadTitle?: string;
+  onClose: () => void;
+  query: BooklistsQuery;
+}
+
 export function QuickAddToBooklistModal({
   isOpen,
   threadId,
   threadTitle,
   onClose,
 }: QuickAddToBooklistModalProps) {
-  const queryClient = useQueryClient();
   const myBooklistsQuery = useMyBooklistsList({
     markThreadId: threadId,
     enabled: isOpen && /^\d+$/.test(threadId),
   });
+
+  if (!isOpen) return null;
+  return (
+    <QuickAddToBooklistModalContent
+      key={`${isOpen}:${threadId}:${myBooklistsQuery.dataUpdatedAt}`}
+      threadId={threadId}
+      threadTitle={threadTitle}
+      onClose={onClose}
+      query={myBooklistsQuery}
+      isOpen={isOpen}
+    />
+  );
+}
+
+function QuickAddToBooklistModalContent({
+  isOpen, threadId, threadTitle, onClose, query: myBooklistsQuery,
+}: QuickAddBooklistContentProps) {
+  const queryClient = useQueryClient();
+  const markedIds = new Set(
+    (myBooklistsQuery.data?.results || [])
+      .filter((booklist) => booklist.is_marked)
+      .map((booklist) => booklist.id),
+  );
   const [selectedBooklistIds, setSelectedBooklistIds] = useState<Set<number>>(
-    new Set(),
+    markedIds,
   );
-  const [initialBooklistIds, setInitialBooklistIds] = useState<Set<number>>(
-    new Set(),
-  );
+  const initialBooklistIds = markedIds;
   const [comment, setComment] = useState("");
 
   const myBooklists = myBooklistsQuery.data?.results || [];
@@ -51,18 +80,6 @@ export function QuickAddToBooklistModal({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
-
-  useEffect(() => {
-    if (!isOpen || !myBooklistsQuery.data) return;
-    const markedIds = new Set(
-      (myBooklistsQuery.data.results || [])
-        .filter((booklist) => booklist.is_marked)
-        .map((booklist) => booklist.id),
-    );
-    setSelectedBooklistIds(markedIds);
-    setInitialBooklistIds(new Set(markedIds));
-    setComment("");
-  }, [isOpen, myBooklistsQuery.data]);
 
   const canSubmit = useMemo(() => {
     if (!/^\d+$/.test(threadId) || !myBooklistsQuery.isSuccess) return false;

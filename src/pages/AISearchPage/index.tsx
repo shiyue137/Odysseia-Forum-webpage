@@ -33,10 +33,11 @@ import {
   type AISearchSettings,
 } from '@/features/ai-search/lib/settings';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowUp, Check, ChevronUp, Pencil, RefreshCw, RotateCcw, Settings, Square, SquarePen, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowUp, Check, ChevronUp, Pencil, RefreshCw, RotateCcw, Square, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AISearchPageHeader } from './AISearchPageHeader';
 
 type AISearchLiveResponse = AISearchAgentProgress & {
   conversationId: string;
@@ -234,12 +235,12 @@ export function AISearchPage() {
     reading: '正在阅读候选作品的首楼……',
   };
 
-  const openSettings = () => {
+  const openSettings = useCallback(() => {
     setDraftSettings(settings);
     setSettingsTab('api');
     setModelFetchFeedback(null);
     settingsDialogRef.current?.showModal();
-  };
+  }, [settings]);
 
   const updateDraft = <K extends keyof AISearchSettings>(
     key: K,
@@ -284,7 +285,7 @@ export function AISearchPage() {
     }
   };
 
-  const ensureModelConfigured = () => {
+  const ensureModelConfigured = useCallback(() => {
     if (!settings.baseUrl || !settings.model) {
       showMascotToast({
         id: 'ai-search-provider-required',
@@ -299,9 +300,9 @@ export function AISearchPage() {
       return false;
     }
     return true;
-  };
+  }, [openSettings, settings.baseUrl, settings.model]);
 
-  const executeTurn = async (
+  const executeTurn = useCallback(async (
     conversationId: string,
     userMessage: string | undefined,
     history: typeof messages,
@@ -400,7 +401,16 @@ export function AISearchPage() {
       liveResponsesRef.current.delete(conversationId);
       setLiveResponse((current) => current?.conversationId === conversationId ? null : current);
     }
-  };
+  }, [
+    appendMessage,
+    appendMessages,
+    context,
+    drawPreferences,
+    markConversationRead,
+    markConversationUnread,
+    setConversationRunning,
+    settings,
+  ]);
 
   // 接收从外部（如帖子卡片右键“AI 探索相似”）传入的初始结构化 Prompt，自动开启新会话并开始对话
   useEffect(() => {
@@ -427,7 +437,16 @@ export function AISearchPage() {
         ensureModelConfigured();
       }
     }
-  }, [location.state, searchParams, settings.baseUrl, settings.model]);
+  }, [
+    ensureModelConfigured,
+    executeTurn,
+    location.state,
+    searchParams,
+    setSearchParams,
+    settings.baseUrl,
+    settings.model,
+    startConversation,
+  ]);
 
   const handleStop = () => {
     if (activeConversationId) abortAISearchConversation(activeConversationId);
@@ -546,11 +565,10 @@ export function AISearchPage() {
 
   return (
     <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden px-4 pt-5 sm:px-8 lg:px-12">
-      <header className="relative z-20 mx-auto flex w-full max-w-5xl shrink-0 justify-end">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => {
+      <AISearchPageHeader
+        disabled={isRunning}
+        onOpenSettings={openSettings}
+        onNewConversation={() => {
               startNewConversation();
               setSearchParams({}, { replace: true });
               setStatus('idle');
@@ -559,23 +577,7 @@ export function AISearchPage() {
               setInput('');
               setPlaceholderIndex((current) => (current + 1) % INPUT_PLACEHOLDERS.length);
             }}
-            disabled={isRunning}
-            className="group inline-flex h-9 w-9 items-center justify-center text-(--od-text-tertiary) transition-colors hover:text-(--od-accent) disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--od-accent)"
-            aria-label="新建对话"
-          >
-            <SquarePen className="h-4.5 w-4.5 transition-transform duration-200 group-hover:-rotate-6" />
-          </button>
-          <button
-            type="button"
-            onClick={openSettings}
-            data-tour="ai-search-settings"
-            className="group inline-flex h-9 w-9 items-center justify-center text-(--od-text-tertiary) transition-colors hover:text-(--od-accent) focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--od-accent)"
-            aria-label="模型设置"
-          >
-            <Settings className="h-4.5 w-4.5 transition-transform duration-300 group-hover:rotate-45" />
-          </button>
-        </div>
-      </header>
+      />
 
       <section className="relative mx-auto min-h-0 w-full max-w-4xl flex-1 overflow-visible py-4 sm:py-6">
         <AnimatePresence initial={false}>
