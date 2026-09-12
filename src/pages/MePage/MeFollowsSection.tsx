@@ -6,10 +6,14 @@ import {
 } from "lucide-react";
 
 import { ThreadListItem } from "@/features/threads/components/ThreadListItem";
+import { ThreadCard } from "@/features/threads/components/ThreadCard";
 import type { FollowedThread, Thread } from "@/entities/thread/types";
 import type { FollowSort } from "@/features/follows/lib/sortFollows";
 import { useListEntranceAnimation } from "@/shared/hooks/useListEntranceAnimation";
 import { Select } from "@/shared/ui/Select";
+import { LayoutModeToggle } from "@/shared/ui/LayoutModeToggle";
+import { useLayoutPreference } from "@/shared/hooks/useLayoutPreference";
+import { useCardGridClass } from "@/shared/hooks/useSettings";
 
 type FollowStatusFilter = "current" | "past" | "all";
 
@@ -60,6 +64,8 @@ export function MeFollowsSection({
   unfollowPendingThreadId,
 }: MeFollowsSectionProps) {
   const animateIn = useListEntranceAnimation(isLoading);
+  const [layoutMode, setLayoutMode] = useLayoutPreference("me-follows", "list");
+  const gridClass = useCardGridClass();
 
   const emptyMessage = selectedChannel
     ? "这个频道里暂时没有符合筛选的关注内容。"
@@ -116,6 +122,7 @@ export function MeFollowsSection({
           />
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
+          <LayoutModeToggle value={layoutMode === "list" ? "list" : "grid"} onChange={setLayoutMode} />
           {(
             [
               { value: "current", label: "当前关注" },
@@ -177,40 +184,46 @@ export function MeFollowsSection({
             : emptyMessage}
         </p>
       ) : (
-        <div className="flex flex-col space-y-od-list-gap">
+        <div className={layoutMode === "list" ? "flex flex-col space-y-od-list-gap" : gridClass}>
           {threads.map((thread, index) => {
             const isCurrentFollow = Boolean(thread.active_flag);
             const isPending = unfollowPendingThreadId === thread.thread_id;
 
-            return (
-              <div key={thread.thread_id}>
-                <ThreadListItem
-                  thread={thread}
-                  index={index}
-                  onPreview={onPreview}
-                  animateIn={animateIn}
-                  trailingAction={
-                    isCurrentFollow ? (
-                      <button
-                        type="button"
-                        disabled={isPending}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onUnfollow(thread);
-                        }}
-                        className="od-inline-action od-inline-action-ghost text-(--od-text-tertiary) hover:text-(--od-error) disabled:pointer-events-none disabled:opacity-55"
-                      >
-                        <BellOff className="h-3.5 w-3.5" />
-                        {isPending ? "取消中" : "取消关注"}
-                      </button>
-                    ) : (
-                      <span className="od-inline-action bg-(--od-surface-soft) text-(--od-text-tertiary)">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        已取消
-                      </span>
-                    )
-                  }
-                />
+            const followAction = isCurrentFollow ? (
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onUnfollow(thread);
+                }}
+                className="od-inline-action od-inline-action-ghost text-(--od-text-tertiary) hover:text-(--od-error) disabled:pointer-events-none disabled:opacity-55"
+              >
+                <BellOff className="h-3.5 w-3.5" />
+                {isPending ? "取消中" : "取消关注"}
+              </button>
+            ) : (
+              <span className="od-inline-action bg-(--od-surface-soft) text-(--od-text-tertiary)">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                已取消
+              </span>
+            );
+
+            return layoutMode === "list" ? (
+              <ThreadListItem
+                key={thread.thread_id}
+                thread={thread}
+                index={index}
+                onPreview={onPreview}
+                animateIn={animateIn}
+                trailingAction={followAction}
+              />
+            ) : (
+              <div key={thread.thread_id} className="flex min-w-0 flex-col">
+                <div className="min-h-0 flex-1">
+                  <ThreadCard thread={thread} index={index} onPreview={onPreview} animateIn={animateIn} />
+                </div>
+                <div className="mt-2 flex justify-end">{followAction}</div>
               </div>
             );
           })}

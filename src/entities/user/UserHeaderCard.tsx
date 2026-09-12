@@ -1,5 +1,5 @@
 import { UserRound } from 'lucide-react';
-import type { User } from '@/features/auth/api/authApi';
+import type { User } from '@/entities/user/types';
 import { LazyImage } from '@/shared/ui/LazyImage';
 
 interface UserHeaderCardProps {

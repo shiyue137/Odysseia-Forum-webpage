@@ -3,8 +3,8 @@ import { Dices, Plus, RotateCw, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import type { Booklist } from "@/entities/booklist/types";
-import { BooklistCard } from "@/entities/booklist/BooklistCard";
-import { filterThreadsByPreferences } from "@/entities/thread/lib/threadFilter";
+import { BooklistCard } from "@/features/booklists/components/BooklistCard";
+import { filterThreadsByPreferences } from "@/features/preferences/lib/threadFilter";
 import type { Thread } from "@/entities/thread/types";
 import { useToggleBooklistCollection } from "@/features/booklists/hooks/useBooklistsData";
 import {

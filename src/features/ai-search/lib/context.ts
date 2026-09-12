@@ -1,4 +1,4 @@
-import type { User } from '@/features/auth/api/authApi';
+import type { User } from '@/entities/user/types';
 import type { UserPreferencesResponse } from '@/features/preferences/api/preferencesApi';
 import { getDiscoveryPreferenceContext } from '@/features/preferences/lib/discoveryPreferences';
 import type { ApiChannel } from '@/shared/hooks/useChannels';

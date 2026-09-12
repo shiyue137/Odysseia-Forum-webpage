@@ -5,7 +5,7 @@ import { ThreadPreviewOverlay } from '@/widgets/thread-preview/ThreadPreviewOver
 import { searchApi } from '@/features/search/api/searchApi';
 import { searchKeys } from '@/features/search/lib/queryKeys';
 import { showMascotToast } from '@/features/mascot/lib/mascotToast';
-import { addBrowseHistory } from '@/shared/lib/browseHistory';
+import { addBrowseHistory } from '@/features/history/lib/browseHistory';
 
 export function GlobalThreadPreview() {
     const previewThread = usePreviewStore((state) => state.previewThread);

@@ -24,7 +24,7 @@ export interface PreferencesFormValue {
   sortMethod: PreferencesSortUi;
 }
 
-const sortApiToUiMap: Record<string, PreferencesSortUi> = {
+export const sortApiToUiMap: Record<string, PreferencesSortUi> = {
   comprehensive: 'relevance',
   last_active: 'last_active_desc',
   created_at: 'created_desc',

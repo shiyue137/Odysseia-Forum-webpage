@@ -9,7 +9,7 @@ import forumIcon from "@/assets/images/icon/forum-icon-256.png";
 import { showMascotToast } from "@/features/mascot/lib/mascotToast";
 import { notifySuccess } from "@/features/mascot/lib/notify";
 import { WordLogoStatic } from "@/shared/ui/loaders/WordLogoStatic";
-import ruleImage from "@/assets/images/background/rule.png";
+import ruleImage from "@/assets/images/background/rule.webp";
 import { WordLoader } from "@/shared/ui/loaders/WordLoader";
 import { ImageViewer } from "@/shared/ui/ImageViewer";
 import { useImageViewerStore } from "@/shared/store/useImageViewerStore";

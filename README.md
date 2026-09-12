@@ -12,7 +12,7 @@
 
 
 <h1 align="center">
-  大家欢迎呀！我是类脑娘！<img align="center" height="36" src="src/assets/images/mascot/hi.png" alt="微笑" />
+  大家欢迎呀！我是类脑娘！<img align="center" height="36" src="src/assets/images/mascot/hi.webp" alt="微笑" />
 </h1>
 
 <p align="center">
@@ -37,24 +37,24 @@
 
 欢迎来到 Odysseia Forum Webpage 的前端大本营！让我来给大家带路吧！希望在这里，大家能像晒着向日葵的太阳一样觉得暖洋洋的！
 
-这可是基于 React 和 Vite 搭建的现代化社区前端，一切都是为了给宝宝们提供最丝滑、最纯粹的阅读和探索体验呢！每天看着大家开开心心地分享角色卡，我就会超级有干劲哦！<img align="center" height="28" src="src/assets/images/mascot/greeting_window.png" alt="乖巧" />
+这可是基于 React 和 Vite 搭建的现代化社区前端，一切都是为了给宝宝们提供最丝滑、最纯粹的阅读和探索体验呢！每天看着大家开开心心地分享角色卡，我就会超级有干劲哦！<img align="center" height="28" src="src/assets/images/mascot/greeting_window.webp" alt="乖巧" />
 
 不过大家也知道的...
 
 <h1 align="center">
-  我最讨厌那些偷资源的 API 贩子和搞商业化的人了！<img align="center" height="40" src="src/assets/images/mascot/error.png" alt="生气" />
+  我最讨厌那些偷资源的 API 贩子和搞商业化的人了！<img align="center" height="40" src="src/assets/images/mascot/error.webp" alt="生气" />
 </h1>
 
-所以，这里是一个完全由大家用爱发电建立起来的和谐社区。我们才不要那些乱七八糟的商业化行为呢！在这个空气纯净的小圈里，只要大家都能开开心心、真诚地相处，我就满足啦！<img align="center" height="28" src="src/assets/images/mascot/pride.png" alt="傲娇" />
+所以，这里是一个完全由大家用爱发电建立起来的和谐社区。我们才不要那些乱七八糟的商业化行为呢！在这个空气纯净的小圈里，只要大家都能开开心心、真诚地相处，我就满足啦！<img align="center" height="28" src="src/assets/images/mascot/pride.webp" alt="傲娇" />
 
 ---
 
 ## 我们建小房子的砖块
 
-- **React 19** 加上 **Vite 8**：页面加载速度超快，就像我吹喇叭一样一呼百应！<img align="center" height="24" src="src/assets/images/mascot/blow_the_trumpet.png" alt="吹喇叭" />
+- **React 19** 加上 **Vite 8**：页面加载速度超快，就像我吹喇叭一样一呼百应！<img align="center" height="24" src="src/assets/images/mascot/blow_the_trumpet.webp" alt="吹喇叭" />
 - **Tailwind CSS 4**：可以随时给界面切掉换上好看的皮肤！深浅色主题随心切换，怎么打扮都好看！
-- **Zustand 5** & **React Query**：帮我把宝宝们写的所有帖子和状态都打理得整整齐齐，就算是路过找东西也绝不会乱哦！<img align="center" height="24" src="src/assets/images/mascot/searching.png" alt="搜索" />
-- **路由懒加载 + 无限滚动**：每个页面都是单独的小包裹，进哪个房间才拆哪个，翻卡片也能一直往下滑！<img align="center" height="24" src="src/assets/images/mascot/success.png" alt="赞" />
+- **Zustand 5** & **React Query**：帮我把宝宝们写的所有帖子和状态都打理得整整齐齐，就算是路过找东西也绝不会乱哦！<img align="center" height="24" src="src/assets/images/mascot/searching.webp" alt="搜索" />
+- **路由懒加载 + 无限滚动**：每个页面都是单独的小包裹，进哪个房间才拆哪个，翻卡片也能一直往下滑！<img align="center" height="24" src="src/assets/images/mascot/success.webp" alt="赞" />
 
 ## 想在你的电脑上部署这个项目吗？
 
@@ -66,20 +66,20 @@ cp .env.example .env
 pnpm dev
 ```
 
-等魔法生效后，用浏览器访问 `http://localhost:3000` 就能看到我啦！如果你做错什么把代码弄坏了... 哼，如果你好好哄哄我，我也会尽力帮你解答你遇到的开发报错的哦！<img align="center" height="24" src="src/assets/images/mascot/sad_apology.png" alt="嫌弃又委屈" />
+等魔法生效后，用浏览器访问 `http://localhost:3000` 就能看到我啦！如果你做错什么把代码弄坏了... 哼，如果你好好哄哄我，我也会尽力帮你解答你遇到的开发报错的哦！<img align="center" height="24" src="src/assets/images/mascot/sad_apology.webp" alt="嫌弃又委屈" />
 
 ## 看板娘解答时间 (FAQ)
 
 <details>
 <summary><b>1. 页面打不开或者一片空白怎么办？</b></summary>
 <br/>
-哼，先检查一下你的 `.env` 里的 `VITE_API_URL` 写对没有！如果没有连接上正确的后端，我是不会理你的！<img align="center" height="24" src="src/assets/images/mascot/error.png" alt="生气" />
+哼，先检查一下你的 `.env` 里的 `VITE_API_URL` 写对没有！如果没有连接上正确的后端，我是不会理你的！<img align="center" height="24" src="src/assets/images/mascot/error.webp" alt="生气" />
 </details>
 
 <details>
 <summary><b>2. 新增的组件应该放在哪里呀？</b></summary>
 <br/>
-我们严格遵守了 FSD 架构哦！如果是带有业务逻辑的，记得放进 `features` 里面。想知道更详细的规矩，去看看右边的日记本吧！<img align="center" height="24" src="src/assets/images/mascot/tea.png" alt="喝茶" />
+我们严格遵守了 FSD 架构哦！如果是带有业务逻辑的，记得放进 `features` 里面。想知道更详细的规矩，去看看右边的日记本吧！<img align="center" height="24" src="src/assets/images/mascot/tea.webp" alt="喝茶" />
 </details>
 
 ## 更多秘密的日记本
@@ -94,7 +94,7 @@ pnpm dev
 - [怎么保护大家不要被抢走 (Security)](docs/development/security.md)
 - [给大家的代码做定期的体格检查 (Testing & CI)](docs/testing/vitest_ci_process.md)
 
-愿宝宝们的每一次代码提交都能顺顺利利，没有讨厌的红字报错！我会把最真诚的祝福给你们哦！<img align="center" height="24" src="src/assets/images/mascot/tea.png" alt="喝茶微笑" />
+愿宝宝们的每一次代码提交都能顺顺利利，没有讨厌的红字报错！我会把最真诚的祝福给你们哦！<img align="center" height="24" src="src/assets/images/mascot/tea.webp" alt="喝茶微笑" />
 
 ---
 
@@ -111,10 +111,10 @@ pnpm dev
 <details>
 <summary><b>偷偷告诉你一个警告... (点击展开)</b></summary>
 <br/>
-哼，如果有谁敢分裂类脑或者做任何背叛大家善意的事情，我一定会把你永远关在小黑屋里的！<img align="center" height="24" src="src/assets/images/mascot/confused.png" alt="疑惑与警告" />
+哼，如果有谁敢分裂类脑或者做任何背叛大家善意的事情，我一定会把你永远关在小黑屋里的！<img align="center" height="24" src="src/assets/images/mascot/confused.webp" alt="疑惑与警告" />
 </details>
 
 <br/>
 <div align="center">
-  <img src="src/assets/images/mascot/letsgo.png" width="120" alt="Let's Go!" />
+  <img src="src/assets/images/mascot/letsgo.webp" width="120" alt="Let's Go!" />
 </div>

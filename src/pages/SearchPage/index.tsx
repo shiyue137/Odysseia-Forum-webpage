@@ -2,8 +2,8 @@ import { ThreadCardSkeleton } from "@/entities/thread/ThreadCardSkeleton";
 import { useInfiniteScrollTrigger } from "@/shared/hooks/useInfiniteScrollTrigger";
 import { ThreadListItemSkeleton } from "@/entities/thread/ThreadListItemSkeleton";
 import { ThreadResultsCollection } from "@/features/threads/components/ThreadResultsCollection";
-import { BooklistCard } from "@/entities/booklist/BooklistCard";
-import { BooklistListItem } from "@/entities/booklist/BooklistListItem";
+import { BooklistCard } from "@/features/booklists/components/BooklistCard";
+import { BooklistListItem } from "@/features/booklists/components/BooklistListItem";
 import { TournamentListItem } from "@/features/tournaments/components/TournamentListItem";
 import { useSearchWhisper } from "@/features/easter-eggs/hooks/useSearchWhisper";
 import { usePreviewThread } from "@/features/search/hooks/usePreviewThread";
@@ -36,6 +36,7 @@ import {
 } from "@/shared/lib/searchTokenizer";
 import { SearchSortMenu } from "@/features/search/components/SearchSortMenu";
 import {
+  sortApiToUiMap,
   sortUiToApiMap,
   type PreferencesSortUi,
 } from "@/features/preferences/lib/preferencesMapper";
@@ -337,14 +338,7 @@ export function SearchPage() {
       preferences?.sort_method &&
       !new URLSearchParams(window.location.search).get("sort")
     ) {
-      const sortMap: Record<string, typeof params.sortMethod> = {
-        comprehensive: "relevance",
-        last_active: "last_active_desc",
-        created_at: "created_desc",
-        reply_count: "reply_desc",
-        reaction_count: "reaction_desc",
-      };
-      const preferredSort = sortMap[preferences.sort_method];
+      const preferredSort = sortApiToUiMap[preferences.sort_method];
       if (preferredSort && preferredSort !== params.sortMethod) {
         setParams({ sortMethod: preferredSort });
       }
@@ -485,7 +479,7 @@ export function SearchPage() {
                 <ArrowUpDown className="h-3.5 w-3.5" />
                 <SearchSortMenu
                   value={params.sortMethod}
-                  defaultValue={Object.entries(sortUiToApiMap).find(([, apiValue]) => apiValue === preferences?.sort_method)?.[0]}
+                  defaultValue={sortApiToUiMap[preferences?.sort_method || '']}
                   saving={isSavingPreferences}
                   saveDisabled={arePreferencesLoading || preferencesError || !preferences}
                   onChange={(v) => setParams({ sortMethod: v })}

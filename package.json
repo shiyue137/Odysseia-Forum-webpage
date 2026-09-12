@@ -8,7 +8,7 @@
     "build:analyze": "ANALYZE_BUNDLE=true vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "lint": "eslint . --report-unused-disable-directives --max-warnings 79",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 63",
     "lint:ox": "oxlint . --deny-warnings",
     "lint:styles": "stylelint \"src/**/*.{css,tsx}\" --allow-empty-input",
     "gen:api": "python3 scripts/export_openapi.py && npx openapi-typescript openapi.json -o src/shared/types/openapi.d.ts",
@@ -19,7 +19,6 @@
     "check:og": "node scripts/check-booklist-og.mjs"
   },
   "dependencies": {
-    "@chenglou/pretext": "^0.0.8",
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.99.0",
     "axios": "^1.20.0",

@@ -60,43 +60,18 @@ export function BooklistCard({
     window.open(`/booklists/${booklist.id}`, "_blank", "noopener,noreferrer");
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onOpen(booklist.id);
-    }
-  };
-
   return (
     <ContextMenu>
       <ContextMenuTrigger className="h-full">
         <article
-          role="button"
           aria-label={ariaLabel}
-          tabIndex={0}
-          onKeyDown={handleKeyDown}
+          tabIndex={-1}
           className="group relative flex h-full cursor-pointer flex-col rounded-[1.1rem] p-2 pb-5 text-(--od-text-primary) transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-(--od-accent)"
           style={{ WebkitTapHighlightColor: "transparent" }}
-          onMouseDown={(e) => {
-            if (!(e.target as HTMLElement).closest("button, a"))
-              e.preventDefault();
-          }}
           onClick={() => onOpen(booklist.id)}
         >
-          {/* 拦截 Tab 焦点进入内部元素，并对辅助技术隐藏内部细节 */}
           <div
-            aria-hidden="true"
             className="pointer-events-auto flex h-full w-full flex-col"
-            ref={(el) => {
-              if (el) {
-                const focusables = el.querySelectorAll(
-                  'a, button, [tabindex="0"]',
-                );
-                focusables.forEach((node) => {
-                  node.setAttribute("tabindex", "-1");
-                });
-              }
-            }}
           >
             <button
               type="button"
@@ -160,7 +135,17 @@ export function BooklistCard({
               </div>
 
               <h3 className="mt-2 line-clamp-2 text-base font-semibold tracking-tight text-(--od-text-primary) transition-colors group-hover:text-(--od-accent)">
-                {booklist.title}
+                <button
+                  type="button"
+                  className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--od-accent)"
+                  aria-label={`打开书单：${booklist.title}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onOpen(booklist.id);
+                  }}
+                >
+                  {booklist.title}
+                </button>
               </h3>
               <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm leading-6 text-(--od-text-secondary)">
                 {booklist.description || "暂无简介"}
@@ -215,6 +200,7 @@ export function BooklistCard({
         </ContextMenuItem>
         <ContextMenuItem
           icon={<Star className="h-4 w-4" />}
+          disabled={collectLoading}
           onClick={() => onToggleCollect(booklist)}
         >
           {booklist.collected_flag ? "取消收藏" : "收藏书单"}

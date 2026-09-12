@@ -57,7 +57,7 @@ import {
   clearBrowseHistory,
   getBrowseHistory,
   removeBrowseHistory,
-} from "@/shared/lib/browseHistory";
+} from "@/features/history/lib/browseHistory";
 import { notifyError, notifySuccess } from "@/features/mascot/lib/notify";
 
 type MeTab = "booklists" | "follows" | "history" | "preferences";

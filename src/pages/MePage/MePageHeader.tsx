@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import { UserHeaderCard } from '@/entities/user/UserHeaderCard';
-import type { User } from '@/features/auth/api/authApi';
+import type { User } from '@/entities/user/types';
 
 export interface MePageTabOption {
   key: string;

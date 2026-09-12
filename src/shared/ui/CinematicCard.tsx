@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 function getAverageColor(imgEl: HTMLImageElement): Promise<string> {
   return new Promise((resolve) => {
@@ -17,7 +17,7 @@ function getAverageColor(imgEl: HTMLImageElement): Promise<string> {
         resolve(`rgba(${r},${g},${b},0.5)`);
         return;
       }
-    } catch (e) {
+    } catch {
       // ignore cross-origin issues
     }
     resolve('rgba(80, 80, 90, 0.4)');
@@ -72,7 +72,7 @@ export function CinematicCard({
 
   const [glowColor, setGlowColor] = useState('rgba(80, 80, 90, 0.4)');
 
-  const handleMouseMove = (e: React.MouseEvent | MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent | MouseEvent) => {
     let rect: DOMRect;
     let cx: number;
     let cy: number;
@@ -102,7 +102,7 @@ export function CinematicCard({
     // 记录目标位置 (POV 模式下，PX/PY 直接作为平移距离)
     state.current.tarPX = dx;
     state.current.tarPY = dy;
-  };
+  }, [useGlobalMouse]);
 
   const handleMouseLeave = () => {
     state.current.isHovered = false;
@@ -116,7 +116,7 @@ export function CinematicCard({
       window.addEventListener('mousemove', onMove);
       return () => window.removeEventListener('mousemove', onMove);
     }
-  }, [useGlobalMouse]);
+  }, [handleMouseMove, useGlobalMouse]);
 
   useEffect(() => {
     let reqId: number;

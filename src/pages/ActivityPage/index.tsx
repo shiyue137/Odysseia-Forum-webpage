@@ -8,7 +8,7 @@ import {
   Settings2,
   UsersRound,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -62,6 +62,8 @@ export function ActivityPage() {
     ? searchParams.get("author") ?? undefined
     : undefined;
   const [selectedStaticId, setSelectedStaticId] = useState<string | null>(null);
+  const hasAutoReadDynamicRef = useRef(false);
+  const hasAutoReadStaticRef = useRef(false);
   const {
     lastOpenedAt,
     dismissedIds,
@@ -84,7 +86,7 @@ export function ActivityPage() {
       resolveStaticNotifications({ currentAppVersion: APP_VERSION }),
     staleTime: 5 * 60 * 1000,
   });
-  const markAllRead = useMarkAllNotificationsRead();
+  const { mutateAsync: markAllReadAsync, isPending: isMarkingAllRead } = useMarkAllNotificationsRead();
   const loadMoreRef = useInfiniteScrollTrigger(notificationsQuery, {
     rootMargin: "320px",
   });
@@ -125,6 +127,35 @@ export function ActivityPage() {
   const staticUnreadCount = staticNotifications.filter((notification) =>
     isStaticNotificationUnread(notification, lastOpenedAt),
   ).length;
+  const latestStaticTimestamp = staticNotifications.reduce<string | null>(
+    (latest, notification) =>
+      !latest || new Date(notification.created_at).getTime() > new Date(latest).getTime()
+        ? notification.created_at
+        : latest,
+    null,
+  );
+
+  useEffect(() => {
+    if (hasAutoReadStaticRef.current || !staticQuery.data) return;
+    hasAutoReadStaticRef.current = true;
+    if (latestStaticTimestamp) markOpenedAt(latestStaticTimestamp);
+  }, [latestStaticTimestamp, markOpenedAt, staticQuery.data]);
+
+  useEffect(() => {
+    if (
+      hasAutoReadDynamicRef.current ||
+      !isAuthenticated ||
+      !dynamicUnreadQuery.data ||
+      (!systemOnly && (!notificationsQuery.data || notificationsQuery.isError))
+    ) return;
+
+    // 每次进入只处理一次，避免已读后的缓存刷新再次触发请求，或清掉之后的新通知。
+    hasAutoReadDynamicRef.current = true;
+    if (dynamicUnreadQuery.data.unread_count === 0) return;
+    void markAllReadAsync().catch((error) => {
+      notifyError(extractErrorMessage(error, '自动标记已读失败，可以点击“全部已读”重试'));
+    });
+  }, [dynamicUnreadQuery.data, isAuthenticated, markAllReadAsync, notificationsQuery.data, notificationsQuery.isError, systemOnly]);
   const filteredDynamicUnreadCount =
     notificationsQuery.data?.pages[0]?.unread_count ?? 0;
   const globalDynamicUnreadCount =
@@ -189,22 +220,14 @@ export function ActivityPage() {
   };
 
   const handleMarkAllRead = async () => {
-    if (markAllRead.isPending || totalUnreadCount === 0) return;
-    const latestStatic = staticNotifications.reduce<string | null>(
-      (latest, notification) =>
-        !latest ||
-        new Date(notification.created_at).getTime() > new Date(latest).getTime()
-          ? notification.created_at
-          : latest,
-      null,
-    );
-    if (latestStatic) markOpenedAt(latestStatic);
+    if (isMarkingAllRead || totalUnreadCount === 0) return;
+    if (latestStaticTimestamp) markOpenedAt(latestStaticTimestamp);
     if (!isAuthenticated || globalDynamicUnreadCount === 0) {
       notifySuccess("当前通知已全部标记为已读");
       return;
     }
     try {
-      const result = await markAllRead.mutateAsync();
+      const result = await markAllReadAsync();
       notifySuccess(
         result.marked_read > 0
           ? `已将 ${result.marked_read} 条动态及系统通知标记为已读`
@@ -264,10 +287,10 @@ export function ActivityPage() {
             <button
               type="button"
               onClick={() => void handleMarkAllRead()}
-              disabled={totalUnreadCount === 0 || markAllRead.isPending}
+              disabled={totalUnreadCount === 0 || isMarkingAllRead}
               className="od-inline-action od-inline-action-soft disabled:pointer-events-none disabled:opacity-50"
             >
-              {markAllRead.isPending ? (
+              {isMarkingAllRead ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <CheckCheck className="h-3.5 w-3.5" />

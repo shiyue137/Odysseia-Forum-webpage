@@ -19,7 +19,6 @@ import { ThreadStatusBadges } from "@/entities/thread/ThreadStatusBadges";
 import { ThreadTagList } from "@/features/threads/components/ThreadTagList";
 import { ThreadTournamentBadges } from "@/entities/thread/ThreadTournamentBadges";
 import { useThreadCardModel } from "@/entities/thread/useThreadCardModel";
-import { usePretextClampText } from "@/shared/hooks/usePretextClampText";
 import { QuickAddToBooklistModal } from "@/features/booklists/components/QuickAddToBooklistModal";
 import { subscribeThreadThumbnailRepair } from "@/features/threads/lib/thumbnailRepairQueue";
 import type { ThreadItemManagementActions } from "@/features/threads/components/threadItemActions";
@@ -100,9 +99,6 @@ function ThreadListItemImpl({
     const urls = thumbnailUrls.filter(Boolean);
     return Array.from(new Set(urls)).slice(0, 4);
   }, [thumbnailUrls]);
-
-  const { measureRef: titleMeasureRef, clampedText: clampedTitle } =
-    usePretextClampText<HTMLHeadingElement>(thread.title, { maxLines: 2 });
 
   // 缓存命中直出的页面传 animateIn=false：内容用户已看过，不再重播浮现动画。
   const entranceClass = animateIn
@@ -297,10 +293,9 @@ function ThreadListItemImpl({
             aria-label={`预览帖子：${thread.title}`}
           >
             <h3
-              ref={titleMeasureRef}
-              className={`min-w-0 flex-1 font-semibold leading-snug tracking-[-0.02em] text-(--od-text-primary) transition-colors duration-200 group-hover:text-(--od-accent) ${fontSizes.title}`}
+              className={`line-clamp-2 min-w-0 flex-1 font-semibold leading-snug tracking-[-0.02em] text-(--od-text-primary) transition-colors duration-200 group-hover:text-(--od-accent) ${fontSizes.title}`}
             >
-              <HighlightText text={clampedTitle} highlight={searchQuery} />
+              <HighlightText text={thread.title} highlight={searchQuery} />
             </h3>
           </button>
 

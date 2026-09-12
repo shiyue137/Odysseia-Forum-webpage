@@ -1,4 +1,37 @@
 import type { ComponentType } from 'react';
+import { motion } from 'motion/react';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
+
+const DIGITS = Array.from({ length: 10 }, (_, digit) => digit);
+
+function RollingStatNumber({ value }: { value: number }) {
+  const characters = String(value).split('');
+
+  return (
+    <span className="inline-flex align-bottom tracking-normal">
+      <span className="sr-only">{value}</span>
+      <span aria-hidden="true" className="inline-flex">
+        {characters.map((character, index) => {
+          const place = characters.length - index - 1;
+          if (!/\d/.test(character)) return <span key={`separator-${place}`}>{character}</span>;
+
+          return (
+            <span key={place} className="inline-block h-[1em] w-[1ch] overflow-hidden leading-none">
+              <motion.span
+                className="block"
+                initial={{ y: '0em' }}
+                animate={{ y: `-${Number(character)}em` }}
+                transition={{ duration: 0.65, delay: place * 0.035, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {DIGITS.map((digit) => <span key={digit} className="block h-[1em]">{digit}</span>)}
+              </motion.span>
+            </span>
+          );
+        })}
+      </span>
+    </span>
+  );
+}
 
 interface UserStatItem {
   label: string;
@@ -11,6 +44,7 @@ interface UserStatsGridProps {
 }
 
 export function UserStatsGrid({ items }: UserStatsGridProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
   const desktopColumns = items.length === 3 ? 'sm:grid-cols-3' : 'lg:grid-cols-4';
 
   return (
@@ -25,7 +59,9 @@ export function UserStatsGrid({ items }: UserStatsGridProps) {
           <div>
             <p className="text-[0.78rem] font-medium text-(--od-text-secondary) sm:text-sm">{item.label}</p>
             <p className="mt-1 text-[1.55rem] font-bold tracking-[-0.04em] text-(--od-text-value) tabular-nums sm:mt-2 sm:text-[2.5rem]">
-              {item.value}
+              {typeof item.value === 'number' && !prefersReducedMotion
+                ? <RollingStatNumber value={item.value} />
+                : item.value}
             </p>
           </div>
         </div>

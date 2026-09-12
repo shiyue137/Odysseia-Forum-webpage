@@ -18,11 +18,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { BooklistCard } from "@/entities/booklist/BooklistCard";
+import { BooklistCard } from "@/features/booklists/components/BooklistCard";
 import { BannerApplicationModal } from "@/features/banner/components/BannerApplicationModal";
 import { ThreadResultsCollection } from "@/features/threads/components/ThreadResultsCollection";
 import type { Thread } from "@/entities/thread/types";
-import { UserHeaderCard } from "@/entities/user/UserHeaderCard";
+import { AuthorAvatar } from "@/entities/user/AuthorAvatar";
 import { UserStatsGrid } from "@/entities/user/UserStatsGrid";
 import {
   useAuthorProfile,
@@ -382,27 +382,22 @@ export function UserProfilePage() {
     <>
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col gap-10 p-4 sm:p-6 lg:gap-14 lg:p-8">
         <section>
-          <FluidDivider
-            label="Author"
-            tone="strong"
-            className="mb-8 lg:mb-10"
-          />
+          <div className="od-page-heading mb-8 lg:mb-10">
+            <h1 className="od-page-title">作者主页</h1>
+          </div>
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
             <div className="flex flex-col items-center gap-4">
-              <div data-tour="user-header" className="w-full">
-                <UserHeaderCard
-                  user={{
-                    id: profile?.id || userId || "unknown",
-                    username:
-                      profile?.name || authorFromThreads?.name || authorName,
-                    global_name: profile?.global_name || authorName,
-                    avatar: undefined,
-                  }}
-                  avatarUrl={
-                    profile?.avatar_url || authorFromThreads?.avatar_url || null
-                  }
-                  subtitle={`作者主页 · ${userId ? `ID: ${userId}` : "正在加载作者信息"}`}
-                />
+              <div data-tour="user-header" className="flex w-full min-w-0 flex-col items-center gap-4 text-center">
+                <AuthorAvatar author={profile || authorFromThreads} className="h-16 w-16 sm:h-20 sm:w-20" />
+                <div className="min-w-0">
+                  <h2 className="break-words text-[1.5rem] font-semibold tracking-tight text-(--od-text-primary)">{authorName}</h2>
+                  <p className="mt-2 text-sm text-(--od-text-secondary)">
+                    @{profile?.name || authorFromThreads?.name || authorName}
+                  </p>
+                  <p className="mt-1 break-all text-xs text-(--od-text-tertiary)">
+                    作者主页 · {userId ? `ID: ${userId}` : "正在加载作者信息"}
+                  </p>
+                </div>
               </div>
 
               <div className="flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
@@ -513,7 +508,7 @@ export function UserProfilePage() {
               </div>
             )}
             <div data-tour="user-stats">
-              <UserStatsGrid items={stats} />
+              <UserStatsGrid key={userId} items={stats} />
             </div>
           </div>
         </section>

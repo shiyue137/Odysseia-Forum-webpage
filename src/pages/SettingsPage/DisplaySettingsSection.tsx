@@ -13,7 +13,7 @@ import {
   Type,
 } from 'lucide-react';
 
-import previewBackground from '@/assets/images/background/garden.png';
+import previewBackground from '@/assets/images/background/garden.webp';
 import { ThreadCard } from '@/features/threads/components/ThreadCard';
 import type { Thread } from '@/entities/thread/types';
 import { useEasterEggUnlocks } from '@/features/easter-eggs/hooks/useEasterEggUnlocks';

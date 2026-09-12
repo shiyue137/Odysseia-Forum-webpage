@@ -1,16 +1,10 @@
 import { apiClient } from '@/shared/api/client';
+import type { User } from '@/entities/user/types';
 import {
   getStoredAuthToken,
   invalidateAuthSession,
   setUseAuthHeader,
 } from '@/shared/lib/authSession';
-
-export interface User {
-  id: string;
-  username: string;
-  global_name?: string;
-  avatar?: string;
-}
 
 export interface AuthResponse {
   loggedIn: boolean;

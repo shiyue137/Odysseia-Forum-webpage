@@ -2,10 +2,8 @@ import { MascotBar } from "@/features/mascot/components/MascotBar";
 import { showMascotToast } from "@/features/mascot/lib/mascotToast";
 import { EasterEggLayer } from "@/features/mascot/components/EasterEggLayer";
 import { GlobalEasterEggLayer } from "@/features/easter-eggs/components/GlobalEasterEggLayer";
-import {
-  useSettings,
-  useSidebarCollapsedSetting,
-} from "@/shared/hooks/useSettings";
+import { useSidebarCollapsedSetting } from "@/shared/hooks/useSettings";
+import { useSettingsStore } from "@/shared/store/settingsStore";
 import {
   getLastBrowsePosition,
   saveLastBrowsePosition,
@@ -36,15 +34,12 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
  *   └──────────────────────────────────────────┘
  *   [  移动端底部 Tab 栏  ] (md:hidden)
  *
- * 布局模式可通过 useSettings 或将来的 useLayoutStore 控制：
- *   - sidebarCollapsed: 侧边栏收起
- *   - 未来: topBarVisible / immersiveMode 等
  */
 
 export function RootLayout() {
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [mobileOpenUrl, setMobileOpenUrl] = useState<string | null>(null);
   const sidebarCollapsed = useSidebarCollapsedSetting();
-  const { updateSettings } = useSettings();
+  const updateSettings = useSettingsStore((state) => state.updateSettings);
   const location = useLocation();
   const navigate = useNavigate();
   const hasShownResumePromptRef = useRef(false);
@@ -52,6 +47,13 @@ export function RootLayout() {
   const restoreTimerRef = useRef<number | null>(null);
   const restoreTargetUrlRef = useRef<string | null>(null);
   const currentUrl = `${location.pathname}${location.search}${location.hash}`;
+  const isMobileOpen = mobileOpenUrl === currentUrl;
+  if (mobileOpenUrl !== null && mobileOpenUrl !== currentUrl) {
+    setMobileOpenUrl(null);
+  }
+  const setIsMobileOpen = useCallback((open: boolean) => {
+    setMobileOpenUrl(open ? currentUrl : null);
+  }, [currentUrl]);
 
   const cancelScrollRestore = useCallback(() => {
     if (restoreTimerRef.current !== null) window.clearTimeout(restoreTimerRef.current);
@@ -74,6 +76,7 @@ export function RootLayout() {
 
       container.scrollTop = scrollTop;
       attempts += 1;
+      // ponytail: 最多等待 2 秒；跨会话深层无限列表需后续接入页内锚点恢复。
       if (container.scrollTop + 2 < scrollTop && attempts < 20) {
         restoreTimerRef.current = window.setTimeout(restore, 100);
       } else {
@@ -121,10 +124,14 @@ export function RootLayout() {
     const container = document.getElementById("main-scroll-container");
     if (!container) return;
     let saveTimer: number | null = null;
+    let scrollTop = container.scrollTop;
 
-    const save = () =>
-      saveLastBrowsePosition(window.location.href, container.scrollTop);
+    const save = () => {
+      if (restoreTargetUrlRef.current === currentUrl) return;
+      saveLastBrowsePosition(currentUrl, scrollTop);
+    };
     const handleScroll = () => {
+      scrollTop = container.scrollTop;
       if (saveTimer !== null) window.clearTimeout(saveTimer);
       saveTimer = window.setTimeout(() => {
         saveTimer = null;
@@ -143,13 +150,16 @@ export function RootLayout() {
   }, [currentUrl, location.pathname]);
 
   useEffect(() => {
-    setIsMobileOpen(false);
-    // 当发生页面或筛选跳转时，将焦点转移到主内容区，避免停留在侧边栏
+    // 只在切换页面时转移焦点；同页筛选和页码变化保留当前操作位置。
     const mainContainer = document.getElementById("main-scroll-container");
-    if (mainContainer) {
-      setTimeout(() => mainContainer.focus(), 50);
-    }
-  }, [location.pathname, location.search, location.hash]);
+    const activeElement = document.activeElement;
+    const timer = window.setTimeout(() => {
+      if (document.activeElement === activeElement || document.activeElement === document.body) {
+        mainContainer?.focus({ preventScroll: true });
+      }
+    }, 50);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname]);
 
   return (
     <div className="od-app-shell relative flex h-screen w-full overflow-hidden text-(--od-text-primary)">

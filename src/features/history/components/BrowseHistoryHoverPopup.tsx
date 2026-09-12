@@ -1,7 +1,7 @@
 import { Trash2, History, ArrowRight, ExternalLink } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { BrowseHistoryItem } from '@/shared/lib/browseHistory';
+import type { BrowseHistoryItem } from '@/features/history/lib/browseHistory';
 import { formatRelativeDateTime } from '@/shared/lib/dateTime';
 import { useThemeSettings } from '@/shared/hooks/useSettings';
 import { LazyImage } from '@/shared/ui/LazyImage';

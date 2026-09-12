@@ -15,8 +15,9 @@ import {
   Plus,
   User,
   X,
+  type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import {
   describeSearchHistoryContext,
@@ -158,7 +159,7 @@ export function SearchSuggestions({
     const flatItems: SuggestionItem[] = [];
     const sectionedGroups: Array<{
       title: string;
-      icon: any;
+      icon: LucideIcon;
       items: SuggestionItem[];
     }> = [];
 
@@ -322,34 +323,7 @@ export function SearchSuggestions({
     threads,
   ]);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < groups.flatItems.length - 1 ? prev + 1 : prev,
-        );
-      } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-      } else if (event.key === "Enter" && selectedIndex >= 0) {
-        event.preventDefault();
-        handleSelect(groups.flatItems[selectedIndex]);
-      } else if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    inputRef?.current?.addEventListener("keydown", handleKeyDown);
-    return () =>
-      inputRef?.current?.removeEventListener("keydown", handleKeyDown);
-  }, [groups.flatItems, inputRef, onClose, selectedIndex]);
-
-  useEffect(() => {
-    setSelectedIndex(-1);
-  }, [currentQuery]);
-
-  const handleSelect = (
+  const handleSelect = useCallback((
     item: SuggestionItem,
     mode: "include" | "exclude" = "include",
   ) => {
@@ -387,7 +361,35 @@ export function SearchSuggestions({
     }
 
     onSelect({ type: "append", value: item.value });
-  };
+  }, [onSelect]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < groups.flatItems.length - 1 ? prev + 1 : prev,
+        );
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+      } else if (event.key === "Enter" && selectedIndex >= 0 && selectedIndex < groups.flatItems.length) {
+        event.preventDefault();
+        handleSelect(groups.flatItems[selectedIndex]);
+      } else if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    const input = inputRef?.current;
+    input?.addEventListener("keydown", handleKeyDown);
+    return () => input?.removeEventListener("keydown", handleKeyDown);
+  }, [groups.flatItems, handleSelect, inputRef, onClose, selectedIndex]);
+
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [currentQuery]);
+
 
   const content = (
     <>

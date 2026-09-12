@@ -44,6 +44,7 @@ const bob = createItem("2", "Bob", "2026-08-28T00:00:00Z", false);
 describe("MeAuthorFollowsSection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it("支持按名称排序、搜索和进入作者页", () => {
@@ -64,9 +65,8 @@ describe("MeAuthorFollowsSection", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("作者关注排序"), {
-      target: { value: "name-asc" },
-    });
+    fireEvent.click(screen.getByLabelText("作者关注排序"));
+    fireEvent.click(screen.getByRole("option", { name: "作者名称 A–Z" }));
     expect(
       screen
         .getAllByRole("button", { name: /前往 .* 的作者页/ })
@@ -101,8 +101,12 @@ describe("MeAuthorFollowsSection", () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole("button", { name: "切换到网格展示" }));
+    expect(screen.getAllByRole("article")[0].parentElement).toHaveClass("grid");
     fireEvent.click(screen.getByRole("button", { name: "取消关注" }));
     fireEvent.click(screen.getByRole("button", { name: "重新关注" }));
     expect(mocks.mutate).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole("button", { name: "切换到列表展示" }));
+    expect(screen.getAllByRole("article")[0].parentElement).not.toHaveClass("grid");
   });
 });

@@ -1,11 +1,11 @@
 import type { UserSettings } from '@/shared/lib/settings';
-import fantasyMarketBackground from '@/assets/images/background/apple.png';
-import gardenBackground from '@/assets/images/background/garden.png';
-import railwayBackground from '@/assets/images/background/railways.png';
-import rainyDayBackground from '@/assets/images/background/rainyday.png';
-import rooftopBackground from '@/assets/images/background/roof.png';
-import spaceBackground from '@/assets/images/background/space.png';
-import vendingMachineBackground from '@/assets/images/background/vending_machine.png';
+import fantasyMarketBackground from '@/assets/images/background/apple.webp';
+import gardenBackground from '@/assets/images/background/garden.webp';
+import railwayBackground from '@/assets/images/background/railways.webp';
+import rainyDayBackground from '@/assets/images/background/rainyday.webp';
+import rooftopBackground from '@/assets/images/background/roof.webp';
+import spaceBackground from '@/assets/images/background/space.webp';
+import vendingMachineBackground from '@/assets/images/background/vending_machine.webp';
 
 type ThemeOption = {
   id: UserSettings['theme'];

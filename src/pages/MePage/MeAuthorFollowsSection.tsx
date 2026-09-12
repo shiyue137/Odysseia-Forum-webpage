@@ -17,6 +17,8 @@ import {
 } from "@/features/follows/lib/sortAuthorFollows";
 import { formatRelativeDateTime } from "@/shared/lib/dateTime";
 import { Select } from "@/shared/ui/Select";
+import { LayoutModeToggle } from "@/shared/ui/LayoutModeToggle";
+import { useLayoutPreference } from "@/shared/hooks/useLayoutPreference";
 
 export type AuthorFollowStatusFilter = "current" | "past" | "all";
 
@@ -105,6 +107,7 @@ export function MeAuthorFollowsSection({
   onSetStatus,
 }: MeAuthorFollowsSectionProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [layoutMode, setLayoutMode] = useLayoutPreference("me-follows", "list");
   const [sort, setSort] = useState<AuthorFollowSort>("followed-newest");
   const visibleItems = useMemo(() => {
     const query = searchQuery.trim().toLocaleLowerCase();
@@ -169,6 +172,7 @@ export function MeAuthorFollowsSection({
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-2">
+          <LayoutModeToggle value={layoutMode === "list" ? "list" : "grid"} onChange={setLayoutMode} />
           {(
             [
               { value: "current", label: "当前关注" },
@@ -215,7 +219,7 @@ export function MeAuthorFollowsSection({
           <div className="mb-3 text-center text-xs text-(--od-text-tertiary)">
             已加载 {items.length} / {total} 位作者
           </div>
-          <div className="flex flex-col">
+          <div className={layoutMode === "list" ? "flex flex-col" : "grid grid-cols-1 gap-x-6 sm:grid-cols-2 xl:grid-cols-3"}>
             {visibleItems.map((item) => (
               <AuthorFollowListItem
                 key={item.author.id}

@@ -30,7 +30,7 @@ import {
   getBrowseHistory,
   clearBrowseHistory,
   type BrowseHistoryItem,
-} from "@/shared/lib/browseHistory";
+} from "@/features/history/lib/browseHistory";
 import { AnimatePresence, motion } from "motion/react";
 import {
   lazy,

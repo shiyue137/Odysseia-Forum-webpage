@@ -1,6 +1,6 @@
 import { Eye, RefreshCw, Trash2 } from 'lucide-react';
 
-import type { BrowseHistoryItem } from '@/shared/lib/browseHistory';
+import type { BrowseHistoryItem } from '@/features/history/lib/browseHistory';
 import { formatRelativeDateTime } from '@/shared/lib/dateTime';
 import { LazyImage } from '@/shared/ui/LazyImage';
 

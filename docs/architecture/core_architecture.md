@@ -1,6 +1,6 @@
 # 前端核心架构
 
-本文描述当前源码，而不是未来架构计划。项目是 React 单页应用，目录按 Feature-Sliced Design（FSD）组织，但现状仍有少量跨层存量引用，不能把 FSD 约束描述为已经完全封闭。
+本文描述当前源码，而不是未来架构计划。项目是 React 单页应用，目录按 Feature-Sliced Design（FSD）组织。
 
 ## 技术栈
 
@@ -32,7 +32,7 @@
 - `entities`：帖子、书单、赛事和用户等业务实体的类型、轻量展示和转换逻辑。
 - `shared`：通用 UI、API 客户端、类型、配置、样式、纯函数和非业务 hooks。
 
-目标依赖方向是 `shared < entities < features < widgets < pages < app`。当前 `eslint.config.js` 只对 `shared`、`entities`、`features`、`widgets` 配置了禁止引用上层的 `no-restricted-imports`，级别为 `warn`；源码中仍存在少量存量违规，因此这里是治理目标，不是已完成的不变量。新增跨层引用应优先通过 props、下沉共享部分或调整切片边界解决。
+目标依赖方向是 `shared < entities < features < widgets < pages < app`。`eslint.config.js` 对 `shared`、`entities`、`features`、`widgets` 配置了禁止通过 `@/` 引用上层的 `no-restricted-imports`，级别为 `error`。书单操作组件、浏览历史和偏好过滤归属对应 feature；用户基础类型归属 entity。该规则不检测所有形式的相对路径导入，不能视为完整的依赖图检查。
 
 ## 状态与数据流
 

@@ -5,8 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 // FSD 分层：shared < entities < features < widgets < pages < app
-// 下层不得引用上层。现存违规见 docs/code-review-2026-08-23.md §4.3，
-// 暂定为 warn，违规清零后升级为 error。
+// 下层不得引用上层；已清理存量违规，新增违规直接阻止检查通过。
 const upperLayers = {
   shared: ['@/entities/*', '@/features/*', '@/widgets/*', '@/pages/*', '@/app/*'],
   entities: ['@/features/*', '@/widgets/*', '@/pages/*', '@/app/*'],
@@ -18,7 +17,7 @@ const layerRule = (layer) => ({
   files: [`src/${layer}/**/*.{ts,tsx}`],
   rules: {
     'no-restricted-imports': [
-      'warn',
+      'error',
       {
         patterns: [
           {
@@ -36,6 +35,8 @@ export default tseslint.config(
     ignores: [
       'dist/**',
       'node_modules/**',
+      'playground/**',
+      'coverage/**',
       '*.config.js',
       'public/**',
       'src/shared/types/openapi.d.ts',

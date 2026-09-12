@@ -1,7 +1,7 @@
 import { BookOpen, RefreshCw } from "lucide-react";
 
-import { BooklistCard } from "@/entities/booklist/BooklistCard";
-import { BooklistListItem } from "@/entities/booklist/BooklistListItem";
+import { BooklistCard } from "@/features/booklists/components/BooklistCard";
+import { BooklistListItem } from "@/features/booklists/components/BooklistListItem";
 import type { Booklist } from "@/entities/booklist/types";
 import { useCardGridClass, useLayoutMode } from "@/shared/hooks/useSettings";
 

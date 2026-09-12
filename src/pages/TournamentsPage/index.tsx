@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { BooklistCard } from "@/entities/booklist/BooklistCard";
+import { BooklistCard } from "@/features/booklists/components/BooklistCard";
 import type { Tournament } from "@/entities/tournament/types";
 import { TournamentListItem } from "@/features/tournaments/components/TournamentListItem";
 import { useTournamentsList } from "@/features/tournaments/hooks/useTournamentsData";

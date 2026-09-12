@@ -361,6 +361,7 @@ export function useSearchResults({
     preloadPaused,
     revealRateLimit,
     requestedPageCount,
+    resultPagingMode,
     viewedPage,
   ]);
 

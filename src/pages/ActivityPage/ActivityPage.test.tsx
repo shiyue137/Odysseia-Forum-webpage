@@ -11,6 +11,12 @@ const mocks = vi.hoisted(() => ({
   useNotificationUnreadCount: vi.fn(),
   markAllMutateAsync: vi.fn(),
   resolveStaticNotifications: vi.fn(),
+  notifyError: vi.fn(),
+}));
+
+vi.mock("@/features/mascot/lib/notify", () => ({
+  notifyError: mocks.notifyError,
+  notifySuccess: vi.fn(),
 }));
 
 vi.mock("@/features/auth/hooks/useAuth", () => ({
@@ -393,11 +399,9 @@ describe("ActivityPage", () => {
     ).toContain(staticNotification.id);
   });
 
-  it("全部已读同时更新静态本地时间与后端动态", async () => {
+  it("进入页面自动已读，同时保留通知内容和公告确认要求", async () => {
     render(<ActivityPage />);
     await screen.findByText("关注喜欢的作者与作品");
-
-    fireEvent.click(screen.getByRole("button", { name: "全部已读" }));
 
     await waitFor(() =>
       expect(mocks.markAllMutateAsync).toHaveBeenCalledTimes(1),
@@ -405,5 +409,42 @@ describe("ActivityPage", () => {
     expect(
       window.localStorage.getItem("od_notifications_last_opened_at"),
     ).toBe(staticNotification.created_at);
+    expect(mocks.openPreview).not.toHaveBeenCalled();
+    expect(screen.getByText("作品更新标题")).toBeInTheDocument();
+    expect(window.localStorage.getItem("od_notifications_acknowledged")).toBeNull();
+  });
+
+  it("等待未读数据加载，每次进入只自动处理一次", async () => {
+    mocks.useNotificationUnreadCount.mockReturnValue({ data: undefined });
+    const view = render(<ActivityPage />);
+    await screen.findByText("关注喜欢的作者与作品");
+    expect(mocks.markAllMutateAsync).not.toHaveBeenCalled();
+
+    mocks.useNotificationUnreadCount.mockReturnValue({ data: { unread_count: 1 } });
+    view.rerender(<ActivityPage />);
+    await waitFor(() => expect(mocks.markAllMutateAsync).toHaveBeenCalledTimes(1));
+    mocks.useNotificationUnreadCount.mockReturnValue({ data: { unread_count: 2 } });
+    view.rerender(<ActivityPage />);
+    expect(mocks.markAllMutateAsync).toHaveBeenCalledTimes(1);
+    view.unmount();
+    render(<ActivityPage />);
+    await waitFor(() => expect(mocks.markAllMutateAsync).toHaveBeenCalledTimes(2));
+  });
+
+  it("没有未读通知时不发送已读请求", async () => {
+    mocks.useNotificationUnreadCount.mockReturnValue({ data: { unread_count: 0 } });
+    render(<ActivityPage />);
+    await screen.findByText("关注喜欢的作者与作品");
+    expect(mocks.markAllMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("自动处理失败时提示错误，不循环重试，保留手动重试入口", async () => {
+    mocks.markAllMutateAsync.mockRejectedValueOnce(new Error("网络异常"));
+    const view = render(<ActivityPage />);
+    await waitFor(() => expect(mocks.notifyError).toHaveBeenCalledTimes(1));
+    view.rerender(<ActivityPage />);
+    expect(mocks.markAllMutateAsync).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "全部已读" }));
+    await waitFor(() => expect(mocks.markAllMutateAsync).toHaveBeenCalledTimes(2));
   });
 });

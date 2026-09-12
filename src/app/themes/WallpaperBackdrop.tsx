@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useThemeSettings } from '@/shared/hooks/useSettings';
@@ -18,16 +17,10 @@ import { useThemeSettings } from '@/shared/hooks/useSettings';
  */
 export function WallpaperBackdrop() {
   const settings = useThemeSettings();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const wallpaperUrl = (settings.backgroundImageBase64?.trim() || settings.backgroundImageUrl.trim());
   const hasWallpaper = settings.backgroundImageEnabled && wallpaperUrl.length > 0;
 
-  if (!mounted || !hasWallpaper || typeof document === 'undefined') {
+  if (!hasWallpaper) {
     return null;
   }
 

@@ -5,8 +5,8 @@ import { Select } from "@/shared/ui/Select";
 import { scrollPageToTop } from "@/shared/lib/pageScroll";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { BooklistCard } from "@/entities/booklist/BooklistCard";
-import { BooklistListItem } from "@/entities/booklist/BooklistListItem";
+import { BooklistCard } from "@/features/booklists/components/BooklistCard";
+import { BooklistListItem } from "@/features/booklists/components/BooklistListItem";
 import type { Booklist } from "@/entities/booklist/types";
 import {
   useBooklistsList,
