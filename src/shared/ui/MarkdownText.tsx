@@ -44,7 +44,7 @@ function buildSafeAnchor(label: string, rawUrl: string): string {
 
   const href = escapeHtmlAttribute(parsedUrl.toString());
   const favicon = escapeHtmlAttribute(`${parsedUrl.origin}/favicon.ico`);
-  return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="discord-link"><img src="${favicon}" alt="" aria-hidden="true" loading="lazy" class="link-favicon" />${label}</a>`;
+  return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="discord-link"><span aria-hidden="true" class="link-favicon" style="background-image:url('${favicon}')"></span>${label}</a>`;
 }
 
 /**
