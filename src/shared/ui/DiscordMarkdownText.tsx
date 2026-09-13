@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { Spoiler } from '@/shared/ui/Spoiler';
+import { LinkFavicon } from '@/shared/ui/LinkFavicon';
 
 interface DiscordMarkdownTextProps {
   text: string;
@@ -69,6 +70,7 @@ export function DiscordMarkdownText({ text, className = '', truncateClassName = 
               onClick={(e) => e.stopPropagation()}
               title={part.url}
             >
+              <LinkFavicon href={part.url} className="mr-1" />
               {part.text}
             </a>
           );
