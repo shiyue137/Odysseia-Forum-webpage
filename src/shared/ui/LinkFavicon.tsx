@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { parseHttpUrl } from "@/shared/lib/urlSafety";
+import { isTrustedDiscordHostname, parseHttpUrl } from "@/shared/lib/urlSafety";
+import { DiscordIcon } from "@/shared/ui/icons/DiscordIcon";
 
 interface LinkFaviconProps {
   href: string;
@@ -8,17 +9,20 @@ interface LinkFaviconProps {
 
 export function LinkFavicon({ href, className = "" }: LinkFaviconProps) {
   const [failed, setFailed] = useState(false);
-  const faviconUrl = useMemo(() => {
+  const parsedUrl = useMemo(() => {
     const parsed = parseHttpUrl(href);
-    if (!parsed) return null;
-    return `${parsed.origin}/favicon.ico`;
+    return parsed;
   }, [href]);
 
-  if (!faviconUrl || failed) return null;
+  if (!parsedUrl) return null;
+  if (isTrustedDiscordHostname(parsedUrl.hostname)) {
+    return <DiscordIcon aria-hidden="true" className={`inline-block h-3.5 w-3.5 shrink-0 align-[-0.15em] ${className}`} />;
+  }
+  if (failed) return null;
 
   return (
     <img
-      src={faviconUrl}
+      src={`${parsedUrl.origin}/favicon.ico`}
       alt=""
       aria-hidden="true"
       loading="lazy"
