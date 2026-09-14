@@ -13,7 +13,7 @@ export function useAuthorProfile(
 ) {
   return useQuery({
     queryKey: authorKeys.profile(authorId ?? ""),
-    queryFn: () => authorsApi.getAuthorProfile(authorId!),
+    queryFn: ({ signal }) => authorsApi.getAuthorProfile(authorId!, signal),
     enabled: Boolean(authorId) && (options.enabled ?? true),
     staleTime: PROFILE_STALE_TIME,
   });
@@ -31,7 +31,7 @@ export function useAuthorThreads(
       page: params.page,
     }),
     enabled: Boolean(authorId),
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       searchApi.search({
         include_authors: authorId ? [authorId] : [],
         author_name: authorId || undefined,
@@ -40,7 +40,7 @@ export function useAuthorThreads(
           params.channelIds.length > 0 ? params.channelIds : undefined,
         limit: AUTHOR_THREADS_PAGE_SIZE,
         offset: (params.page - 1) * AUTHOR_THREADS_PAGE_SIZE,
-      }),
+      }, signal),
     staleTime: 60 * 1000,
   });
 }
@@ -52,7 +52,7 @@ export function useAuthorRecentWorks(
 ) {
   return useQuery({
     queryKey: authorKeys.recentWorks(authorId, options.excludeThreadId),
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       searchApi.search({
         include_authors: [authorId],
         exclude_thread_ids: options.excludeThreadId
@@ -61,7 +61,7 @@ export function useAuthorRecentWorks(
         apply_preferences: true,
         limit: 3,
         sort_method: "created_desc",
-      }),
+      }, signal),
     enabled: options.enabled ?? true,
     staleTime: PROFILE_STALE_TIME,
   });

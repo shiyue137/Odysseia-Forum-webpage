@@ -2,6 +2,7 @@ import { ThreadCardSkeleton } from "@/entities/thread/ThreadCardSkeleton";
 import { useInfiniteScrollTrigger } from "@/shared/hooks/useInfiniteScrollTrigger";
 import { ThreadListItemSkeleton } from "@/entities/thread/ThreadListItemSkeleton";
 import { ThreadResultsCollection } from "@/features/threads/components/ThreadResultsCollection";
+import { VirtualThreadList } from "@/features/threads/components/VirtualThreadList";
 import { SearchCollectionResults } from "./SearchCollectionResults";
 import { useSearchWhisper } from "@/features/easter-eggs/hooks/useSearchWhisper";
 import { usePreviewThread } from "@/features/search/hooks/usePreviewThread";
@@ -18,7 +19,7 @@ import {
 import {
   useCardGridClass,
   useResultPagingModeSetting,
-  useSettings,
+  useLayoutMode,
 } from "@/shared/hooks/useSettings";
 import { useLayoutPreference } from "@/shared/hooks/useLayoutPreference";
 import { useListEntranceAnimation } from "@/shared/hooks/useListEntranceAnimation";
@@ -132,10 +133,10 @@ export function SearchPage() {
   const { openPreview } = usePreviewThread();
   const reactToSearch = useMascotStore((state) => state.reactToSearch);
 
-  const { settings } = useSettings();
+  const defaultLayoutMode = useLayoutMode();
   const [layoutMode, setLayoutMode] = useLayoutPreference(
     "search",
-    settings.layoutMode,
+    defaultLayoutMode,
   );
   const resultPagingMode = useResultPagingModeSetting();
   const hasTriggeredSearchCueRef = useRef<string | null>(null);
@@ -618,7 +619,17 @@ export function SearchPage() {
                   compact
                 />
               )}
-              <ThreadResultsCollection
+              {isInfiniteMode && layoutMode === "list" ? (
+                <VirtualThreadList
+                  threads={results}
+                  searchQuery={query}
+                  onTagClick={handleTagClick}
+                  onAuthorClick={handleAuthorClick}
+                  onPreview={openPreview}
+                  pageByThreadId={pageByThreadId}
+                  onViewedPageChange={reportViewedPage}
+                />
+              ) : <ThreadResultsCollection
                 threads={results}
                 onTagClick={handleTagClick}
                 searchQuery={query}
@@ -630,7 +641,7 @@ export function SearchPage() {
                 animateIn={animateIn}
                 pageByThreadId={isInfiniteMode ? pageByThreadId : undefined}
                 onViewedPageChange={isInfiniteMode ? reportViewedPage : undefined}
-              />
+              />}
 
               {isInfiniteMode ? (
                 <div

@@ -21,8 +21,25 @@ it('作者作品翻页使用 offset，返回第一页时复用该页缓存', asy
   await waitFor(() => expect(result.current.data?.results[0].thread_id).toBe('second-page'));
   expect(search).toHaveBeenLastCalledWith(expect.objectContaining({
     offset: 48, limit: 48, include_authors: ['123456789012345678'], channel_ids: ['987654321098765432'],
-  }));
+  }), expect.any(AbortSignal));
   rerender({ page: 1 });
   await waitFor(() => expect(result.current.data?.results[0].thread_id).toBe('first-page'));
   expect(search).toHaveBeenCalledTimes(2);
+});
+
+it('卸载作者查询会中止传入 API 的信号', async () => {
+  let requestSignal: AbortSignal | undefined;
+  vi.mocked(searchApi.search).mockImplementation((_params, signal) => {
+    requestSignal = signal;
+    return new Promise(() => {});
+  });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  const { unmount } = renderHook(() => useAuthorThreads('123', {
+    page: 1, sortMethod: 'created_desc', channelIds: [],
+  }), { wrapper });
+  await waitFor(() => expect(requestSignal).toBeInstanceOf(AbortSignal));
+  unmount();
+  expect(requestSignal?.aborted).toBe(true);
+  client.clear();
 });

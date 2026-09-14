@@ -7,7 +7,7 @@ import { useOnboardingStore } from '@/features/onboarding/store/useOnboardingSto
 import { useUserPreferences } from '@/features/preferences/hooks/useUserPreferences';
 import { GUILD_ID } from '@/shared/config/channelCategories.private';
 import { useChannels } from '@/shared/hooks/useChannels';
-import { useSettings } from '@/shared/hooks/useSettings';
+import { useSettingsStore } from '@/shared/store/settingsStore';
 import { extractErrorMessage } from '@/shared/lib/notify';
 import { sanitizeInternalRedirect } from '@/shared/lib/navigationSafety';
 import { OmicronLoader } from '@/shared/ui/loaders/OmicronLoader';
@@ -50,7 +50,7 @@ export function RequiredSetupPage() {
   const legacySetupCompleted = useOnboardingStore((state) =>
     state.completedTutorialIds.includes('initial_setup'),
   );
-  const { updateSettings } = useSettings();
+  const updateSettings = useSettingsStore((state) => state.updateSettings);
   const preferencesQuery = useUserPreferences({ guildId: GUILD_ID });
   const channelsQuery = useChannels();
   const tagCatalog = useMemo(

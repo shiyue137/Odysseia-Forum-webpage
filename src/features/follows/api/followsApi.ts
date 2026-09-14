@@ -34,8 +34,10 @@ export const followsApi = {
    */
   getFollowsRaw: async (
     params: FollowsQueryParams = {},
+    signal?: AbortSignal,
   ): Promise<FollowsThreadsResponse> => {
     const response = await apiClient.get<FollowsThreadsResponse>("/follows/", {
+      signal,
       params: {
         limit: params.limit,
         offset: params.offset,
@@ -53,9 +55,10 @@ export const followsApi = {
    * 获取未读更新数量
    * GET /v1/follows/unread-count
    */
-  getUnreadCount: async (): Promise<UnreadCountResponse> => {
+  getUnreadCount: async (signal?: AbortSignal): Promise<UnreadCountResponse> => {
     const response = await apiClient.get<UnreadCountResponse>(
       "/follows/unread-count",
+      { signal },
     );
     return response.data;
   },

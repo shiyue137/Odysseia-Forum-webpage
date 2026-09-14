@@ -18,7 +18,7 @@ import {
 import { BooklistFormModal } from "@/features/booklists/components/BooklistFormModal";
 import { AnimatedPagination } from "@/shared/ui/AnimatedPagination";
 import { useBooklistURLParams } from "@/features/booklists/hooks/useBooklistURLParams";
-import { useCardGridClass, useSettings } from "@/shared/hooks/useSettings";
+import { useCardGridClass, useLayoutMode } from "@/shared/hooks/useSettings";
 import { useLayoutPreference } from "@/shared/hooks/useLayoutPreference";
 import { LayoutModeToggle } from "@/shared/ui/LayoutModeToggle";
 import { notifyError } from "@/features/mascot/lib/notify";
@@ -36,10 +36,10 @@ export function BooklistsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { params, setParams } = useBooklistURLParams();
-  const { settings } = useSettings();
+  const defaultLayoutMode = useLayoutMode();
   const [layoutMode, setLayoutMode] = useLayoutPreference(
     "booklists",
-    settings.layoutMode,
+    defaultLayoutMode,
   );
   const gridClass = useCardGridClass();
 

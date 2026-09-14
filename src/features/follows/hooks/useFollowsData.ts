@@ -12,7 +12,7 @@ interface EnabledOption {
 export function useFollowedThreads(params: FollowsQueryParams = {}, { enabled = true }: EnabledOption = {}) {
   return useQuery({
     queryKey: followsKeys.list(params),
-    queryFn: () => followsApi.getFollowsRaw(params),
+    queryFn: ({ signal }) => followsApi.getFollowsRaw(params, signal),
     staleTime: 60 * 1000,
     enabled,
   });
@@ -21,7 +21,7 @@ export function useFollowedThreads(params: FollowsQueryParams = {}, { enabled = 
 export function useUnreadFollowCount({ enabled = true }: EnabledOption = {}) {
   return useQuery({
     queryKey: followsKeys.unreadCount(),
-    queryFn: followsApi.getUnreadCount,
+    queryFn: ({ signal }) => followsApi.getUnreadCount(signal),
     staleTime: 60 * 1000,
     refetchInterval: 30 * 1000,
     refetchOnWindowFocus: true,
@@ -49,8 +49,10 @@ export function useFollowsFeed(
     },
     isLoading: followsQuery.isLoading || unreadQuery.isLoading,
     isError: followsQuery.isError || unreadQuery.isError,
+    isFetching: followsQuery.isFetching || unreadQuery.isFetching,
+    error: followsQuery.error ?? unreadQuery.error,
     refetch: async () => {
-      await Promise.all([followsQuery.refetch(), unreadQuery.refetch()]);
+      return Promise.all([followsQuery.refetch(), unreadQuery.refetch()]);
     },
   };
 }

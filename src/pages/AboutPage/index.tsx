@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 import { withViewTransition } from "@/shared/lib/viewTransition";
 
@@ -185,8 +186,35 @@ export function AboutPage() {
       cancelled = true;
     };
   }, [isUiHidden]);
-  const [contributors, setContributors] = useState<GithubContributor[]>([]);
-  const [contributorsError, setContributorsError] = useState(false);
+  const contributorsQuery = useQuery({
+    queryKey: ["github-contributors", FRONTEND_CONTRIBUTORS_API, BACKEND_CONTRIBUTORS_API],
+    queryFn: async ({ signal }) => {
+      const responses = await Promise.all(
+        [FRONTEND_CONTRIBUTORS_API, BACKEND_CONTRIBUTORS_API].map(async (url) => {
+          const response = await fetch(url, {
+            signal,
+            headers: { Accept: "application/vnd.github+json" },
+          });
+          if (!response.ok) throw new Error(`贡献者请求失败：${response.status}`);
+          return await response.json() as GithubContributor[];
+        }),
+      );
+      const merged = new Map<number, GithubContributor>();
+      for (const contributor of responses.flat()) {
+        if (contributor.type === "Bot" || contributor.login.toLowerCase().includes("bot")) continue;
+        const previous = merged.get(contributor.id);
+        merged.set(contributor.id, {
+          ...contributor,
+          contributions: (previous?.contributions ?? 0) + contributor.contributions,
+        });
+      }
+      return [...merged.values()].sort((a, b) => b.contributions - a.contributions);
+    },
+    staleTime: 30 * 60 * 1000,
+    retry: false,
+  });
+  const contributors = contributorsQuery.data ?? [];
+  const contributorsError = contributorsQuery.isError;
 
   const handleSpawnNeko = () => {
     if (hasSpawnedRef.current) return;
@@ -218,66 +246,6 @@ export function AboutPage() {
 
     withViewTransition(goBack, "wipe-down");
   };
-
-  useEffect(() => {
-    let isActive = true;
-
-    const loadContributors = async () => {
-      try {
-        const fetchRepo = async (url: string) => {
-          const res = await fetch(url, {
-            headers: { Accept: "application/vnd.github+json" },
-          });
-          if (!res.ok) return [];
-          return (await res.json()) as GithubContributor[];
-        };
-
-        const [frontendData, backendData] = await Promise.all([
-          fetchRepo(FRONTEND_CONTRIBUTORS_API),
-          fetchRepo(BACKEND_CONTRIBUTORS_API),
-        ]);
-
-        if (!isActive) return;
-
-        // 合并并去重
-        const merged = new Map<number, GithubContributor>();
-        [...frontendData, ...backendData].forEach((c) => {
-          if (c.type === "Bot" || c.login.toLowerCase().includes("bot")) return;
-          if (merged.has(c.id)) {
-            const existing = merged.get(c.id)!;
-            existing.contributions += c.contributions;
-          } else {
-            merged.set(c.id, { ...c });
-          }
-        });
-
-        const sorted = Array.from(merged.values()).sort(
-          (a, b) => b.contributions - a.contributions,
-        );
-
-        if (
-          sorted.length === 0 &&
-          (frontendData.length > 0 || backendData.length > 0)
-        ) {
-          // 如果合并后为空但原始数据有，说明可能是 API 限制或其他问题，但不标记错误
-        } else if (sorted.length === 0) {
-          throw new Error("No contributors found");
-        }
-
-        setContributors(sorted);
-        setContributorsError(false);
-      } catch {
-        if (!isActive) return;
-        setContributorsError(true);
-      }
-    };
-
-    void loadContributors();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   return (
     <div className="relative h-dvh overflow-hidden">
@@ -501,6 +469,8 @@ export function AboutPage() {
                     >
                       这会儿没把头像名单拉下来，点我去 GitHub 看完整贡献榜呀。
                     </a>
+                  ) : contributorsQuery.isSuccess ? (
+                    <p className="text-sm text-(--od-text-secondary)">暂时没有可展示的贡献者。</p>
                   ) : (
                     <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
                       {Array.from({ length: 12 }).map((_, index) => (

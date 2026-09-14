@@ -105,9 +105,9 @@ describe("AuthorWorksHoverCard", () => {
       apply_preferences: true,
       limit: 3,
       sort_method: "created_desc",
-    });
+    }, expect.any(AbortSignal));
     expect(useUserPreferences).toHaveBeenCalled();
-    expect(authorsApi.getAuthorProfile).toHaveBeenCalledWith("123456789");
+    expect(authorsApi.getAuthorProfile).toHaveBeenCalledWith("123456789", expect.any(AbortSignal));
     expect(screen.getByLabelText("作者名 的其他作品")).toHaveClass("od-floating-glass");
   });
 
