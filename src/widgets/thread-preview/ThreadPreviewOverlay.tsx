@@ -18,6 +18,8 @@ import type { Thread } from "@/entities/thread/types";
 import { hasViewerFlag } from "@/entities/thread/lib/viewerFlags";
 import { AuthorIdentityLink } from "@/features/authors/components/AuthorIdentityLink";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { customTagsEnabled } from "@/shared/config/tags";
+import { TargetTagSection } from "@/features/tags/components/TargetTagSection";
 import { QuickAddToBooklistModal } from "@/features/booklists/components/QuickAddToBooklistModal";
 import { useMarkThreadNotificationsRead } from "@/features/notifications/hooks/useNotificationsData";
 import { useSearchURLParams } from "@/features/search/hooks/useSearchParams";
@@ -108,6 +110,7 @@ export function ThreadPreviewOverlay({
     closeButtonRef.current?.focus({ preventScroll: true });
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
       if (e.key === "Escape") {
         e.preventDefault();
         handleClose();
@@ -240,7 +243,7 @@ export function ThreadPreviewOverlay({
   const authorName = searchableAuthorName || "未知用户";
 
   const applySearchToken = useCallback(
-    (type: "tag" | "author", value: string) => {
+    (type: "tag" | "tagid" | "author", value: string) => {
       const nextQuery = addToken(params.query || "", type, value, "include");
 
       if (location.pathname !== "/search") {
@@ -255,6 +258,17 @@ export function ThreadPreviewOverlay({
     },
     [handleClose, location.pathname, navigate, params.query, setParams],
   );
+
+  const nativeTagContent = <>
+    {thread.tags?.map((tag) => (
+      <button type="button" key={tag} onClick={() => applySearchToken("tag", tag)}
+        className="od-pill-chip" title={`添加标签筛选：${tag}`}><Hash className="h-3 w-3" />{tag}</button>
+    ))}
+    {virtualOnlyTags.map((tag) => (
+      <button type="button" key={`vt-${tag}`} onClick={() => applySearchToken("tag", tag)}
+        className="od-pill-chip text-(--od-accent)" title={`添加标签筛选：${tag}`}><Hash className="h-3 w-3" />{tag}</button>
+    ))}
+  </>;
 
   return createPortal(
     <div className="fixed inset-0 z-[2000] flex items-center justify-center">
@@ -428,34 +442,10 @@ export function ThreadPreviewOverlay({
             )}
 
             {/* Tags */}
-            {(thread.tags?.length || virtualOnlyTags.length > 0) && (
-              <div className="mb-6 flex flex-wrap gap-2">
-                {thread.tags?.map((tag) => (
-                  <button
-                    type="button"
-                    key={tag}
-                    onClick={() => applySearchToken("tag", tag)}
-                    className="od-pill-chip"
-                    title={`添加标签筛选：${tag}`}
-                  >
-                    <Hash className="h-3 w-3" />
-                    {tag}
-                  </button>
-                ))}
-                {virtualOnlyTags.map((tag) => (
-                  <button
-                    type="button"
-                    key={`vt-${tag}`}
-                    onClick={() => applySearchToken("tag", tag)}
-                    className="inline-flex items-center gap-1 rounded-full border border-(--od-accent)/24 bg-(--od-accent)/10 px-3 py-1 text-xs font-semibold text-(--od-accent) transition-colors hover:bg-(--od-accent)/18"
-                    title={`添加标签筛选：${tag}`}
-                  >
-                    <Hash className="h-3 w-3" />
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            )}
+            {customTagsEnabled
+              ? <TargetTagSection key={String(thread.thread_id)} target={{ type: "thread", id: String(thread.thread_id) }} ownerId={thread.author?.id}
+                  onSearch={(tag) => applySearchToken("tagid", `${tag.id}|${encodeURIComponent(tag.name)}`)}>{nativeTagContent}</TargetTagSection>
+              : (thread.tags?.length || virtualOnlyTags.length > 0) ? <div className="mb-6 flex flex-wrap gap-2">{nativeTagContent}</div> : null}
 
             {/* Recommendations */}
             <ThreadTournamentBadges

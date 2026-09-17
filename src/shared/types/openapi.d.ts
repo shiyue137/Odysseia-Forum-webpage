@@ -482,6 +482,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/notifications/{notification_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 标记单条通知已读
+         * @description 读取书单审核等不关联作品的通知时可单独标记。
+         */
+        post: operations["mark_one_read_v1_notifications__notification_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/meta/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 查询当前用户的管理身份
+         * @description 独立返回主服务器管理组和 BOT 管理员身份，用于前端控制按钮显示。
+         */
+        get: operations["get_user_role_v1_meta_role_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/meta/channels": {
         parameters: {
             query?: never;
@@ -907,9 +947,12 @@ export interface paths {
          *
          *     - **booklist_id**: 书单ID
          *     - **request body**: 包含一个`items`列表，每个元素包含:
-         *         - **thread_id**: 帖子ID (必填)
+         *         - **thread_id**: 帖子ID (必填)，支持整数或数字字符串，范围为 1 至 9223372036854775807
          *         - **comment**: 推荐语 (可选)
          *         - **display_order**: 排序序号 (可选)
+         *
+         *     每个帖子 ID 应作为独立的 items 条目提交。任一 ID 非法时整批返回 HTTP 422，
+         *     detail[].msg 提供中文提示，detail[].loc 定位具体条目；超范围时提示检查遗漏逗号。
          */
         post: operations["add_threads_to_booklist_v1_booklist_item_add__booklist_id__post"];
         delete?: never;
@@ -1032,6 +1075,282 @@ export interface paths {
          * @description 一次性聚合获取指定范围内的所有标签使用统计情况
          */
         post: operations["stats_tags_v1_tags_stats_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Categories
+         * @description 返回稳定分类枚举。
+         */
+        get: operations["categories_v1_tags_categories_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pool
+         * @description 按标准名或别名分页搜索标签池。
+         */
+        get: operations["pool_v1_tags_get"];
+        put?: never;
+        /**
+         * 创建标签
+         * @description BOT 管理员创建一个标准标签。
+         */
+        post: operations["create_tag_v1_tags_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/relations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Relations
+         * @description 提供全部直接关系边，层级由前端计算。
+         */
+        get: operations["relations_v1_tags_relations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 软删除标签
+         * @description 软删除标签并保留治理历史。
+         */
+        delete: operations["delete_tag_v1_tags__tag_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * 修改标签
+         * @description 原子修改名称、分类及启用状态。
+         */
+        patch: operations["update_tag_v1_tags__tag_id__patch"];
+        trace?: never;
+    };
+    "/v1/tags/{tag_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 恢复标签
+         * @description 恢复标签实体，不恢复旧绑定。
+         */
+        post: operations["restore_tag_v1_tags__tag_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{tag_id}/aliases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 替换标签别名
+         * @description 完整替换别名集合。
+         */
+        put: operations["replace_aliases_v1_tags__tag_id__aliases_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{tag_id}/relations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 添加标签关系
+         * @description 添加包含或互斥关系。
+         */
+        post: operations["add_relation_v1_tags__tag_id__relations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{tag_id}/relations/{kind}/{target_tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 删除标签关系
+         * @description 删除指定的直接标签关系。
+         */
+        delete: operations["remove_relation_v1_tags__tag_id__relations__kind___target_tag_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{target_type}/{target_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read
+         * @description 读取原生标签、自定义标签、票数和版本。
+         */
+        get: operations["read_v1_tags__target_type___target_id__get"];
+        /**
+         * Replace
+         * @description 作者或管理组替换完整自定义标签集合。
+         */
+        put: operations["replace_v1_tags__target_type___target_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{target_type}/{target_id}/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Proposals
+         * @description 读取本人申请或作者审核队列。
+         */
+        get: operations["proposals_v1_tags__target_type___target_id__proposals_get"];
+        put?: never;
+        /**
+         * Propose
+         * @description 提议一个标签，提交后开始七天审核期。
+         */
+        post: operations["propose_v1_tags__target_type___target_id__proposals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{target_type}/{target_id}/proposals/{proposal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Review
+         * @description 同意或拒绝待审核提议。
+         */
+        put: operations["review_v1_tags__target_type___target_id__proposals__proposal_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{target_type}/{target_id}/votes/{binding_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Vote
+         * @description 设置赞、踩或撤票，旧轮次不可继续投票。
+         */
+        put: operations["vote_v1_tags__target_type___target_id__votes__binding_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{target_type}/{target_id}/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Audit
+         * @description 管理人员在授权范围内查询操作记录。
+         */
+        get: operations["audit_v1_tags__target_type___target_id__audit_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1859,6 +2178,11 @@ export interface components {
              */
             title: string;
             /**
+             * Custom Tags
+             * @description 书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数
+             */
+            custom_tags?: components["schemas"]["CustomTagBindingResponse"][];
+            /**
              * Description
              * @description 书单简介
              */
@@ -1961,7 +2285,7 @@ export interface components {
         BooklistItemAddData: {
             /**
              * Thread Id
-             * @description Discord Thread ID
+             * @description Discord Thread ID，支持整数或数字字符串，范围为 1 至 9223372036854775807，每个 ID 应单独提交
              */
             thread_id: number | string;
             /**
@@ -2418,6 +2742,11 @@ export interface components {
              */
             title: string;
             /**
+             * Custom Tags
+             * @description 书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数
+             */
+            custom_tags?: components["schemas"]["CustomTagBindingResponse"][];
+            /**
              * Description
              * @description 书单简介
              */
@@ -2533,6 +2862,11 @@ export interface components {
              * @description 书单标题
              */
             title: string;
+            /**
+             * Custom Tags
+             * @description 书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数
+             */
+            custom_tags?: components["schemas"]["CustomTagBindingResponse"][];
             /**
              * Description
              * @description 书单简介
@@ -2896,6 +3230,205 @@ export interface components {
             is_virtual: boolean;
         };
         /**
+         * CustomTagBindingResponse
+         * @description 帖子或书单当前生效的自定义标签绑定信息。
+         */
+        CustomTagBindingResponse: {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标签标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * Category
+             * @description 分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法
+             */
+            category: number;
+            /**
+             * Category Name
+             * @description 分类枚举对应的中文名称
+             */
+            category_name: string;
+            /**
+             * Source
+             * @description 标签来源，固定为 custom
+             * @constant
+             */
+            source: "custom";
+            /**
+             * Enabled
+             * @description 标签是否启用；停用标签的现有绑定仍可展示
+             */
+            enabled: boolean;
+            /**
+             * Binding Id
+             * @description 当前绑定轮次 ID，以十进制字符串返回；重新添加产生新轮次
+             */
+            binding_id: string;
+            /**
+             * Upvotes
+             * @description 当前绑定轮次的正向票数
+             */
+            upvotes: number;
+            /**
+             * Downvotes
+             * @description 当前绑定轮次的负向票数
+             */
+            downvotes: number;
+        };
+        /**
+         * CustomTagSnapshotResponse
+         * @description 目标上的自定义标签及当前用户投票。
+         */
+        "CustomTagSnapshotResponse-Input": {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * Source
+             * @description 来源固定为 custom
+             * @constant
+             */
+            source: "custom";
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID，以字符串返回；自定义标签为空
+             */
+            discord_tag_id: string | null;
+            /**
+             * Category
+             * @description 分类枚举值 1–7；原生标签为空
+             */
+            category: number | null;
+            /**
+             * Category Name
+             * @description 分类中文名；原生标签为空
+             */
+            category_name: string | null;
+            /**
+             * Enabled
+             * @description 标签是否启用
+             */
+            enabled: boolean;
+            /**
+             * Deleted At
+             * @description 软删除时间（UTC）；未删除时为空
+             */
+            deleted_at: string | null;
+            /**
+             * Readonly
+             * @description 固定为 false，自定义标签按权限进行治理
+             * @constant
+             */
+            readonly: false;
+            /**
+             * Binding Id
+             * @description 当前绑定轮次 ID，以十进制字符串返回
+             */
+            binding_id: string;
+            /**
+             * Upvotes
+             * @description 当前轮次正向票数
+             */
+            upvotes: number;
+            /**
+             * Downvotes
+             * @description 当前轮次负向票数
+             */
+            downvotes: number;
+            /**
+             * My Vote
+             * @description 当前用户本轮投票：-1 为踩，0 为未投票，1 为赞
+             * @enum {integer}
+             */
+            my_vote: -1 | 0 | 1;
+        };
+        /**
+         * CustomTagSnapshotResponse
+         * @description 目标上的自定义标签及当前用户投票。
+         */
+        "CustomTagSnapshotResponse-Output": {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * @description 来源固定为 custom (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            source: "custom";
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID，以字符串返回；自定义标签为空
+             */
+            discord_tag_id: string | null;
+            /**
+             * Category
+             * @description 分类枚举值 1–7；原生标签为空
+             */
+            category: number | null;
+            /**
+             * Category Name
+             * @description 分类中文名；原生标签为空
+             */
+            category_name: string | null;
+            /**
+             * Enabled
+             * @description 标签是否启用
+             */
+            enabled: boolean;
+            /**
+             * Deleted At
+             * @description 软删除时间（UTC）；未删除时为空
+             */
+            deleted_at: string | null;
+            /**
+             * Readonly
+             * @description 固定为 false，自定义标签按权限进行治理
+             * @constant
+             */
+            readonly: false;
+            /**
+             * Binding Id
+             * @description 当前绑定轮次 ID，以十进制字符串返回
+             */
+            binding_id: string;
+            /**
+             * Upvotes
+             * @description 当前轮次正向票数
+             */
+            upvotes: number;
+            /**
+             * Downvotes
+             * @description 当前轮次负向票数
+             */
+            downvotes: number;
+            /**
+             * My Vote
+             * @description 当前用户本轮投票：-1 为踩，0 为未投票，1 为赞
+             * @enum {integer}
+             */
+            my_vote: -1 | 0 | 1;
+        };
+        /**
          * DiscoveryRailsResponse
          * @description 广场多轨道聚合响应体
          */
@@ -3038,6 +3571,11 @@ export interface components {
              */
             tags?: string[];
             /**
+             * Custom Tags
+             * @description 帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数
+             */
+            custom_tags?: components["schemas"]["CustomTagBindingResponse"][];
+            /**
              * Virtual Tags
              * @description 帖子匹配的虚拟映射标签名列表
              */
@@ -3178,6 +3716,11 @@ export interface components {
              */
             tags?: string[];
             /**
+             * Custom Tags
+             * @description 帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数
+             */
+            custom_tags?: components["schemas"]["CustomTagBindingResponse"][];
+            /**
              * Virtual Tags
              * @description 帖子匹配的虚拟映射标签名列表
              */
@@ -3270,6 +3813,7 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        JsonValue: unknown;
         /**
          * LatestUpdate
          * @description API 响应中的作品最新更新。
@@ -3425,6 +3969,111 @@ export interface components {
             marked_read: number;
         };
         /**
+         * NativeTagSnapshotResponse
+         * @description 目标上的只读 Discord 原生标签。
+         */
+        "NativeTagSnapshotResponse-Input": {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * Source
+             * @description 来源固定为 discord
+             * @constant
+             */
+            source: "discord";
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID，以字符串返回；自定义标签为空
+             */
+            discord_tag_id: string | null;
+            /**
+             * Category
+             * @description 分类枚举值 1–7；原生标签为空
+             */
+            category: number | null;
+            /**
+             * Category Name
+             * @description 分类中文名；原生标签为空
+             */
+            category_name: string | null;
+            /**
+             * Enabled
+             * @description 标签是否启用
+             */
+            enabled: boolean;
+            /**
+             * Deleted At
+             * @description 软删除时间（UTC）；未删除时为空
+             */
+            deleted_at: string | null;
+            /**
+             * Readonly
+             * @description 固定为 true，原生标签在本项目不可修改
+             * @constant
+             */
+            readonly: true;
+        };
+        /**
+         * NativeTagSnapshotResponse
+         * @description 目标上的只读 Discord 原生标签。
+         */
+        "NativeTagSnapshotResponse-Output": {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * @description 来源固定为 discord (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            source: "discord";
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID，以字符串返回；自定义标签为空
+             */
+            discord_tag_id: string | null;
+            /**
+             * Category
+             * @description 分类枚举值 1–7；原生标签为空
+             */
+            category: number | null;
+            /**
+             * Category Name
+             * @description 分类中文名；原生标签为空
+             */
+            category_name: string | null;
+            /**
+             * Enabled
+             * @description 标签是否启用
+             */
+            enabled: boolean;
+            /**
+             * Deleted At
+             * @description 软删除时间（UTC）；未删除时为空
+             */
+            deleted_at: string | null;
+            /**
+             * Readonly
+             * @description 固定为 true，原生标签在本项目不可修改
+             * @constant
+             */
+            readonly: true;
+        };
+        /**
          * NotificationItem
          * @description 动态通知列表中的单项数据。
          */
@@ -3436,13 +4085,28 @@ export interface components {
             id: number;
             /**
              * Type
-             * @description 动态通知类型：作品更新或作者新作
+             * @description 动态通知类型：thread_update=作品更新，author_new_thread=作者新作，tag_review=标签提议待审核
              * @enum {string}
              */
-            type: "thread_update" | "author_new_thread";
-            /** @description 通知关联作品的完整信息 */
-            thread: components["schemas"]["ThreadDetail-Input"];
-            /** @description 作品更新详情；作者新作通知固定为空 */
+            type: "thread_update" | "author_new_thread" | "tag_review";
+            /** @description 通知关联作品的完整信息；标签审核通知为空 */
+            thread?: components["schemas"]["ThreadDetail-Input"] | null;
+            /**
+             * Target Type
+             * @description 标签审核目标类型：thread=帖子，booklist=书单；其他通知为空
+             */
+            target_type?: string | null;
+            /**
+             * Target Id
+             * @description 标签审核目标 ID 的十进制字符串：帖子为 Discord 帖子 ID，书单为内部书单 ID；其他通知为空
+             */
+            target_id?: string | null;
+            /**
+             * Proposal Id
+             * @description 待审核标签申请的 ID 字符串，用于定位审核记录；其他通知为空
+             */
+            proposal_id?: string | null;
+            /** @description 作品更新详情；作者新作和标签审核通知为空 */
             update?: components["schemas"]["LatestUpdate-Input"] | null;
             /**
              * Created At
@@ -3468,13 +4132,28 @@ export interface components {
             id: number;
             /**
              * Type
-             * @description 动态通知类型：作品更新或作者新作
+             * @description 动态通知类型：thread_update=作品更新，author_new_thread=作者新作，tag_review=标签提议待审核
              * @enum {string}
              */
-            type: "thread_update" | "author_new_thread";
-            /** @description 通知关联作品的完整信息 */
-            thread: components["schemas"]["ThreadDetail-Output"];
-            /** @description 作品更新详情；作者新作通知固定为空 */
+            type: "thread_update" | "author_new_thread" | "tag_review";
+            /** @description 通知关联作品的完整信息；标签审核通知为空 */
+            thread?: components["schemas"]["ThreadDetail-Output"] | null;
+            /**
+             * Target Type
+             * @description 标签审核目标类型：thread=帖子，booklist=书单；其他通知为空
+             */
+            target_type?: string | null;
+            /**
+             * Target Id
+             * @description 标签审核目标 ID 的十进制字符串：帖子为 Discord 帖子 ID，书单为内部书单 ID；其他通知为空
+             */
+            target_id?: string | null;
+            /**
+             * Proposal Id
+             * @description 待审核标签申请的 ID 字符串，用于定位审核记录；其他通知为空
+             */
+            proposal_id?: string | null;
+            /** @description 作品更新详情；作者新作和标签审核通知为空 */
             update?: components["schemas"]["LatestUpdate-Output"] | null;
             /**
              * Created At
@@ -3703,6 +4382,16 @@ export interface components {
              */
             include_tags?: string[];
             /**
+             * Include Tag Ids
+             * @description 包含的内部标签 ID，可混合原生与自定义标签
+             */
+            include_tag_ids?: (string | number)[];
+            /**
+             * Exclude Tag Ids
+             * @description 排除的内部标签 ID，可混合原生与自定义标签
+             */
+            exclude_tag_ids?: (string | number)[];
+            /**
              * Exclude Tags
              * @description 必须排除的标签名列表
              */
@@ -3911,6 +4600,131 @@ export interface components {
             results?: components["schemas"]["ThreadDetail-Output"][];
         };
         /**
+         * TagAliasesRequest
+         * @description 完整替换别名集合，空列表表示清空。
+         */
+        TagAliasesRequest: {
+            /**
+             * Aliases
+             * @description 替换后的完整检索别名列表；空列表表示清空所有别名
+             */
+            aliases: string[];
+        };
+        /**
+         * TagAuditResponse
+         * @description 仅向获授权管理人员提供的操作记录。
+         */
+        "TagAuditResponse-Input": {
+            /**
+             * Id
+             * @description 操作记录内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Type
+             * @description 操作类型，例如 tag.vote、tag.review；允许后续扩展
+             */
+            type: string;
+            /**
+             * Actor Id
+             * @description 操作者 Discord ID，以字符串返回；系统操作可为空
+             */
+            actor_id: string | null;
+            /**
+             * Tag Id
+             * @description 关联标签内部 ID，以字符串返回；未关联时为空
+             */
+            tag_id: string | null;
+            /**
+             * Detail
+             * @description 可扩展 JSON 详情，字段随操作类型变化
+             */
+            detail: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /**
+             * Created At
+             * Format: date-time
+             * @description 记录创建时间（UTC）
+             */
+            created_at: string;
+        };
+        /**
+         * TagAuditResponse
+         * @description 仅向获授权管理人员提供的操作记录。
+         */
+        "TagAuditResponse-Output": {
+            /**
+             * Id
+             * @description 操作记录内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Type
+             * @description 操作类型，例如 tag.vote、tag.review；允许后续扩展
+             */
+            type: string;
+            /**
+             * Actor Id
+             * @description 操作者 Discord ID，以字符串返回；系统操作可为空
+             */
+            actor_id: string | null;
+            /**
+             * Tag Id
+             * @description 关联标签内部 ID，以字符串返回；未关联时为空
+             */
+            tag_id: string | null;
+            /**
+             * Detail
+             * @description 可扩展 JSON 详情，字段随操作类型变化
+             */
+            detail: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /**
+             * Created At
+             * @description 记录创建时间（UTC）
+             */
+            created_at: string;
+        };
+        /**
+         * TagCategoryResponse
+         * @description 稳定的标签分类枚举项。
+         */
+        TagCategoryResponse: {
+            /**
+             * Value
+             * @description 分类值：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法
+             */
+            value: number;
+            /**
+             * Name
+             * @description 分类中文名称
+             */
+            name: string;
+        };
+        /**
+         * TagCreateRequest
+         * @description 创建标准标签所需的完整参数。
+         */
+        TagCreateRequest: {
+            /**
+             * Name
+             * @description 标签标准名，不含分类前缀；同名概念使用括号后缀限定上下文
+             */
+            name: string;
+            /**
+             * Category
+             * @description 分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法
+             */
+            category: number;
+            /**
+             * Aliases
+             * @description 检索别名列表，可被多个标准标签共用；未传时不添加别名
+             */
+            aliases?: string[];
+        };
+        /**
          * TagDetail
          * @description 标签的基础信息模型
          */
@@ -3941,6 +4755,276 @@ export interface components {
              * @description 标签名称
              */
             name: string;
+        };
+        /**
+         * TagPoolItemResponse
+         * @description 标签池中的标签及其检索别名。
+         */
+        "TagPoolItemResponse-Input": {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * Source
+             * @description 来源：discord 为原生标签，custom 为自定义标签
+             * @enum {string}
+             */
+            source: "discord" | "custom";
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID，以字符串返回；自定义标签为空
+             */
+            discord_tag_id: string | null;
+            /**
+             * Category
+             * @description 分类枚举值 1–7；原生标签为空
+             */
+            category: number | null;
+            /**
+             * Category Name
+             * @description 分类中文名；原生标签为空
+             */
+            category_name: string | null;
+            /**
+             * Enabled
+             * @description 标签是否启用
+             */
+            enabled: boolean;
+            /**
+             * Deleted At
+             * @description 软删除时间（UTC）；未删除时为空
+             */
+            deleted_at: string | null;
+            /**
+             * Aliases
+             * @description 检索别名列表，无别名时为空数组
+             */
+            aliases: string[];
+        };
+        /**
+         * TagPoolItemResponse
+         * @description 标签池中的标签及其检索别名。
+         */
+        "TagPoolItemResponse-Output": {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * Source
+             * @description 来源：discord 为原生标签，custom 为自定义标签
+             * @enum {string}
+             */
+            source: "discord" | "custom";
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID，以字符串返回；自定义标签为空
+             */
+            discord_tag_id: string | null;
+            /**
+             * Category
+             * @description 分类枚举值 1–7；原生标签为空
+             */
+            category: number | null;
+            /**
+             * Category Name
+             * @description 分类中文名；原生标签为空
+             */
+            category_name: string | null;
+            /**
+             * Enabled
+             * @description 标签是否启用
+             */
+            enabled: boolean;
+            /**
+             * Deleted At
+             * @description 软删除时间（UTC）；未删除时为空
+             */
+            deleted_at: string | null;
+            /**
+             * Aliases
+             * @description 检索别名列表，无别名时为空数组
+             */
+            aliases: string[];
+        };
+        /**
+         * TagProposalRequest
+         * @description 单标签提议请求。
+         */
+        TagProposalRequest: {
+            /**
+             * Tag Id
+             * @description 提议添加的自定义标签内部 ID，必须来自可用标签池
+             */
+            tag_id: string | number;
+        };
+        /**
+         * TagProposalResponse
+         * @description 标签提议的状态与审核时间。
+         */
+        TagProposalResponse: {
+            /**
+             * Id
+             * @description 提议内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Tag Id
+             * @description 提议标签内部 ID，以十进制字符串返回
+             */
+            tag_id: string;
+            /**
+             * Status
+             * @description pending 待审核，approved 通过，rejected 拒绝，failed 生效校验失败
+             * @enum {string}
+             */
+            status: "pending" | "approved" | "rejected" | "failed";
+            /**
+             * Reason
+             * @description 裁定或失败原因码；尚未裁定时为空
+             */
+            reason: string | null;
+            /**
+             * Created At
+             * @description 提议创建时间（UTC）
+             */
+            created_at: string;
+            /**
+             * Due At
+             * @description 七天审核期限的到期时间（UTC）
+             */
+            due_at: string;
+            /**
+             * Resolved At
+             * @description 处理完成时间（UTC）；待审核时为空
+             */
+            resolved_at: string | null;
+        };
+        /**
+         * TagRelationRequest
+         * @description 创建一条直接标签关系的必要参数。
+         */
+        TagRelationRequest: {
+            /**
+             * Target Tag Id
+             * @description 关系目标标签的内部 ID，不是 Discord 标签 ID；包含关系中表示父标签
+             */
+            target_tag_id: string | number;
+            /**
+             * Kind
+             * @description 关系类型：implies=有向包含关系，excludes=对称互斥关系
+             * @enum {string}
+             */
+            kind: "implies" | "excludes";
+        };
+        /**
+         * TagRelationResponse
+         * @description 标签之间的一条直接关系。
+         */
+        TagRelationResponse: {
+            /**
+             * Source Id
+             * @description 起点标签内部 ID，以十进制字符串返回
+             */
+            source_id: string;
+            /**
+             * Target Id
+             * @description 终点标签内部 ID，以十进制字符串返回
+             */
+            target_id: string;
+            /**
+             * Kind
+             * @description implies 为有向包含，excludes 为对称互斥
+             * @enum {string}
+             */
+            kind: "implies" | "excludes";
+        };
+        /**
+         * TagResponse
+         * @description 标签实体的公开基本信息。
+         */
+        TagResponse: {
+            /**
+             * Id
+             * @description 标签内部 ID，以十进制字符串返回
+             */
+            id: string;
+            /**
+             * Name
+             * @description 标准名，不含分类前缀
+             */
+            name: string;
+            /**
+             * Source
+             * @description 来源：discord 为原生标签，custom 为自定义标签
+             * @enum {string}
+             */
+            source: "discord" | "custom";
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID，以字符串返回；自定义标签为空
+             */
+            discord_tag_id: string | null;
+            /**
+             * Category
+             * @description 分类枚举值 1–7；原生标签为空
+             */
+            category: number | null;
+            /**
+             * Category Name
+             * @description 分类中文名；原生标签为空
+             */
+            category_name: string | null;
+            /**
+             * Enabled
+             * @description 标签是否启用
+             */
+            enabled: boolean;
+            /**
+             * Deleted At
+             * @description 软删除时间（UTC）；未删除时为空
+             */
+            deleted_at: string | null;
+        };
+        /**
+         * TagReviewRequest
+         * @description 作者对提议的裁定。
+         */
+        TagReviewRequest: {
+            /**
+             * Approve
+             * @description 审核决定：true=同意添加，false=拒绝申请；同意时仍需校验标签状态、数量和互斥关系
+             */
+            approve: boolean;
+        };
+        /**
+         * TagSelectionRequest
+         * @description 作者提交的完整自定义标签集合。
+         */
+        TagSelectionRequest: {
+            /**
+             * Version
+             * @description 读取目标标签时返回的版本标记，提交时原样传回；用于防止覆盖并发修改，过期返回 409 stale_version
+             */
+            version: string;
+            /**
+             * Tag Ids
+             * @description 目标完整自定义标签内部 ID 集合，不含原生标签；未传入的现有自定义标签将解绑，空列表表示全部解绑
+             */
+            tag_ids: (string | number)[];
         };
         /**
          * TagStatItem
@@ -4023,6 +5107,55 @@ export interface components {
             items: components["schemas"]["TagStatItem-Output"][];
         };
         /**
+         * TagUpdateRequest
+         * @description 部分更新名称、分类或启用状态，禁止空更新与显式空值。
+         */
+        TagUpdateRequest: {
+            /**
+             * Name
+             * @description 新的标签标准名，不含分类前缀；未传保持原值，不允许显式 null
+             */
+            name?: string;
+            /**
+             * Category
+             * @description 分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法；未传保持原值，不允许显式 null
+             */
+            category?: number;
+            /**
+             * Enabled
+             * @description true=启用，false=停用；未传保持原值，不允许显式 null；恢复软删除标签需使用恢复接口
+             */
+            enabled?: boolean;
+        };
+        /**
+         * TagVoteRequest
+         * @description 幂等设置单个轮次的当前投票。
+         */
+        TagVoteRequest: {
+            /**
+             * Vote
+             * @description 当前挂标轮次的本人投票：1=赞，-1=踩，0=撤票；重复提交同值不重复计票
+             * @enum {integer}
+             */
+            vote: -1 | 0 | 1;
+        };
+        /**
+         * TargetTagsResponse
+         * @description 目标当前标签集合及并发校验版本。
+         */
+        TargetTagsResponse: {
+            /**
+             * Version
+             * @description 标签集合版本标记；完整替换时原样传回，过期返回 409
+             */
+            version: string;
+            /**
+             * Tags
+             * @description 当前生效的原生和自定义标签；按 source 区分结构，无标签时为空数组
+             */
+            tags: (components["schemas"]["NativeTagSnapshotResponse-Output"] | components["schemas"]["CustomTagSnapshotResponse-Output"])[];
+        };
+        /**
          * ThreadDetail
          * @description API 响应中单个帖子的详细信息模型
          */
@@ -4098,6 +5231,11 @@ export interface components {
              * @description 帖子关联的标签列表
              */
             tags?: string[];
+            /**
+             * Custom Tags
+             * @description 帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数
+             */
+            custom_tags?: components["schemas"]["CustomTagBindingResponse"][];
             /**
              * Virtual Tags
              * @description 帖子匹配的虚拟映射标签名列表
@@ -4202,6 +5340,11 @@ export interface components {
              * @description 帖子关联的标签列表
              */
             tags?: string[];
+            /**
+             * Custom Tags
+             * @description 帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数
+             */
+            custom_tags?: components["schemas"]["CustomTagBindingResponse"][];
             /**
              * Virtual Tags
              * @description 帖子匹配的虚拟映射标签名列表
@@ -4725,6 +5868,22 @@ export interface components {
              * @description 最后活跃时间早于此日期 (格式: YYYY-MM-DD 或相对时间如 -7d)
              */
             active_before?: string | null;
+        };
+        /**
+         * UserRole
+         * @description 当前登录用户在主服务器的管理身份。
+         */
+        UserRole: {
+            /**
+             * Is Management Member
+             * @description 是否拥有主服务器配置的管理组身份组；与 BOT 管理员身份独立判断
+             */
+            is_management_member: boolean;
+            /**
+             * Is Bot Admin
+             * @description 当前 Discord 用户 ID 是否在服务端 bot_admin_user_ids 配置中
+             */
+            is_bot_admin: boolean;
         };
         /** ValidationError */
         ValidationError: {
@@ -5482,6 +6641,57 @@ export interface operations {
             };
         };
     };
+    mark_one_read_v1_notifications__notification_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkReadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_user_role_v1_meta_role_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRole"];
+                };
+            };
+        };
+    };
     get_indexed_channels_with_tags_v1_meta_channels_get: {
         parameters: {
             query?: {
@@ -5852,6 +7062,9 @@ export interface operations {
     list_public_booklists_v1_booklist_list_page_get: {
         parameters: {
             query?: {
+                include_tag_ids?: (string | number)[] | null;
+                exclude_tag_ids?: (string | number)[] | null;
+                tag_logic?: "and" | "or";
                 /** @description 创建者用户ID */
                 owner_id?: number | null;
                 /** @description 模糊搜索关键词，匹配标题和描述 */
@@ -5900,6 +7113,9 @@ export interface operations {
     list_my_booklists_v1_booklist_my_list_page_get: {
         parameters: {
             query?: {
+                include_tag_ids?: (string | number)[] | null;
+                exclude_tag_ids?: (string | number)[] | null;
+                tag_logic?: "and" | "or";
                 /** @description 筛选公开状态 (不传则不筛选) */
                 is_public?: boolean | null;
                 /** @description 模糊搜索关键词，匹配标题和描述 */
@@ -6320,6 +7536,561 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagStatsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    categories_v1_tags_categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagCategoryResponse"][];
+                };
+            };
+        };
+    };
+    pool_v1_tags_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                category?: number | null;
+                selectable?: boolean;
+                include_deleted?: boolean;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagPoolItemResponse-Output"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_tag_v1_tags_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relations_v1_tags_relations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagRelationResponse"][];
+                };
+            };
+        };
+    };
+    delete_tag_v1_tags__tag_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_tag_v1_tags__tag_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_tag_v1_tags__tag_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_aliases_v1_tags__tag_id__aliases_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagAliasesRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_relation_v1_tags__tag_id__relations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagRelationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_relation_v1_tags__tag_id__relations__kind___target_tag_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "implies" | "excludes";
+                tag_id: string | number;
+                target_tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_v1_tags__target_type___target_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                target_type: "thread" | "booklist";
+                target_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TargetTagsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_v1_tags__target_type___target_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                target_type: "thread" | "booklist";
+                target_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagSelectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TargetTagsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    proposals_v1_tags__target_type___target_id__proposals_get: {
+        parameters: {
+            query?: {
+                review_queue?: boolean;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                target_type: "thread" | "booklist";
+                target_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagProposalResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    propose_v1_tags__target_type___target_id__proposals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                target_type: "thread" | "booklist";
+                target_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagProposalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagProposalResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_v1_tags__target_type___target_id__proposals__proposal_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                target_type: "thread" | "booklist";
+                target_id: string | number;
+                proposal_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagProposalResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    vote_v1_tags__target_type___target_id__votes__binding_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                target_type: "thread" | "booklist";
+                target_id: string | number;
+                binding_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagVoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TargetTagsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_v1_tags__target_type___target_id__audit_get: {
+        parameters: {
+            query?: {
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                target_type: "thread" | "booklist" | "tag";
+                target_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagAuditResponse-Output"][];
                 };
             };
             /** @description Validation Error */

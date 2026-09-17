@@ -91,6 +91,9 @@ export function App() {
     return subscribeAuthInvalidation(() => {
       void queryClient.cancelQueries({ queryKey: ['auth'] });
       queryClient.setQueryData(['auth'], { loggedIn: false });
+      void queryClient.cancelQueries({ queryKey: ['custom-tags'] }).then(() => {
+        queryClient.removeQueries({ queryKey: ['custom-tags'] });
+      });
     });
   }, []);
 

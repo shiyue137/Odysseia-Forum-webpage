@@ -20,6 +20,9 @@ import {
 import { toast } from "sonner";
 
 import { ThreadCard } from "@/features/threads/components/ThreadCard";
+import { TargetTagSection } from "@/features/tags/components/TargetTagSection";
+import { customTagsEnabled } from "@/shared/config/tags";
+import { customTagSearchQuery } from "@/shared/lib/searchTokenizer";
 import { ThreadListItem } from "@/features/threads/components/ThreadListItem";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { threadFromBooklistItem } from "@/entities/booklist/lib/threadFromBooklistItem";
@@ -236,6 +239,11 @@ export function BooklistDetailPage() {
                   <p className="mt-1 whitespace-pre-line text-sm text-(--od-text-secondary)">
                     {booklist.description || "暂无简介"}
                   </p>
+                  {customTagsEnabled && <div className="mt-3">
+                    <TargetTagSection key={String(booklist.id)} target={{ type: "booklist", id: String(booklist.id) }} ownerId={booklist.owner_id}
+                      targetLabel={booklist.is_tournament ? "赛事" : "书单"}
+                      onSearch={(tag) => navigate(`/search?${new URLSearchParams({ q: customTagSearchQuery(tag), type: booklist.is_tournament ? "tournament" : "booklist" })}`)} />
+                  </div>}
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-(--od-text-tertiary)">
                     <span className="inline-flex items-center gap-1">
                       <BookOpen className="h-3.5 w-3.5" />

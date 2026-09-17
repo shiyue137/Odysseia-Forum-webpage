@@ -14,6 +14,9 @@ import type {
 } from "@/entities/booklist/types";
 
 interface BooklistListRequest {
+  includeTagIds?: string[];
+  excludeTagIds?: string[];
+  tagLogic?: "and" | "or";
   pageIndex?: number;
   pageSize?: number;
   keywords?: string;
@@ -25,6 +28,9 @@ interface BooklistListRequest {
 }
 
 interface MyBooklistListRequest {
+  includeTagIds?: string[];
+  excludeTagIds?: string[];
+  tagLogic?: "and" | "or";
   pageIndex?: number;
   pageSize?: number;
   keywords?: string;
@@ -57,7 +63,11 @@ export const booklistsApi = {
       "/booklist/list/page",
       {
         signal,
+        paramsSerializer: { indexes: null },
         params: {
+          include_tag_ids: params.includeTagIds,
+          exclude_tag_ids: params.excludeTagIds,
+          tag_logic: params.tagLogic,
           ...toPageParams(params.pageIndex, params.pageSize),
           keywords: params.keywords || undefined,
           owner_id: params.ownerId,
@@ -79,7 +89,11 @@ export const booklistsApi = {
       "/booklist/my/list/page",
       {
         signal,
+        paramsSerializer: { indexes: null },
         params: {
+          include_tag_ids: params.includeTagIds,
+          exclude_tag_ids: params.excludeTagIds,
+          tag_logic: params.tagLogic,
           ...toPageParams(params.pageIndex, params.pageSize),
           keywords: params.keywords || undefined,
           is_public: params.isPublic,

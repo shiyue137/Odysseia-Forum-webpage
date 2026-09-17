@@ -14,6 +14,8 @@ export const searchKeys = {
       "results",
       {
         query: params.query,
+        includeTagIds: params.includeTagIds,
+        excludeTagIds: params.excludeTagIds,
         channel: params.channel,
         includeAuthors: params.includeAuthors,
         excludeAuthors: params.excludeAuthors,

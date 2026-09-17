@@ -7,9 +7,20 @@ import {
   setTokenMode,
   setSingletonToken,
   tokenizeSearchPayload,
+  customTagSearchQuery,
+  tagTokenLabel,
 } from './searchTokenizer';
 
 describe('searchTokenizer', () => {
+  it('自定义标签名称只用于展示，特殊字符安全往返，查询只提取稳定 ID', () => {
+    const query = customTagSearchQuery({ id: '90071992547409931', name: '狐$娘|100%' });
+    const tokens = parseSearchQuery(query);
+    expect(tokens).toHaveLength(1);
+    expect(tagTokenLabel(tokens[0])).toBe('狐$娘|100%');
+    expect(tokenizeSearchPayload(query)).toMatchObject({ text: '', includeTags: [], includeTagIds: ['90071992547409931'] });
+    expect(tokenizeSearchPayload(removeToken(query, tokens[0])).includeTagIds).toEqual([]);
+    expect(tokenizeSearchPayload(`-${query}`).excludeTagIds).toEqual(['90071992547409931']);
+  });
   describe('parseSearchQuery', () => {
     it('应该能解析普通文本', () => {
       const query = 'hello world';

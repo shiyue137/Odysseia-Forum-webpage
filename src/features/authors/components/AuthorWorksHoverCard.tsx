@@ -604,7 +604,7 @@ export function AuthorWorksHoverCard({
     <>
       <span
         ref={triggerRef}
-        className="inline-flex"
+        className="inline-flex min-w-0 max-w-full"
         onPointerEnter={(event) => {
           if (event.pointerType === "mouse") openSoon();
         }}

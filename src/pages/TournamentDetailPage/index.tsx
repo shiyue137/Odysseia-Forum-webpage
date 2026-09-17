@@ -20,6 +20,9 @@ import { threadFromBooklistItem } from "@/entities/booklist/lib/threadFromBookli
 import type { Thread } from "@/entities/thread/types";
 import { AuthorAvatar } from "@/entities/user/AuthorAvatar";
 import { ThreadCard } from "@/features/threads/components/ThreadCard";
+import { TargetTagSection } from "@/features/tags/components/TargetTagSection";
+import { customTagsEnabled } from "@/shared/config/tags";
+import { customTagSearchQuery } from "@/shared/lib/searchTokenizer";
 import { ThreadListItem } from "@/features/threads/components/ThreadListItem";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
@@ -317,6 +320,10 @@ export function TournamentDetailPage() {
               <p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-7 text-(--od-text-secondary) sm:text-base">
                 {tournament.description || "暂无简介"}
               </p>
+              {customTagsEnabled && <div className="mt-4 w-full text-left">
+                <TargetTagSection key={String(tournament.id)} target={{ type: "booklist", id: String(tournament.id) }} ownerId={tournament.owner_id} targetLabel="赛事"
+                  onSearch={(tag) => navigate(`/search?${new URLSearchParams({ q: customTagSearchQuery(tag), type: "tournament" })}`)} />
+              </div>}
 
               <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-(--od-text-tertiary)">
                 <span className="inline-flex items-center gap-1">

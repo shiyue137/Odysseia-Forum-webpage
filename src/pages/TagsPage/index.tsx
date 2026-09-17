@@ -7,6 +7,8 @@ import { useSidebarCollapsedSetting } from "@/shared/hooks/useSettings";
 import { Select } from "@/shared/ui/Select";
 import { useTagStats } from "@/features/tags/hooks/useTagStats";
 import { useChannels } from "@/shared/hooks/useChannels";
+import { customTagsEnabled } from "@/shared/config/tags";
+import { LiveTagPool } from "@/features/tags/components/LiveTagPool";
 
 interface AggregatedChannelSlice {
   channelId: string;
@@ -30,6 +32,19 @@ const ALL_CHANNELS_VALUE = "__all__";
 const TOP_CHANNEL_SLICE_COUNT = 3;
 
 export function TagsPage() {
+  const [tab, setTab] = useState<"pool" | "stats">("pool");
+  if (!customTagsEnabled) return <TagStatistics />;
+  return <div className="flex h-full min-h-0 shrink-0 flex-col gap-5 p-4 text-(--od-text-primary) sm:p-6 lg:p-8">
+    <header className="od-page-heading shrink-0"><h1 className="od-page-title">标签</h1></header>
+    <nav aria-label="标签视图" className="flex shrink-0 gap-2">
+      {([{ id: "pool", label: "标签池" }, { id: "stats", label: "使用统计" }] as const).map((item) =>
+        <button key={item.id} type="button" aria-pressed={tab === item.id} onClick={() => setTab(item.id)} className={`od-pill-chip min-h-10 ${tab === item.id ? "bg-(--od-accent)/10 text-(--od-accent)" : ""}`}>{item.label}</button>)}
+    </nav>
+    <div className="min-h-0 flex-1">{tab === "pool" ? <LiveTagPool /> : <div className="h-full overflow-y-auto"><TagStatistics embedded /></div>}</div>
+  </div>;
+}
+
+function TagStatistics({ embedded = false }: { embedded?: boolean }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChannelId, setSelectedChannelId] =
     useState<string>(ALL_CHANNELS_VALUE);
@@ -184,10 +199,10 @@ export function TagsPage() {
 
   return (
     <div className="flex min-h-full flex-col overflow-x-clip text-(--od-text-primary)">
-      <div className="animate-in fade-in duration-500 flex-1 p-4 sm:p-6 lg:p-8">
+      <div className={`animate-in fade-in duration-500 flex-1 ${embedded ? "" : "p-4 sm:p-6 lg:p-8"}`}>
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 lg:gap-10">
           <div>
-            <div className="od-page-heading flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            {!embedded && <div className="od-page-heading flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <h1 className="od-page-title">标签总览</h1>
               <button
                 type="button"
@@ -196,7 +211,7 @@ export function TagsPage() {
               >
                 返回搜索
               </button>
-            </div>
+            </div>}
 
             <div
               className="mt-6 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:mt-8 lg:grid-cols-3 animate-in fade-in slide-in-from-top-4 duration-500"

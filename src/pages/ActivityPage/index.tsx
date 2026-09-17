@@ -574,13 +574,11 @@ export function ActivityPage() {
                   <DynamicNotificationCard
                     key={`dynamic-${item.notification.id}`}
                     notification={item.notification}
-                    onOpen={() =>
-                      openPreview(
-                        threadFromNotification(item.notification.thread),
-                      )
-                    }
+                    onOpen={() => {
+                      if (item.notification.thread) openPreview(threadFromNotification(item.notification.thread));
+                    }}
                     onAuthorOpen={() => {
-                      const authorId = item.notification.thread.author?.id;
+                      const authorId = item.notification.thread?.author?.id;
                       if (authorId) navigate(`/u/${authorId}`);
                     }}
                   />

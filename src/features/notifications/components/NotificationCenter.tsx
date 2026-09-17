@@ -310,12 +310,14 @@ export function NotificationCenter({
                       key={notification.id}
                       notification={notification}
                       variant="compact"
+                      onTargetOpen={onClose}
                       onAuthorOpen={() => {
-                        const authorId = notification.thread.author?.id;
+                        const authorId = notification.thread?.author?.id;
                         if (authorId) navigate(`/u/${authorId}`);
                         onClose();
                       }}
                       onOpen={() => {
+                        if (!notification.thread) return;
                         setPreviewThread(
                           threadFromNotification(notification.thread),
                         );

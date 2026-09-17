@@ -42,7 +42,7 @@ async function loadNotificationsByAuthor(
     );
     results.push(
       ...page.results.filter(
-        (item) => String(item.thread.author?.id ?? "") === authorId,
+        (item) => String(item.thread?.author?.id ?? "") === authorId,
       ),
     );
     offset += page.results.length;

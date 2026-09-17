@@ -4,6 +4,7 @@ import type { Booklist } from "@/entities/booklist/types";
 import { AuthorIdentityLink } from "@/features/authors/components/AuthorIdentityLink";
 import { LazyImage } from "@/shared/ui/LazyImage";
 import { formatRelativeDateTime } from "@/shared/lib/dateTime";
+import { BooklistTagList } from "./BooklistTagList";
 
 interface BooklistListItemProps {
   booklist: Booklist;
@@ -116,7 +117,9 @@ export function BooklistListItem({
               {booklist.description || "暂无简介"}
             </p>
 
-            <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-(--od-text-secondary)">
+            <div className="mt-auto">
+            <BooklistTagList booklist={booklist} />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-(--od-text-secondary)">
               <span className="inline-flex items-center gap-1.5">
                 <BookOpen className="h-3.5 w-3.5 text-(--od-text-tertiary)" />
                 <span className="tabular-nums">{booklist.item_count}</span>
@@ -134,6 +137,7 @@ export function BooklistListItem({
                 <span className="tabular-nums">{booklist.view_count}</span>
                 <span>浏览</span>
               </span>
+            </div>
             </div>
           </div>
 

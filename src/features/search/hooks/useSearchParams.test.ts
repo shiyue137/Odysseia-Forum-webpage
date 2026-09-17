@@ -5,6 +5,15 @@ import { describe, it, expect } from 'vitest';
 import { parseParams, serializeParams, useSearchURLParams } from './useSearchParams';
 
 describe('useSearchParams URL 协议层', () => {
+  it('ID 条件往返保留精度，与名称条件并存', () => {
+    const original = new URLSearchParams('include_tag_ids=90071992547409931&include_tag_ids=2&exclude_tag_ids=3&q=%24tag%3A同名%24');
+    const parsed = parseParams(original);
+    expect(parsed.includeTagIds).toEqual(['90071992547409931', '2']);
+    expect(parsed.includeTags).toEqual(['同名']);
+    const result = parseParams(serializeParams({ ...parsed, page: 2 }));
+    expect(result.includeTagIds).toEqual(parsed.includeTagIds);
+    expect(result.excludeTagIds).toEqual(['3']);
+  });
   describe('parseParams', () => {
     it('对于空 URL 参数应该返回默认值', () => {
       const sp = new URLSearchParams('');
@@ -96,6 +105,16 @@ describe('useSearchParams URL 协议层', () => {
   });
 
   describe('setParams', () => {
+    it('旧 ID 链接转成 token，删除后翻页不会恢复隐形筛选', () => {
+      const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(MemoryRouter, { initialEntries: ['/search?include_tag_ids=7914'] }, children);
+      const { result } = renderHook(() => ({ search: useSearchURLParams(), location: useLocation() }), { wrapper });
+      expect(result.current.search.params.query).toBe('$tagid:7914$');
+      act(() => result.current.search.setParams({ query: '' }));
+      act(() => result.current.search.setParams({ page: 2 }));
+      expect(result.current.search.params.includeTagIds).toEqual([]);
+      expect(result.current.location.search).not.toContain('include_tag_ids');
+    });
     it('翻页时应该保留显式选择的最近活跃排序', () => {
       const wrapper = ({ children }: { children: ReactNode }) =>
         createElement(

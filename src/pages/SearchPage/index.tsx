@@ -32,6 +32,7 @@ import {
   addToken,
   parseSearchQuery,
   tokenizeSearchPayload,
+  tagTokenLabel,
 } from "@/shared/lib/searchTokenizer";
 import { SearchSortMenu } from "@/features/search/components/SearchSortMenu";
 import {
@@ -170,6 +171,9 @@ export function SearchPage() {
   const animateIn = useListEntranceAnimation(isLoading);
 
   const booklistQuery = useBooklistsList({
+    includeTagIds: params.includeTagIds,
+    excludeTagIds: params.excludeTagIds,
+    tagLogic: (params.includeTagIds?.length || params.excludeTagIds?.length) ? params.tagLogic : undefined,
     scope: "public",
     keywords: collectionKeywords || undefined,
     sortMethod: 3,
@@ -350,6 +354,8 @@ export function SearchPage() {
     !params.query.trim() &&
     params.includeTags.length === 0 &&
     params.excludeTags.length === 0 &&
+    (params.includeTagIds?.length ?? 0) === 0 &&
+    (params.excludeTagIds?.length ?? 0) === 0 &&
     params.includeAuthors.length === 0 &&
     params.excludeAuthors.length === 0 &&
     !params.timeFrom &&
@@ -398,7 +404,7 @@ export function SearchPage() {
                         >
                           {isNegative && "-"}
                           {prefix}
-                          {token.value}
+                          {tagTokenLabel(token)}
                         </span>
                       );
                     })}

@@ -4,6 +4,9 @@ export const booklistKeys = {
   all: ["booklists"] as const,
   lists: () => [...booklistKeys.all, "list"] as const,
   list: (params: {
+    includeTagIds?: string[];
+    excludeTagIds?: string[];
+    tagLogic?: "and" | "or";
     scope: BooklistScope;
     keywords?: string;
     sortMethod: number;

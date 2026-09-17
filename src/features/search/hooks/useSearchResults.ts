@@ -127,6 +127,8 @@ export function useSearchResults({
   const currentPage = Math.max(1, page || 1);
 
   const hasExplicitFilters =
+    (params.includeTagIds?.length ?? 0) > 0 ||
+    (params.excludeTagIds?.length ?? 0) > 0 ||
     includeTags.length > 0 ||
     excludeTags.length > 0 ||
     includeAuthors.length > 0 ||
@@ -145,6 +147,8 @@ export function useSearchResults({
 
   const applyPreferences = !ignoreDiscoveryPreferences;
   const resultSignature = JSON.stringify([
+    params.includeTagIds,
+    params.excludeTagIds,
     query,
     selectedChannel,
     includeTags,
@@ -188,6 +192,8 @@ export function useSearchResults({
           channel_ids: selectedChannel ? [selectedChannel] : undefined,
           include_tags: includeTags.length > 0 ? includeTags : undefined,
           exclude_tags: excludeTags.length > 0 ? excludeTags : undefined,
+          include_tag_ids: params.includeTagIds,
+          exclude_tag_ids: params.excludeTagIds,
           tag_logic: tagLogic,
           sort_method: sortMethod,
           sort_order: sortOrder,

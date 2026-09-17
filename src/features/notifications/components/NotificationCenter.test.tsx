@@ -167,6 +167,19 @@ describe("NotificationCenter", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("无帖子对象的标签审核通知独立展示并关闭通知面板", async () => {
+    mocks.useNotificationPreview.mockReturnValue({
+      data: { results: [{ id: "12", type: "tag_review", thread: null, target_type: "thread", target_id: "123", proposal_id: "456", read_at: null }] },
+      isLoading: false, isError: false,
+    });
+    const onClose = vi.fn();
+    render(<NotificationCenter open onClose={onClose} />);
+    expect(await screen.findByText("未读 · 标签待审核")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "查看内容" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(mocks.setPreviewThread).not.toHaveBeenCalled();
+  });
+
   it("popup 会自动弹出但不要求读到底，关闭后不会再次自动弹出", async () => {
     mocks.resolveStaticNotifications.mockResolvedValue([
       { ...staticNotification, presentation: "popup" },

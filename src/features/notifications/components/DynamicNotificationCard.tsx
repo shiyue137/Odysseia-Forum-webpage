@@ -8,6 +8,9 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { apiClient } from "@/shared/api/client";
 
 import { ThreadStatusBadges } from "@/entities/thread/ThreadStatusBadges";
 import { ThreadTournamentBadges } from "@/entities/thread/ThreadTournamentBadges";
@@ -31,11 +34,12 @@ interface DynamicNotificationCardProps {
   notification: DynamicNotification;
   onOpen: () => void;
   onAuthorOpen: () => void;
+  onTargetOpen?: () => void;
   variant?: "compact" | "feed";
 }
 
 function getAuthorName(notification: DynamicNotification) {
-  const author = notification.thread.author;
+  const author = notification.thread?.author;
   return (
     author?.display_name ||
     author?.global_name ||
@@ -45,11 +49,38 @@ function getAuthorName(notification: DynamicNotification) {
 }
 
 export function DynamicNotificationCard({
+  notification, ...props
+}: DynamicNotificationCardProps) {
+  if (notification.type === "tag_review") return <TagReviewNotification notification={notification} onOpen={props.onTargetOpen} />;
+  if (!notification.thread) return <p className="p-3 text-sm text-(--od-text-secondary)">作品暂不可用</p>;
+  return <ThreadNotificationCard {...props} notification={{ ...notification, thread: notification.thread }} />;
+}
+
+function TagReviewNotification({ notification, onOpen }: { notification: DynamicNotification; onOpen?: () => void }) {
+  const navigate = useNavigate();
+  const client = useQueryClient();
+  const markRead = useMutation({
+    mutationFn: () => apiClient.post(`/notifications/${notification.id}/read`),
+    onSuccess: () => { void client.invalidateQueries({ queryKey: ["notifications"] }); },
+  });
+  const targetPath = notification.target_type === "thread" ? "threads" : notification.target_type === "booklist" ? "booklists" : null;
+  return <article className="space-y-2 border-b border-(--od-border) p-3 text-sm">
+    <p className="font-semibold">{notification.read_at == null && "未读 · "}标签待审核</p>
+    <p className="text-xs text-(--od-text-secondary)">{notification.thread?.title || `${notification.target_type === "booklist" ? "书单" : "帖子"} #${notification.target_id}`} · 申请 #{notification.proposal_id}</p>
+    <div className="flex gap-3 text-xs">
+      {targetPath && notification.target_id && <button className="min-h-10 text-(--od-accent)" onClick={() => { navigate(`/${targetPath}/${encodeURIComponent(notification.target_id!)}`); onOpen?.(); }}>查看内容</button>}
+      {notification.read_at == null && <button disabled={markRead.isPending} onClick={() => markRead.mutate()}>标为已读</button>}
+    </div>
+    {markRead.isError && <p role="alert">标记失败，请重试</p>}
+  </article>;
+}
+
+function ThreadNotificationCard({
   notification,
   onOpen,
   onAuthorOpen,
   variant = "feed",
-}: DynamicNotificationCardProps) {
+}: Omit<DynamicNotificationCardProps, "notification"> & { notification: DynamicNotification & { thread: NonNullable<DynamicNotification["thread"]> } }) {
   const compact = variant === "compact";
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const thread = threadFromNotification(notification.thread);

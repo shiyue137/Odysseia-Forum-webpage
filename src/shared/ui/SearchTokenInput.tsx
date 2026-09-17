@@ -3,6 +3,7 @@ import {
   removeToken,
   SearchToken,
   tokensToQuery,
+  tagTokenLabel,
 } from "@/shared/lib/searchTokenizer";
 import { LazyImage } from "@/shared/ui/LazyImage";
 import { CalendarRange, Hash, MessageCircle, Tag as TagIcon, ThumbsUp, User, X } from "lucide-react";
@@ -207,6 +208,7 @@ export function SearchTokenInput({
 
     switch (token.type) {
       case "tag":
+      case "tagid":
         return <TagIcon className="h-3 w-3" />;
       case "author":
         return <User className="h-3 w-3" />;
@@ -230,6 +232,7 @@ export function SearchTokenInput({
 
     switch (token.type) {
       case "tag":
+      case "tagid":
         return "border-sky-500/40 bg-sky-500/12 text-sky-300";
       case "author":
         return "border-violet-500/40 bg-violet-500/12 text-violet-300";
@@ -250,7 +253,7 @@ export function SearchTokenInput({
     if (token.type === "date") return `日期 ${token.value.replace("..", " → ")}`;
     if (token.type === "likes") return `点赞 ${token.value}`;
     if (token.type === "replies") return `评论 ${token.value}`;
-    return token.value;
+    return tagTokenLabel(token);
   };
 
   return (
@@ -307,11 +310,11 @@ export function SearchTokenInput({
                 <span
                   className={`${token.type === "date" ? "max-w-[180px]" : "max-w-[72px]"} truncate cursor-pointer`}
                   onClick={(e) => {
-                    if (author) return;
+                    if (author || token.type === "tagid") return;
                     e.stopPropagation();
                     handleTokenClick(token);
                   }}
-                  title={author ? author.displayName : "点击修改"}
+                  title={author ? author.displayName : token.type === "tagid" ? tagTokenLabel(token) : "点击修改"}
                 >
                   {author?.displayName || getTokenLabel(token) || "(空)"}
                 </span>
@@ -325,7 +328,7 @@ export function SearchTokenInput({
                     handleRemoveToken(token);
                   }}
                   className="rounded-full p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10"
-                  aria-label={`移除${token.mode === "exclude" ? "排除" : "包含"} ${token.type}: ${token.value}`}
+                  aria-label={`移除${token.mode === "exclude" ? "排除" : "包含"} ${token.type === "tagid" ? "tag" : token.type}: ${tagTokenLabel(token)}`}
                 >
                   <X className="h-3 w-3" />
                 </button>

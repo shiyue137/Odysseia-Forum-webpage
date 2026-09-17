@@ -23,6 +23,7 @@ import {
 } from "@/shared/ui/ContextMenu";
 import { toast } from "sonner";
 import { LazyImage } from "@/shared/ui/LazyImage";
+import { BooklistTagList } from "./BooklistTagList";
 
 interface BooklistCardProps {
   booklist: Booklist;
@@ -151,7 +152,9 @@ export function BooklistCard({
                 {booklist.description || "暂无简介"}
               </p>
 
-              <div className="mt-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-4 text-[12px] text-(--od-text-secondary)">
+              <div className="mt-auto pt-4">
+              <BooklistTagList booklist={booklist} className="justify-center" />
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[12px] text-(--od-text-secondary)">
                 <span className="inline-flex items-center gap-1.5">
                   <BookOpen className="h-3.5 w-3.5 text-(--od-text-tertiary)" />
                   <span className="text-(--od-accent)">
@@ -174,7 +177,7 @@ export function BooklistCard({
                   <span>浏览</span>
                 </span>
               </div>
-
+              </div>
               {canManage && (
                 <div className="mt-3 flex items-center justify-end gap-1">
                   <ContextMenuButton

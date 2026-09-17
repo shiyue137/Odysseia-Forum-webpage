@@ -1145,6 +1145,81 @@
         ]
       }
     },
+    "/v1/notifications/{notification_id}/read": {
+      "post": {
+        "tags": [
+          "动态通知"
+        ],
+        "summary": "标记单条通知已读",
+        "description": "读取书单审核等不关联作品的通知时可单独标记。",
+        "operationId": "mark_one_read_v1_notifications__notification_id__read_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Notification Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkReadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/meta/role": {
+      "get": {
+        "tags": [
+          "元数据"
+        ],
+        "summary": "查询当前用户的管理身份",
+        "description": "独立返回主服务器管理组和 BOT 管理员身份，用于前端控制按钮显示。",
+        "operationId": "get_user_role_v1_meta_role_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRole"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/v1/meta/channels": {
       "get": {
         "tags": [
@@ -1918,6 +1993,72 @@
         ],
         "parameters": [
           {
+            "name": "include_tag_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Include Tag Ids"
+            }
+          },
+          {
+            "name": "exclude_tag_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exclude Tag Ids"
+            }
+          },
+          {
+            "name": "tag_logic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "and",
+                "or"
+              ],
+              "type": "string",
+              "default": "and",
+              "title": "Tag Logic"
+            }
+          },
+          {
             "name": "owner_id",
             "in": "query",
             "required": false,
@@ -2097,6 +2238,72 @@
           }
         ],
         "parameters": [
+          {
+            "name": "include_tag_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Include Tag Ids"
+            }
+          },
+          {
+            "name": "exclude_tag_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exclude Tag Ids"
+            }
+          },
+          {
+            "name": "tag_logic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "and",
+                "or"
+              ],
+              "type": "string",
+              "default": "and",
+              "title": "Tag Logic"
+            }
+          },
           {
             "name": "is_public",
             "in": "query",
@@ -2651,7 +2858,7 @@
           "书单"
         ],
         "summary": "向书单批量添加帖子",
-        "description": "向书单批量添加帖子\n\n- **booklist_id**: 书单ID\n- **request body**: 包含一个`items`列表，每个元素包含:\n    - **thread_id**: 帖子ID (必填)\n    - **comment**: 推荐语 (可选)\n    - **display_order**: 排序序号 (可选)",
+        "description": "向书单批量添加帖子\n\n- **booklist_id**: 书单ID\n- **request body**: 包含一个`items`列表，每个元素包含:\n    - **thread_id**: 帖子ID (必填)，支持整数或数字字符串，范围为 1 至 9223372036854775807\n    - **comment**: 推荐语 (可选)\n    - **display_order**: 排序序号 (可选)\n\n每个帖子 ID 应作为独立的 items 条目提交。任一 ID 非法时整批返回 HTTP 422，\ndetail[].msg 提供中文提示，detail[].loc 定位具体条目；超范围时提示检查遗漏逗号。",
         "operationId": "add_threads_to_booklist_v1_booklist_item_add__booklist_id__post",
         "security": [
           {
@@ -3033,6 +3240,1202 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/v1/tags/categories": {
+      "get": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Categories",
+        "description": "返回稳定分类枚举。",
+        "operationId": "categories_v1_tags_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagCategoryResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Categories V1 Tags Categories Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/tags": {
+      "get": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Pool",
+        "description": "按标准名或别名分页搜索标签池。",
+        "operationId": "pool_v1_tags_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 7,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "selectable",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Selectable"
+            }
+          },
+          {
+            "name": "include_deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Deleted"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagPoolItemResponse-Output"
+                  },
+                  "title": "Response Pool V1 Tags Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "创建标签",
+        "description": "BOT 管理员创建一个标准标签。",
+        "operationId": "create_tag_v1_tags_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/relations": {
+      "get": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Relations",
+        "description": "提供全部直接关系边，层级由前端计算。",
+        "operationId": "relations_v1_tags_relations_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagRelationResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Relations V1 Tags Relations Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/v1/tags/{tag_id}": {
+      "patch": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "修改标签",
+        "description": "原子修改名称、分类及启用状态。",
+        "operationId": "update_tag_v1_tags__tag_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "title": "Tag Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "软删除标签",
+        "description": "软删除标签并保留治理历史。",
+        "operationId": "delete_tag_v1_tags__tag_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "title": "Tag Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{tag_id}/restore": {
+      "post": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "恢复标签",
+        "description": "恢复标签实体，不恢复旧绑定。",
+        "operationId": "restore_tag_v1_tags__tag_id__restore_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "title": "Tag Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{tag_id}/aliases": {
+      "put": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "替换标签别名",
+        "description": "完整替换别名集合。",
+        "operationId": "replace_aliases_v1_tags__tag_id__aliases_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "title": "Tag Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagAliasesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{tag_id}/relations": {
+      "post": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "添加标签关系",
+        "description": "添加包含或互斥关系。",
+        "operationId": "add_relation_v1_tags__tag_id__relations_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "title": "Tag Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagRelationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{tag_id}/relations/{kind}/{target_tag_id}": {
+      "delete": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "删除标签关系",
+        "description": "删除指定的直接标签关系。",
+        "operationId": "remove_relation_v1_tags__tag_id__relations__kind___target_tag_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "implies",
+                "excludes"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "title": "Tag Id"
+            }
+          },
+          {
+            "name": "target_tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "title": "Target Tag Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{target_type}/{target_id}": {
+      "get": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Read",
+        "description": "读取原生标签、自定义标签、票数和版本。",
+        "operationId": "read_v1_tags__target_type___target_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thread",
+                "booklist"
+              ],
+              "type": "string",
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Target Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetTagsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Replace",
+        "description": "作者或管理组替换完整自定义标签集合。",
+        "operationId": "replace_v1_tags__target_type___target_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thread",
+                "booklist"
+              ],
+              "type": "string",
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Target Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagSelectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetTagsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{target_type}/{target_id}/proposals": {
+      "post": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Propose",
+        "description": "提议一个标签，提交后开始七天审核期。",
+        "operationId": "propose_v1_tags__target_type___target_id__proposals_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thread",
+                "booklist"
+              ],
+              "type": "string",
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Target Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagProposalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagProposalResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Proposals",
+        "description": "读取本人申请或作者审核队列。",
+        "operationId": "proposals_v1_tags__target_type___target_id__proposals_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thread",
+                "booklist"
+              ],
+              "type": "string",
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Target Id"
+            }
+          },
+          {
+            "name": "review_queue",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Review Queue"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagProposalResponse"
+                  },
+                  "title": "Response Proposals V1 Tags  Target Type   Target Id  Proposals Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{target_type}/{target_id}/proposals/{proposal_id}": {
+      "put": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Review",
+        "description": "同意或拒绝待审核提议。",
+        "operationId": "review_v1_tags__target_type___target_id__proposals__proposal_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thread",
+                "booklist"
+              ],
+              "type": "string",
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Target Id"
+            }
+          },
+          {
+            "name": "proposal_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Proposal Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagProposalResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{target_type}/{target_id}/votes/{binding_id}": {
+      "put": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Vote",
+        "description": "设置赞、踩或撤票，旧轮次不可继续投票。",
+        "operationId": "vote_v1_tags__target_type___target_id__votes__binding_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thread",
+                "booklist"
+              ],
+              "type": "string",
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Target Id"
+            }
+          },
+          {
+            "name": "binding_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Binding Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagVoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetTagsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{target_type}/{target_id}/audit": {
+      "get": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "Audit",
+        "description": "管理人员在授权范围内查询操作记录。",
+        "operationId": "audit_v1_tags__target_type___target_id__audit_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thread",
+                "booklist",
+                "tag"
+              ],
+              "type": "string",
+              "title": "Target Type"
+            }
+          },
+          {
+            "name": "target_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "title": "Target Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagAuditResponse-Output"
+                  },
+                  "title": "Response Audit V1 Tags  Target Type   Target Id  Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/discovery/rails": {
@@ -4818,6 +6221,14 @@
             "title": "Title",
             "description": "书单标题"
           },
+          "custom_tags": {
+            "items": {
+              "$ref": "#/components/schemas/CustomTagBindingResponse"
+            },
+            "type": "array",
+            "title": "Custom Tags",
+            "description": "书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
+          },
           "description": {
             "anyOf": [
               {
@@ -4982,7 +6393,7 @@
               }
             ],
             "title": "Thread Id",
-            "description": "Discord Thread ID"
+            "description": "Discord Thread ID，支持整数或数字字符串，范围为 1 至 9223372036854775807，每个 ID 应单独提交"
           },
           "comment": {
             "anyOf": [
@@ -5746,6 +7157,14 @@
             "title": "Title",
             "description": "书单标题"
           },
+          "custom_tags": {
+            "items": {
+              "$ref": "#/components/schemas/CustomTagBindingResponse"
+            },
+            "type": "array",
+            "title": "Custom Tags",
+            "description": "书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
+          },
           "description": {
             "anyOf": [
               {
@@ -5905,6 +7324,14 @@
             "type": "string",
             "title": "Title",
             "description": "书单标题"
+          },
+          "custom_tags": {
+            "items": {
+              "$ref": "#/components/schemas/CustomTagBindingResponse"
+            },
+            "type": "array",
+            "title": "Custom Tags",
+            "description": "书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
           },
           "description": {
             "anyOf": [
@@ -6457,6 +7884,315 @@
         "title": "ChannelTagInfo",
         "description": "标签在某个频道下的统计信息"
       },
+      "CustomTagBindingResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标签标准名，不含分类前缀"
+          },
+          "category": {
+            "type": "integer",
+            "title": "Category",
+            "description": "分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法"
+          },
+          "category_name": {
+            "type": "string",
+            "title": "Category Name",
+            "description": "分类枚举对应的中文名称"
+          },
+          "source": {
+            "type": "string",
+            "const": "custom",
+            "title": "Source",
+            "description": "标签来源，固定为 custom"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用；停用标签的现有绑定仍可展示"
+          },
+          "binding_id": {
+            "type": "string",
+            "title": "Binding Id",
+            "description": "当前绑定轮次 ID，以十进制字符串返回；重新添加产生新轮次"
+          },
+          "upvotes": {
+            "type": "integer",
+            "title": "Upvotes",
+            "description": "当前绑定轮次的正向票数"
+          },
+          "downvotes": {
+            "type": "integer",
+            "title": "Downvotes",
+            "description": "当前绑定轮次的负向票数"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "category_name",
+          "source",
+          "enabled",
+          "binding_id",
+          "upvotes",
+          "downvotes"
+        ],
+        "title": "CustomTagBindingResponse",
+        "description": "帖子或书单当前生效的自定义标签绑定信息。"
+      },
+      "CustomTagSnapshotResponse-Input": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标准名，不含分类前缀"
+          },
+          "source": {
+            "type": "string",
+            "const": "custom",
+            "title": "Source",
+            "description": "来源固定为 custom"
+          },
+          "discord_tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "分类枚举值 1–7；原生标签为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名；原生标签为空"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At",
+            "description": "软删除时间（UTC）；未删除时为空"
+          },
+          "readonly": {
+            "type": "boolean",
+            "const": false,
+            "title": "Readonly",
+            "description": "固定为 false，自定义标签按权限进行治理"
+          },
+          "binding_id": {
+            "type": "string",
+            "title": "Binding Id",
+            "description": "当前绑定轮次 ID，以十进制字符串返回"
+          },
+          "upvotes": {
+            "type": "integer",
+            "title": "Upvotes",
+            "description": "当前轮次正向票数"
+          },
+          "downvotes": {
+            "type": "integer",
+            "title": "Downvotes",
+            "description": "当前轮次负向票数"
+          },
+          "my_vote": {
+            "type": "integer",
+            "enum": [
+              -1,
+              0,
+              1
+            ],
+            "title": "My Vote",
+            "description": "当前用户本轮投票：-1 为踩，0 为未投票，1 为赞"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "discord_tag_id",
+          "category",
+          "category_name",
+          "enabled",
+          "deleted_at",
+          "readonly",
+          "binding_id",
+          "upvotes",
+          "downvotes",
+          "my_vote"
+        ],
+        "title": "CustomTagSnapshotResponse",
+        "description": "目标上的自定义标签及当前用户投票。"
+      },
+      "CustomTagSnapshotResponse-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标准名，不含分类前缀"
+          },
+          "source": {
+            "type": "string",
+            "const": "custom",
+            "title": "Source",
+            "description": "来源固定为 custom"
+          },
+          "discord_tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "分类枚举值 1–7；原生标签为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名；原生标签为空"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At",
+            "description": "软删除时间（UTC）；未删除时为空"
+          },
+          "readonly": {
+            "type": "boolean",
+            "const": false,
+            "title": "Readonly",
+            "description": "固定为 false，自定义标签按权限进行治理"
+          },
+          "binding_id": {
+            "type": "string",
+            "title": "Binding Id",
+            "description": "当前绑定轮次 ID，以十进制字符串返回"
+          },
+          "upvotes": {
+            "type": "integer",
+            "title": "Upvotes",
+            "description": "当前轮次正向票数"
+          },
+          "downvotes": {
+            "type": "integer",
+            "title": "Downvotes",
+            "description": "当前轮次负向票数"
+          },
+          "my_vote": {
+            "type": "integer",
+            "enum": [
+              -1,
+              0,
+              1
+            ],
+            "title": "My Vote",
+            "description": "当前用户本轮投票：-1 为踩，0 为未投票，1 为赞"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "discord_tag_id",
+          "category",
+          "category_name",
+          "enabled",
+          "deleted_at",
+          "readonly",
+          "binding_id",
+          "upvotes",
+          "downvotes",
+          "my_vote"
+        ],
+        "title": "CustomTagSnapshotResponse",
+        "description": "目标上的自定义标签及当前用户投票。"
+      },
       "DiscoveryRailsResponse": {
         "properties": {
           "latest": {
@@ -6709,6 +8445,14 @@
             "title": "Tags",
             "description": "帖子关联的标签列表"
           },
+          "custom_tags": {
+            "items": {
+              "$ref": "#/components/schemas/CustomTagBindingResponse"
+            },
+            "type": "array",
+            "title": "Custom Tags",
+            "description": "帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
+          },
           "virtual_tags": {
             "items": {
               "type": "string"
@@ -6933,6 +8677,14 @@
             "title": "Tags",
             "description": "帖子关联的标签列表"
           },
+          "custom_tags": {
+            "items": {
+              "$ref": "#/components/schemas/CustomTagBindingResponse"
+            },
+            "type": "array",
+            "title": "Custom Tags",
+            "description": "帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
+          },
           "virtual_tags": {
             "items": {
               "type": "string"
@@ -7103,6 +8855,7 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "JsonValue": {},
       "LatestUpdate-Input": {
         "properties": {
           "id": {
@@ -7328,6 +9081,193 @@
         "title": "MarkReadResponse",
         "description": "按作品标记动态通知已读的响应。"
       },
+      "NativeTagSnapshotResponse-Input": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标准名，不含分类前缀"
+          },
+          "source": {
+            "type": "string",
+            "const": "discord",
+            "title": "Source",
+            "description": "来源固定为 discord"
+          },
+          "discord_tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "分类枚举值 1–7；原生标签为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名；原生标签为空"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At",
+            "description": "软删除时间（UTC）；未删除时为空"
+          },
+          "readonly": {
+            "type": "boolean",
+            "const": true,
+            "title": "Readonly",
+            "description": "固定为 true，原生标签在本项目不可修改"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "discord_tag_id",
+          "category",
+          "category_name",
+          "enabled",
+          "deleted_at",
+          "readonly"
+        ],
+        "title": "NativeTagSnapshotResponse",
+        "description": "目标上的只读 Discord 原生标签。"
+      },
+      "NativeTagSnapshotResponse-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标准名，不含分类前缀"
+          },
+          "source": {
+            "type": "string",
+            "const": "discord",
+            "title": "Source",
+            "description": "来源固定为 discord"
+          },
+          "discord_tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "分类枚举值 1–7；原生标签为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名；原生标签为空"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At",
+            "description": "软删除时间（UTC）；未删除时为空"
+          },
+          "readonly": {
+            "type": "boolean",
+            "const": true,
+            "title": "Readonly",
+            "description": "固定为 true，原生标签在本项目不可修改"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "discord_tag_id",
+          "category",
+          "category_name",
+          "enabled",
+          "deleted_at",
+          "readonly"
+        ],
+        "title": "NativeTagSnapshotResponse",
+        "description": "目标上的只读 Discord 原生标签。"
+      },
       "NotificationItem-Input": {
         "properties": {
           "id": {
@@ -7339,14 +9279,58 @@
             "type": "string",
             "enum": [
               "thread_update",
-              "author_new_thread"
+              "author_new_thread",
+              "tag_review"
             ],
             "title": "Type",
-            "description": "动态通知类型：作品更新或作者新作"
+            "description": "动态通知类型：thread_update=作品更新，author_new_thread=作者新作，tag_review=标签提议待审核"
           },
           "thread": {
-            "$ref": "#/components/schemas/ThreadDetail-Input",
-            "description": "通知关联作品的完整信息"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThreadDetail-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "通知关联作品的完整信息；标签审核通知为空"
+          },
+          "target_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Type",
+            "description": "标签审核目标类型：thread=帖子，booklist=书单；其他通知为空"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id",
+            "description": "标签审核目标 ID 的十进制字符串：帖子为 Discord 帖子 ID，书单为内部书单 ID；其他通知为空"
+          },
+          "proposal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposal Id",
+            "description": "待审核标签申请的 ID 字符串，用于定位审核记录；其他通知为空"
           },
           "update": {
             "anyOf": [
@@ -7357,7 +9341,7 @@
                 "type": "null"
               }
             ],
-            "description": "作品更新详情；作者新作通知固定为空"
+            "description": "作品更新详情；作者新作和标签审核通知为空"
           },
           "created_at": {
             "type": "string",
@@ -7383,7 +9367,6 @@
         "required": [
           "id",
           "type",
-          "thread",
           "created_at"
         ],
         "title": "NotificationItem",
@@ -7400,14 +9383,58 @@
             "type": "string",
             "enum": [
               "thread_update",
-              "author_new_thread"
+              "author_new_thread",
+              "tag_review"
             ],
             "title": "Type",
-            "description": "动态通知类型：作品更新或作者新作"
+            "description": "动态通知类型：thread_update=作品更新，author_new_thread=作者新作，tag_review=标签提议待审核"
           },
           "thread": {
-            "$ref": "#/components/schemas/ThreadDetail-Output",
-            "description": "通知关联作品的完整信息"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThreadDetail-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "通知关联作品的完整信息；标签审核通知为空"
+          },
+          "target_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Type",
+            "description": "标签审核目标类型：thread=帖子，booklist=书单；其他通知为空"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id",
+            "description": "标签审核目标 ID 的十进制字符串：帖子为 Discord 帖子 ID，书单为内部书单 ID；其他通知为空"
+          },
+          "proposal_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposal Id",
+            "description": "待审核标签申请的 ID 字符串，用于定位审核记录；其他通知为空"
           },
           "update": {
             "anyOf": [
@@ -7418,7 +9445,7 @@
                 "type": "null"
               }
             ],
-            "description": "作品更新详情；作者新作通知固定为空"
+            "description": "作品更新详情；作者新作和标签审核通知为空"
           },
           "created_at": {
             "type": "string",
@@ -7442,7 +9469,6 @@
         "required": [
           "id",
           "type",
-          "thread",
           "created_at"
         ],
         "title": "NotificationItem",
@@ -7775,6 +9801,38 @@
             "type": "array",
             "title": "Include Tags",
             "description": "必须包含的标签名列表"
+          },
+          "include_tag_ids": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Include Tag Ids",
+            "description": "包含的内部标签 ID，可混合原生与自定义标签"
+          },
+          "exclude_tag_ids": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Exclude Tag Ids",
+            "description": "排除的内部标签 ID，可混合原生与自定义标签"
           },
           "exclude_tags": {
             "items": {
@@ -8149,6 +10207,211 @@
         "title": "SimilarThreadsResponse",
         "description": "相似帖子推荐接口的响应体"
       },
+      "TagAliasesRequest": {
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Aliases",
+            "description": "替换后的完整检索别名列表；空列表表示清空所有别名"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "aliases"
+        ],
+        "title": "TagAliasesRequest",
+        "description": "完整替换别名集合，空列表表示清空。"
+      },
+      "TagAuditResponse-Input": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "操作记录内部 ID，以十进制字符串返回"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "操作类型，例如 tag.vote、tag.review；允许后续扩展"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id",
+            "description": "操作者 Discord ID，以字符串返回；系统操作可为空"
+          },
+          "tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag Id",
+            "description": "关联标签内部 ID，以字符串返回；未关联时为空"
+          },
+          "detail": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Detail",
+            "description": "可扩展 JSON 详情，字段随操作类型变化"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "记录创建时间（UTC）"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "actor_id",
+          "tag_id",
+          "detail",
+          "created_at"
+        ],
+        "title": "TagAuditResponse",
+        "description": "仅向获授权管理人员提供的操作记录。"
+      },
+      "TagAuditResponse-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "操作记录内部 ID，以十进制字符串返回"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "操作类型，例如 tag.vote、tag.review；允许后续扩展"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id",
+            "description": "操作者 Discord ID，以字符串返回；系统操作可为空"
+          },
+          "tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tag Id",
+            "description": "关联标签内部 ID，以字符串返回；未关联时为空"
+          },
+          "detail": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Detail",
+            "description": "可扩展 JSON 详情，字段随操作类型变化"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "记录创建时间（UTC）"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "actor_id",
+          "tag_id",
+          "detail",
+          "created_at"
+        ],
+        "title": "TagAuditResponse",
+        "description": "仅向获授权管理人员提供的操作记录。"
+      },
+      "TagCategoryResponse": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value",
+            "description": "分类值：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "分类中文名称"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "name"
+        ],
+        "title": "TagCategoryResponse",
+        "description": "稳定的标签分类枚举项。"
+      },
+      "TagCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "description": "标签标准名，不含分类前缀；同名概念使用括号后缀限定上下文"
+          },
+          "category": {
+            "type": "integer",
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Category",
+            "description": "分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法"
+          },
+          "aliases": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Aliases",
+            "description": "检索别名列表，可被多个标准标签共用；未传时不添加别名"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "category"
+        ],
+        "title": "TagCreateRequest",
+        "description": "创建标准标签所需的完整参数。"
+      },
       "TagDetail-Input": {
         "properties": {
           "tag_id": {
@@ -8197,6 +10460,500 @@
         ],
         "title": "TagDetail",
         "description": "标签的基础信息模型"
+      },
+      "TagPoolItemResponse-Input": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标准名，不含分类前缀"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "discord",
+              "custom"
+            ],
+            "title": "Source",
+            "description": "来源：discord 为原生标签，custom 为自定义标签"
+          },
+          "discord_tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "分类枚举值 1–7；原生标签为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名；原生标签为空"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At",
+            "description": "软删除时间（UTC）；未删除时为空"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases",
+            "description": "检索别名列表，无别名时为空数组"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "discord_tag_id",
+          "category",
+          "category_name",
+          "enabled",
+          "deleted_at",
+          "aliases"
+        ],
+        "title": "TagPoolItemResponse",
+        "description": "标签池中的标签及其检索别名。"
+      },
+      "TagPoolItemResponse-Output": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标准名，不含分类前缀"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "discord",
+              "custom"
+            ],
+            "title": "Source",
+            "description": "来源：discord 为原生标签，custom 为自定义标签"
+          },
+          "discord_tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "分类枚举值 1–7；原生标签为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名；原生标签为空"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At",
+            "description": "软删除时间（UTC）；未删除时为空"
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases",
+            "description": "检索别名列表，无别名时为空数组"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "discord_tag_id",
+          "category",
+          "category_name",
+          "enabled",
+          "deleted_at",
+          "aliases"
+        ],
+        "title": "TagPoolItemResponse",
+        "description": "标签池中的标签及其检索别名。"
+      },
+      "TagProposalRequest": {
+        "properties": {
+          "tag_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\+?0*[1-9][0-9]*$"
+              },
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              }
+            ],
+            "title": "Tag Id",
+            "description": "提议添加的自定义标签内部 ID，必须来自可用标签池"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tag_id"
+        ],
+        "title": "TagProposalRequest",
+        "description": "单标签提议请求。"
+      },
+      "TagProposalResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "提议内部 ID，以十进制字符串返回"
+          },
+          "tag_id": {
+            "type": "string",
+            "title": "Tag Id",
+            "description": "提议标签内部 ID，以十进制字符串返回"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "failed"
+            ],
+            "title": "Status",
+            "description": "pending 待审核，approved 通过，rejected 拒绝，failed 生效校验失败"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "裁定或失败原因码；尚未裁定时为空"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "提议创建时间（UTC）"
+          },
+          "due_at": {
+            "type": "string",
+            "title": "Due At",
+            "description": "七天审核期限的到期时间（UTC）"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At",
+            "description": "处理完成时间（UTC）；待审核时为空"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tag_id",
+          "status",
+          "reason",
+          "created_at",
+          "due_at",
+          "resolved_at"
+        ],
+        "title": "TagProposalResponse",
+        "description": "标签提议的状态与审核时间。"
+      },
+      "TagRelationRequest": {
+        "properties": {
+          "target_tag_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\+?0*[1-9][0-9]*$"
+              },
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              }
+            ],
+            "title": "Target Tag Id",
+            "description": "关系目标标签的内部 ID，不是 Discord 标签 ID；包含关系中表示父标签"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "implies",
+              "excludes"
+            ],
+            "title": "Kind",
+            "description": "关系类型：implies=有向包含关系，excludes=对称互斥关系"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "target_tag_id",
+          "kind"
+        ],
+        "title": "TagRelationRequest",
+        "description": "创建一条直接标签关系的必要参数。"
+      },
+      "TagRelationResponse": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id",
+            "description": "起点标签内部 ID，以十进制字符串返回"
+          },
+          "target_id": {
+            "type": "string",
+            "title": "Target Id",
+            "description": "终点标签内部 ID，以十进制字符串返回"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "implies",
+              "excludes"
+            ],
+            "title": "Kind",
+            "description": "implies 为有向包含，excludes 为对称互斥"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "target_id",
+          "kind"
+        ],
+        "title": "TagRelationResponse",
+        "description": "标签之间的一条直接关系。"
+      },
+      "TagResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "标签内部 ID，以十进制字符串返回"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "标准名，不含分类前缀"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "discord",
+              "custom"
+            ],
+            "title": "Source",
+            "description": "来源：discord 为原生标签，custom 为自定义标签"
+          },
+          "discord_tag_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "分类枚举值 1–7；原生标签为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名；原生标签为空"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "标签是否启用"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At",
+            "description": "软删除时间（UTC）；未删除时为空"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "source",
+          "discord_tag_id",
+          "category",
+          "category_name",
+          "enabled",
+          "deleted_at"
+        ],
+        "title": "TagResponse",
+        "description": "标签实体的公开基本信息。"
+      },
+      "TagReviewRequest": {
+        "properties": {
+          "approve": {
+            "type": "boolean",
+            "title": "Approve",
+            "description": "审核决定：true=同意添加，false=拒绝申请；同意时仍需校验标签状态、数量和互斥关系"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approve"
+        ],
+        "title": "TagReviewRequest",
+        "description": "作者对提议的裁定。"
+      },
+      "TagSelectionRequest": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "读取目标标签时返回的版本标记，提交时原样传回；用于防止覆盖并发修改，过期返回 409 stale_version"
+          },
+          "tag_ids": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Tag Ids",
+            "description": "目标完整自定义标签内部 ID 集合，不含原生标签；未传入的现有自定义标签将解绑，空列表表示全部解绑"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "tag_ids"
+        ],
+        "title": "TagSelectionRequest",
+        "description": "作者提交的完整自定义标签集合。"
       },
       "TagStatItem-Input": {
         "properties": {
@@ -8322,6 +11079,91 @@
         "title": "TagStatsResponse",
         "description": "标签聚合统计的完整响应体"
       },
+      "TagUpdateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "description": "新的标签标准名，不含分类前缀；未传保持原值，不允许显式 null"
+          },
+          "category": {
+            "type": "integer",
+            "maximum": 7.0,
+            "minimum": 1.0,
+            "title": "Category",
+            "description": "分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法；未传保持原值，不允许显式 null"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "true=启用，false=停用；未传保持原值，不允许显式 null；恢复软删除标签需使用恢复接口"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "TagUpdateRequest",
+        "description": "部分更新名称、分类或启用状态，禁止空更新与显式空值。"
+      },
+      "TagVoteRequest": {
+        "properties": {
+          "vote": {
+            "type": "integer",
+            "enum": [
+              -1,
+              0,
+              1
+            ],
+            "title": "Vote",
+            "description": "当前挂标轮次的本人投票：1=赞，-1=踩，0=撤票；重复提交同值不重复计票"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vote"
+        ],
+        "title": "TagVoteRequest",
+        "description": "幂等设置单个轮次的当前投票。"
+      },
+      "TargetTagsResponse": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "标签集合版本标记；完整替换时原样传回，过期返回 409"
+          },
+          "tags": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/NativeTagSnapshotResponse-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/CustomTagSnapshotResponse-Output"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "source",
+                "mapping": {
+                  "custom": "#/components/schemas/CustomTagSnapshotResponse-Output",
+                  "discord": "#/components/schemas/NativeTagSnapshotResponse-Output"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "当前生效的原生和自定义标签；按 source 区分结构，无标签时为空数组"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "tags"
+        ],
+        "title": "TargetTagsResponse",
+        "description": "目标当前标签集合及并发校验版本。"
+      },
       "ThreadDetail-Input": {
         "properties": {
           "thread_id": {
@@ -8424,6 +11266,14 @@
             "type": "array",
             "title": "Tags",
             "description": "帖子关联的标签列表"
+          },
+          "custom_tags": {
+            "items": {
+              "$ref": "#/components/schemas/CustomTagBindingResponse"
+            },
+            "type": "array",
+            "title": "Custom Tags",
+            "description": "帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
           },
           "virtual_tags": {
             "items": {
@@ -8591,6 +11441,14 @@
             "type": "array",
             "title": "Tags",
             "description": "帖子关联的标签列表"
+          },
+          "custom_tags": {
+            "items": {
+              "$ref": "#/components/schemas/CustomTagBindingResponse"
+            },
+            "type": "array",
+            "title": "Custom Tags",
+            "description": "帖子当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
           },
           "virtual_tags": {
             "items": {
@@ -9559,6 +12417,27 @@
         "type": "object",
         "title": "UserPreferencesUpdateRequest",
         "description": "用于更新用户搜索偏好设置的 API 请求模型"
+      },
+      "UserRole": {
+        "properties": {
+          "is_management_member": {
+            "type": "boolean",
+            "title": "Is Management Member",
+            "description": "是否拥有主服务器配置的管理组身份组；与 BOT 管理员身份独立判断"
+          },
+          "is_bot_admin": {
+            "type": "boolean",
+            "title": "Is Bot Admin",
+            "description": "当前 Discord 用户 ID 是否在服务端 bot_admin_user_ids 配置中"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_management_member",
+          "is_bot_admin"
+        ],
+        "title": "UserRole",
+        "description": "当前登录用户在主服务器的管理身份。"
       },
       "ValidationError": {
         "properties": {

@@ -9,6 +9,7 @@
  */
 
 import {
+  addToken,
   migrateLegacySyntax,
   setSingletonToken,
   tokenizeSearchPayload,
@@ -36,6 +37,8 @@ export interface SearchParams {
   page: number;
   includeTags: string[];
   excludeTags: string[];
+  includeTagIds?: string[];
+  excludeTagIds?: string[];
   includeAuthors: string[];
   excludeAuthors: string[];
   tagLogic: TagLogic;
@@ -88,7 +91,14 @@ function hasTextSearch(query: string) {
 }
 
 export function parseParams(sp: URLSearchParams): SearchParams {
-  const rawQuery = normalizeQuery(sp.get("q") || "");
+  let rawQuery = normalizeQuery(sp.get("q") || "");
+  for (const [field, mode] of [["include_tag_ids", "include"], ["exclude_tag_ids", "exclude"]] as const) {
+    const existing = tokenizeSearchPayload(rawQuery);
+    const ids = mode === "include" ? existing.includeTagIds : existing.excludeTagIds;
+    for (const id of sp.getAll(field)) {
+      if (/^[1-9][0-9]*$/.test(id) && !ids.includes(id)) rawQuery = addToken(rawQuery, "tagid", id, mode);
+    }
+  }
   const rawTokenized = tokenizeSearchPayload(rawQuery);
   const strippedQuery = stripChannelTokens(rawQuery);
   const legacyTimeFrom = sp.get("time_from") || "";
@@ -124,6 +134,8 @@ export function parseParams(sp: URLSearchParams): SearchParams {
     page,
     includeTags: tokenized.includeTags,
     excludeTags: tokenized.excludeTags,
+    includeTagIds: tokenized.includeTagIds,
+    excludeTagIds: tokenized.excludeTagIds,
     includeAuthors: tokenized.includeAuthors,
     excludeAuthors: tokenized.excludeAuthors,
     tagLogic,
@@ -138,7 +150,6 @@ export function serializeParams(
   params: Partial<SearchParams>,
 ): URLSearchParams {
   const sp = new URLSearchParams();
-
   if (params.query) sp.set("q", normalizeQuery(params.query));
   if (params.channel) sp.set("channel", params.channel);
   if (params.type && params.type !== "thread") sp.set("type", params.type);
@@ -163,7 +174,8 @@ export function useSearchURLParams() {
       const current = parseParams(searchParams);
       const shouldResetPage =
         updates.page === undefined &&
-        ((updates.query !== undefined && updates.query !== current.query) ||
+        ((updates.includeTagIds !== undefined || updates.excludeTagIds !== undefined) ||
+          (updates.query !== undefined && updates.query !== current.query) ||
           (updates.channel !== undefined && updates.channel !== current.channel) ||
           (updates.type !== undefined && updates.type !== current.type) ||
           (updates.sortMethod !== undefined && updates.sortMethod !== current.sortMethod) ||
@@ -203,6 +215,8 @@ export function useSearchURLParams() {
         setSearchTagLogicPreference(updates.tagLogic);
       }
       const isSignificantChange =
+        updates.includeTagIds !== undefined ||
+        updates.excludeTagIds !== undefined ||
         (updates.query !== undefined && updates.query !== current.query) ||
         (updates.channel !== undefined && updates.channel !== current.channel) ||
         (updates.type !== undefined && updates.type !== current.type) ||
@@ -224,6 +238,8 @@ export function useSearchURLParams() {
       params.channel ||
       params.includeTags.length > 0 ||
       params.excludeTags.length > 0 ||
+      (params.includeTagIds?.length ?? 0) > 0 ||
+      (params.excludeTagIds?.length ?? 0) > 0 ||
       params.includeAuthors.length > 0 ||
       params.excludeAuthors.length > 0 ||
       params.timeFrom ||

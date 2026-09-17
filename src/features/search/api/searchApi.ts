@@ -22,6 +22,8 @@ export interface SearchUIRequest {
   channel_ids?: Array<number | string> | null;
   include_tags?: string[];
   exclude_tags?: string[];
+  include_tag_ids?: string[];
+  exclude_tag_ids?: string[];
   include_authors?: Array<number | string>;
   exclude_authors?: Array<number | string>;
   tag_logic?: 'and' | 'or';
@@ -159,12 +161,16 @@ function buildSearchRequest(params: SearchUIRequest): ApiSearchParams {
 
   const includeTags = dedupeStrings([...(params.include_tags || []), ...tokenized.includeTags]);
   const excludeTags = dedupeStrings([...(params.exclude_tags || []), ...tokenized.excludeTags]);
+  const includeTagIds = dedupeStrings([...(params.include_tag_ids ?? []), ...tokenized.includeTagIds]);
+  const excludeTagIds = dedupeStrings([...(params.exclude_tag_ids ?? []), ...tokenized.excludeTagIds]);
 
   const requestBody: Partial<ApiSearchParams> = {
     guild_id: params.guild_id,
     channel_ids: toApiIntIdList(channel_ids) || undefined,
     include_tags: includeTags.length > 0 ? includeTags : undefined,
     exclude_tags: excludeTags.length > 0 ? excludeTags : undefined,
+    include_tag_ids: includeTagIds.length ? includeTagIds : undefined,
+    exclude_tag_ids: excludeTagIds.length ? excludeTagIds : undefined,
     tag_logic: params.tag_logic === 'or' ? 'or' : (params.tag_logic === 'and' ? 'and' : undefined),
     keywords: buildKeywordString(tokenized.text, includeAuthorNames) || undefined,
     include_authors: toApiIntIdList(includeAuthorIds) || undefined,

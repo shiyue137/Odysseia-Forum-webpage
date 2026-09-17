@@ -1,6 +1,8 @@
 import { ThreadAchievementTag } from "@/entities/thread/ThreadAchievementTag";
 import { ThreadTagItem } from "@/features/threads/components/ThreadTagItem";
 import type { Thread } from "@/entities/thread/types";
+import { CustomTagChip } from "@/features/tags/components/CustomTagChip";
+import { customTagsEnabled } from "@/shared/config/tags";
 
 interface ThreadTagListProps {
   thread: Thread;
@@ -21,6 +23,7 @@ export function ThreadTagList({
   onTagClick,
   variant,
 }: ThreadTagListProps) {
+  const custom = customTagsEnabled ? thread.custom_tags ?? [] : [];
   const handleTagClick = (tag: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
     onTagClick?.(tag);
@@ -28,7 +31,7 @@ export function ThreadTagList({
 
   if (variant === "card") {
     const hasContent =
-      thread.reaction_count >= 100 ||
+      custom.length > 0 || thread.reaction_count >= 100 ||
       thread.tags.length > 0 ||
       virtualOnlyTags.length > 0;
     if (!hasContent) return null;
@@ -39,6 +42,8 @@ export function ThreadTagList({
           reactionCount={thread.reaction_count}
           variant="card"
         />
+        {custom.slice(0, 3).map((tag) => <CustomTagChip key={tag.id} tag={tag} />)}
+        {custom.length > 3 && <span className="text-[10px] text-(--od-accent)">+{custom.length - 3}</span>}
         {thread.tags.slice(0, 3).map((tag) => (
           <ThreadTagItem
             key={tag}
@@ -68,11 +73,13 @@ export function ThreadTagList({
   }
 
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-(--od-text-tertiary) md:text-xs">
+    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-(--od-text-tertiary) md:text-[11px]">
       <ThreadAchievementTag
         reactionCount={thread.reaction_count}
         variant="list"
       />
+      {custom.slice(0, 4).map((tag) => <CustomTagChip key={tag.id} tag={tag} />)}
+      {custom.length > 4 && <span className="text-(--od-accent)">+{custom.length - 4}</span>}
       {thread.tags?.slice(0, 4).map((tag) => (
         <ThreadTagItem
           key={tag}

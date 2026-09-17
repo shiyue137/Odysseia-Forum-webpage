@@ -25,6 +25,9 @@ try:
             print(f"Successfully fetched and exported openapi.json to {output_path}")
             sys.exit(0)
 except Exception as err:
+    if '--remote-only' in sys.argv:
+        print(f"Remote fetch failed: {err}. Existing schema was not replaced.")
+        sys.exit(1)
     print(f"Remote fetch failed: {err}. Falling back to local backend module...")
 
 # 回退方案：从本地后端仓库导入

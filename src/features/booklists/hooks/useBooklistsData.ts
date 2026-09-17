@@ -21,6 +21,9 @@ import { notifyError, notifySuccess } from "@/features/mascot/lib/notify";
 import { extractErrorMessage } from "@/shared/lib/notify";
 
 export function useBooklistsList(params: {
+  includeTagIds?: string[];
+  excludeTagIds?: string[];
+  tagLogic?: "and" | "or";
   scope: BooklistScope;
   keywords?: string;
   sortMethod: number;
@@ -32,6 +35,9 @@ export function useBooklistsList(params: {
 }) {
   return useQuery({
     queryKey: booklistKeys.list({
+      includeTagIds: params.includeTagIds,
+      excludeTagIds: params.excludeTagIds,
+      tagLogic: params.tagLogic,
       scope: params.scope,
       keywords: params.keywords,
       sortMethod: params.sortMethod,
@@ -43,6 +49,9 @@ export function useBooklistsList(params: {
     queryFn: async ({ signal }) => {
       if (params.scope === "public") {
         return booklistsApi.listPublic({
+          includeTagIds: params.includeTagIds,
+          excludeTagIds: params.excludeTagIds,
+          tagLogic: params.tagLogic,
           keywords: params.keywords,
           sortMethod: params.sortMethod,
           pageIndex: params.pageIndex,
@@ -53,6 +62,9 @@ export function useBooklistsList(params: {
       }
 
       return booklistsApi.listMine({
+        includeTagIds: params.includeTagIds,
+        excludeTagIds: params.excludeTagIds,
+        tagLogic: params.tagLogic,
         keywords: params.keywords,
         sortMethod: params.sortMethod,
         pageIndex: params.pageIndex,

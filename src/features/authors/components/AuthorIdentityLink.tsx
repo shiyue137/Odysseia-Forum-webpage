@@ -44,7 +44,7 @@ export function AuthorIdentityLink({
       {showAvatar && (
         <AuthorAvatar
           author={author}
-          className={`${avatarClassName} ring-1 ring-(--od-border-strong)/30 transition-[box-shadow] duration-200 group-hover/author:ring-(--od-accent) group-focus-visible/author:ring-(--od-accent)`}
+          className={`${avatarClassName} shrink-0 ring-1 ring-(--od-border-strong)/30 transition-[box-shadow] duration-200 group-hover/author:ring-(--od-accent) group-focus-visible/author:ring-(--od-accent)`}
         />
       )}
       {showName && (

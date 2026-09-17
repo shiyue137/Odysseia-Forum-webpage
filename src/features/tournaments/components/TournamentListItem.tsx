@@ -7,6 +7,7 @@ import { booklistsApi } from "@/features/booklists/api/booklistsApi";
 import { booklistKeys } from "@/features/booklists/lib/queryKeys";
 import { LazyImage } from "@/shared/ui/LazyImage";
 import { formatRelativeDateTime } from "@/shared/lib/dateTime";
+import { BooklistTagList } from "@/features/booklists/components/BooklistTagList";
 
 interface TournamentListItemProps {
   tournament: Tournament;
@@ -120,7 +121,9 @@ export function TournamentListItem({
             </p>
           </div>
 
-          <div className="mt-6 grid w-full max-w-lg grid-cols-3 gap-3 text-xs text-(--od-text-secondary)">
+          <div className="mt-6 w-full max-w-lg">
+          <BooklistTagList booklist={tournament} className="justify-center" />
+          <div className="grid w-full grid-cols-3 gap-3 text-xs text-(--od-text-secondary)">
             <span className="flex flex-col items-center gap-1">
               <span className="inline-flex items-center justify-center gap-1.5 text-(--od-text-tertiary)">
                 <BookOpen className="h-3.5 w-3.5" />
@@ -148,6 +151,7 @@ export function TournamentListItem({
                 {tournament.view_count}
               </strong>
             </span>
+          </div>
           </div>
         </div>
       </div>

@@ -13,11 +13,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   return (
     <label
       htmlFor={id}
-      className={`group relative inline-flex select-none items-start gap-2.5 ${
+      className={`group relative inline-flex select-none ${description ? 'items-start' : 'items-center'} gap-2.5 ${
         disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
       } ${className || ''}`}
     >
-      <div className="relative flex shrink-0 items-center justify-center pt-0.5">
+      <div className={`relative flex shrink-0 items-center justify-center ${description ? 'pt-0.5' : ''}`}>
         <input
           ref={ref}
           id={id}
@@ -30,9 +30,10 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
           {...props}
         />
         <div
-          className="flex h-4.5 w-4.5 items-center justify-center rounded-md border border-(--od-border-strong) bg-(--od-surface-input) text-white transition-all duration-200 peer-checked:border-(--od-accent) peer-checked:bg-(--od-accent) peer-focus-visible:ring-2 peer-focus-visible:ring-(--od-accent) peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-(--od-bg) group-hover:border-(--od-accent)/60"
+          aria-hidden="true"
+          className="flex h-5 w-5 items-center justify-center rounded-full border border-(--od-border-strong) bg-(--od-surface-input) text-(--od-accent) transition-colors duration-150 peer-checked:border-(--od-accent) peer-checked:bg-(--od-accent)/15 peer-checked:[&>svg]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-(--od-accent) peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-(--od-bg) group-hover:border-(--od-accent)/60"
         >
-          <Check className={`h-3.5 w-3.5 stroke-[3] transition-opacity duration-150 ${checked ? 'opacity-100' : 'opacity-0'}`} />
+          <Check className="h-3.5 w-3.5 stroke-[2.5] opacity-0 transition-opacity duration-150" />
         </div>
       </div>
 

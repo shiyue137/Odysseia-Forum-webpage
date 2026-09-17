@@ -3,6 +3,7 @@ dist
 .env
 .env.*
 !.env.example
+!.env.tag-test
 !.env.production
 .DS_Store
 .kilo/

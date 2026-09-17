@@ -13,6 +13,19 @@ vi.mock("@/shared/api/client", () => ({
 describe("booklistsApi", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("公开与个人书单使用重复参数传递完整标签 ID", async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ data: { results: [] } });
+    const params = { includeTagIds: ["90071992547409931", "2"], excludeTagIds: ["3"], tagLogic: "or" as const };
+    await booklistsApi.listPublic(params);
+    await booklistsApi.listMine(params);
+    for (const path of ["/booklist/list/page", "/booklist/my/list/page"]) {
+      expect(apiClient.get).toHaveBeenCalledWith(path, expect.objectContaining({
+        paramsSerializer: { indexes: null },
+        params: expect.objectContaining({ include_tag_ids: params.includeTagIds, exclude_tag_ids: ["3"], tag_logic: "or" }),
+      }));
+    }
+  });
+
   it("marks a thread while keeping the quick list limited to 18 booklists", async () => {
     vi.mocked(apiClient.get).mockResolvedValue({ data: { results: [] } });
     const controller = new AbortController();

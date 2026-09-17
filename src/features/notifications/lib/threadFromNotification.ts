@@ -2,7 +2,7 @@ import type { Thread } from "@/entities/thread/types";
 import type { DynamicNotification } from "@/features/notifications/api/notificationsApi";
 
 export function threadFromNotification(
-  thread: DynamicNotification["thread"],
+  thread: NonNullable<DynamicNotification["thread"]>,
 ): Thread {
   return {
     ...thread,

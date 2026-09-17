@@ -1,6 +1,6 @@
 // 搜索语法 Token 解析与协议转换工具
 
-export type TokenType = 'tag' | 'author' | 'channel' | 'date' | 'likes' | 'replies' | 'text';
+export type TokenType = 'tag' | 'tagid' | 'author' | 'channel' | 'date' | 'likes' | 'replies' | 'text';
 export type SearchTokenMode = 'include' | 'exclude';
 
 export interface SearchToken {
@@ -16,6 +16,8 @@ export interface TokenizedSearchPayload {
   text: string;
   includeTags: string[];
   excludeTags: string[];
+  includeTagIds: string[];
+  excludeTagIds: string[];
   includeAuthors: string[];
   excludeAuthors: string[];
   channels: string[];
@@ -27,6 +29,24 @@ export interface TokenizedSearchPayload {
 
 const DATE_RANGE_PATTERN = /^(\d{4}-\d{2}-\d{2})?\.\.(\d{4}-\d{2}-\d{2})?$/;
 const MINIMUM_PATTERN = /^(\d+)\+$/;
+
+export function parseTagIdentity(value: string) {
+  const match = /^([1-9][0-9]*)(?:\|(.*))?$/.exec(value);
+  if (!match) return null;
+  try {
+    return { id: match[1], name: match[2] ? decodeURIComponent(match[2]) : `#${match[1]}` };
+  } catch {
+    return null;
+  }
+}
+
+export function tagTokenLabel(token: SearchToken) {
+  return token.type === 'tagid' ? parseTagIdentity(token.value)!.name : token.value;
+}
+
+export function customTagSearchQuery(tag: { id: string; name: string }) {
+  return addToken('', 'tagid', `${tag.id}|${encodeURIComponent(tag.name)}`);
+}
 
 function isValidDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -68,12 +88,13 @@ export function parseSearchQuery(query: string): SearchToken[] {
   const tokens: SearchToken[] = [];
 
   // 支持可选负号前缀，例如 -$tag:xxx$
-  const tokenRegex = /(-)?\$(tag|author|channel|date|likes|replies):([^$]+)\$/g;
+  const tokenRegex = /(-)?\$(tag|tagid|author|channel|date|likes|replies):([^$]+)\$/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
   while ((match = tokenRegex.exec(query)) !== null) {
     const [fullMatch, negativeFlag, type, value] = match;
+    if (type === 'tagid' && !parseTagIdentity(value.trim())) continue;
     const start = match.index;
     const end = start + fullMatch.length;
 
@@ -251,6 +272,8 @@ export function tokenizeSearchPayload(query: string): TokenizedSearchPayload {
     text,
     includeTags: dedupe(includeTags),
     excludeTags: dedupe(excludeTags),
+    includeTagIds: dedupe(tokens.filter((token) => token.type === 'tagid' && token.mode === 'include').map((token) => parseTagIdentity(token.value)!.id)),
+    excludeTagIds: dedupe(tokens.filter((token) => token.type === 'tagid' && token.mode === 'exclude').map((token) => parseTagIdentity(token.value)!.id)),
     includeAuthors: dedupe(includeAuthors),
     excludeAuthors: dedupe(excludeAuthors),
     channels: dedupe(channels),
