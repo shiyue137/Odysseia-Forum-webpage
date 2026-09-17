@@ -111,7 +111,7 @@ function TagAdminActions({ tag }: { tag: PoolTag }) {
     }
     <p className="break-all text-xs text-(--od-text-tertiary)">ID：{tag.id}</p>
     <button className={action} onClick={() => setAuditOpen(!auditOpen)} aria-expanded={auditOpen}>管理记录</button>
-    {auditOpen && <div className="space-y-2 text-xs">{audit.data?.pages.flat().map((item) => <p key={item.id}>{new Date(item.created_at).toLocaleString()} · {item.type} · {item.actor_id ?? "系统"}</p>)}
+    {auditOpen && <div className="space-y-2 text-xs">{audit.data?.pages?.flat().map((item) => <p key={item.id}>{new Date(item.created_at).toLocaleString()} · {item.type} · {item.actor_id ?? "系统"}</p>)}
       {audit.isError && <p role="alert">{tagError(audit.error).message}</p>}
       {audit.hasNextPage && <button className={action} disabled={audit.isFetchingNextPage} onClick={() => void audit.fetchNextPage()}>更多记录</button>}
     </div>}

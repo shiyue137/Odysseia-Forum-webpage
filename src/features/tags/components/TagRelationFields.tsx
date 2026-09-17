@@ -46,7 +46,7 @@ function RelationField({ label, ids, selfId, tags, onChange }: {
     initialPageParam: 0,
     getNextPageParam: (page, pages) => page.length === 100 ? pages.flat().length : undefined,
   });
-  const candidates = results.data?.pages.flat().filter((tag) => tag.source === "custom" && tag.id !== selfId) ?? [];
+  const candidates = results.data?.pages?.flat().filter((tag) => tag.source === "custom" && tag.id !== selfId) ?? [];
   return <div ref={fieldRef} className={`text-sm ${dragging ? "outline-2 outline-dashed outline-(--od-accent) outline-offset-4" : ""}`}
     onKeyDown={(event) => { if (event.key === "Escape" && open) { event.stopPropagation(); setOpen(false); } }}
     onDragOver={(event) => {

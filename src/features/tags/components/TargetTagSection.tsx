@@ -45,10 +45,11 @@ export function TargetTagSection({ target, ownerId, children, onSearch, targetLa
   const custom = (snapshot.data?.tags ?? []).filter((tag): tag is CustomTagSnapshot => tag.binding_source === "local");
   // ponytail: 申请 API 暂缺名称；仅复用已加载数据，后端补充 tag_name 后移除此查询缓存查找。
   const proposalNames = new Map<string, string>();
-  for (const [, data] of client.getQueriesData<InfiniteData<PoolItem[]>>({
+  for (const [, data] of client.getQueriesData<InfiniteData<PoolItem[]> | PoolItem[]>({
     predicate: ({ queryKey }) => queryKey[0] === "custom-tags" && (queryKey[1] === "pool" || queryKey[1] === "relation-candidates"),
   })) {
-    for (const tag of data?.pages.flat() ?? []) proposalNames.set(tag.id, tag.name);
+    const list = Array.isArray(data) ? data : data?.pages?.flat() ?? [];
+    for (const tag of list) proposalNames.set(tag.id, tag.name);
   }
   for (const tag of snapshot.data?.tags ?? []) proposalNames.set(tag.id, tag.name);
   return <div className="mb-6 space-y-3">
@@ -79,8 +80,8 @@ export function TargetTagSection({ target, ownerId, children, onSearch, targetLa
             className={`od-pill-chip min-h-8 ${reviewQueue === option.value ? "bg-(--od-accent)/10 text-(--od-accent)" : "text-(--od-text-tertiary)"}`}>{option.label}</button>)}
       </div>}
       {proposals.isPending && <p role="status">正在读取申请…</p>}
-      {proposals.isSuccess && proposals.data.pages.flat().length === 0 && <p>暂无申请</p>}
-      {proposals.data?.pages.flat().map((proposal) => <div key={proposal.id} className="flex flex-wrap items-center gap-2 border-b border-(--od-border) pb-2">
+      {proposals.isSuccess && (proposals.data?.pages?.flat().length ?? 0) === 0 && <p>暂无申请</p>}
+      {proposals.data?.pages?.flat().map((proposal) => <div key={proposal.id} className="flex flex-wrap items-center gap-2 border-b border-(--od-border) pb-2">
         <span title={`标签 ID：${proposal.tag_id}`}>{proposalNames.get(proposal.tag_id) ?? `标签 #${proposal.tag_id}（名称未提供）`} · {{ pending: "待审核", approved: "已通过", rejected: "已拒绝", failed: "生效失败" }[proposal.status]}</span>
         <time dateTime={proposal.created_at}>{new Date(proposal.created_at).toLocaleString()}</time>
         {proposal.status === "pending" && <span>截止 {new Date(proposal.due_at).toLocaleString()}</span>}
