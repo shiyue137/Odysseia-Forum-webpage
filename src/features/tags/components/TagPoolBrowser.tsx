@@ -62,7 +62,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
   const selected = tags.find((tag) => tag.id === selectedId);
   // ponytail: 仅排序已加载的标签；完整分类排序需后端在分页前支持拼音排序。
   const visible = tags.filter((tag) =>
-    (category === "全部" || tag.category === category) &&
+    (category === "全部" ? tag.category !== "原生" : tag.category === category) &&
     (onFilter || !query.trim() || [tag.name, ...tag.aliases].some((name) => name.toLowerCase().includes(query.trim().toLowerCase()))),
   ).sort((a, b) => nameCollator.compare(a.name, b.name) || nameCollator.compare(a.id, b.id));
 
@@ -152,7 +152,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
   return (
     <div className="tag-pool-browser mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col">
       {!hideHeader && !onToggle && <header className="od-page-heading flex shrink-0 items-center justify-between gap-3">
-        <div><h1 className="text-xl font-semibold">标签池</h1><p className="mt-1 text-xs text-(--od-text-tertiary)">{onFilter ? "已加载 " : ""}{tags.length} 个标签 · {categories.filter((name) => name !== "原生").length} 个分类</p></div>
+        <div><h1 className="text-xl font-semibold">标签池</h1><p className="mt-1 text-xs text-(--od-text-tertiary)">{onFilter ? "已加载 " : ""}{tags.filter((t) => t.category !== "原生").length} 个标签 · {categories.filter((name) => name !== "原生").length} 个分类</p></div>
       </header>}
       {(canManage || toolbar) && <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 pb-5 pt-2">
         <div className="flex flex-wrap items-center gap-3 text-xs text-(--od-text-tertiary)">{toolbar}</div>

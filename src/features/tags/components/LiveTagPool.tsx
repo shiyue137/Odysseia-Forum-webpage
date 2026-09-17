@@ -41,12 +41,21 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
     getNextPageParam: (page, pages) => page.length === 100 ? pages.reduce((sum, items) => sum + items.length, 0) : undefined,
   });
   const items = pool.data?.pages.flat() ?? [];
-  const tags: PoolTag[] = items.map((item) => ({
-    id: item.id, name: item.name, category: item.category_name ?? "原生",
-    enabled: item.enabled, deleted: !!item.deleted_at, source: item.source, aliases: item.aliases,
-    parents: (relations.data ?? []).filter((edge) => edge.kind === "implies" && edge.source_id === item.id).map((edge) => edge.target_id),
-    excludes: (relations.data ?? []).filter((edge) => edge.kind === "excludes" && (edge.source_id === item.id || edge.target_id === item.id)).map((edge) => edge.source_id === item.id ? edge.target_id : edge.source_id),
-  }));
+  const filteredItems = onToggle ? items.filter((item) => item.source !== "discord") : items;
+  const seenDiscordNames = new Set<string>();
+  const tags: PoolTag[] = [];
+  for (const item of filteredItems) {
+    if (item.source === "discord") {
+      if (seenDiscordNames.has(item.name)) continue;
+      seenDiscordNames.add(item.name);
+    }
+    tags.push({
+      id: item.id, name: item.name, category: item.category_name ?? "原生",
+      enabled: item.enabled, deleted: !!item.deleted_at, source: item.source, aliases: item.aliases,
+      parents: (relations.data ?? []).filter((edge) => edge.kind === "implies" && edge.source_id === item.id).map((edge) => edge.target_id),
+      excludes: (relations.data ?? []).filter((edge) => edge.kind === "excludes" && (edge.source_id === item.id || edge.target_id === item.id)).map((edge) => edge.source_id === item.id ? edge.target_id : edge.source_id),
+    });
+  }
   const save = useMutation({
     mutationFn: async (tag: PoolTag) => {
       const categoryValue = categories.data?.find((item) => item.name === tag.category)?.value;
@@ -58,7 +67,7 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
   const errors = [categories.error, relations.error, pool.error, save.error].filter(Boolean);
   return <div className="flex h-full min-h-0 flex-col">
     {!onToggle && role.isError && <p role="alert" className="p-4 text-sm">管理身份读取失败：{tagError(role.error).message} <button className={action} onClick={() => void role.refetch()}>重试</button></p>}
-    <TagPoolBrowser tags={tags} categories={[...(categories.data ?? []).map((item) => item.name), "原生"]}
+    <TagPoolBrowser tags={tags} categories={[...(categories.data ?? []).map((item) => item.name), ...(!onToggle ? ["原生"] : [])]}
       parentEdges={relations.data?.filter((edge) => edge.kind === "implies")}
       hideHeader
       toolbar={canManage ? <Checkbox checked={includeDeleted} onChange={(e) => setIncludeDeleted(e.target.checked)} label="包含已删除标签" /> : undefined}
