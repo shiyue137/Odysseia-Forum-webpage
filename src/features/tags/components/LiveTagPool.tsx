@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { RotateCcw, Trash2 } from "lucide-react";
@@ -24,19 +24,12 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
   const role = useTagRole();
   const canManage = !onToggle && role.data?.is_bot_admin === true;
   const [includeDeleted, setIncludeDeleted] = useState(false);
-  const [filter, setFilter] = useState({ q: "", category: "全部" });
-  const [query, setQuery] = useState("");
-  useEffect(() => {
-    const timer = window.setTimeout(() => setQuery(filter.q), 250);
-    return () => window.clearTimeout(timer);
-  }, [filter.q]);
   const categories = useQuery({ queryKey: ["custom-tags", "categories"], queryFn: customTagsApi.categories });
   const relations = useQuery({ queryKey: ["custom-tags", "relations"], queryFn: customTagsApi.relations });
-  const category = categories.data?.find((item) => item.name === filter.category)?.value;
   const pool = useQuery({
-    queryKey: ["custom-tags", "pool", query, category, !!onToggle, includeDeleted && canManage],
+    queryKey: ["custom-tags", "pool", !!onToggle, includeDeleted && canManage],
     queryFn: ({ signal }) => customTagsApi.poolAll({
-      q: query, category, selectable: !!onToggle, include_deleted: includeDeleted && canManage,
+      q: "", selectable: !!onToggle, include_deleted: includeDeleted && canManage,
     }, signal),
   });
   const items = pool.data ?? [];
@@ -87,7 +80,6 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
       </div> : undefined}
       canManage={canManage} onSave={(tag) => save.mutateAsync(tag)} busy={busy || save.isPending}
       relationEditor={(draft, onChange) => <TagRelationFields draft={draft} tags={tags} onChange={onChange} />}
-      onFilter={(q, nextCategory) => setFilter({ q, category: nextCategory })}
       onSearch={(tag) => navigate(`/search?${new URLSearchParams({ q: customTagSearchQuery(tag) })}`)}
       selectedIds={selectedIds} disabledIds={disabledIds} onToggle={onToggle}
       extraDetails={canManage ? (tag) => tag.source === "custom" ? <TagAdminActions key={tag.id} tag={tag} /> : null : undefined}

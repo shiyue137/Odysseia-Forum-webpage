@@ -59,3 +59,22 @@ it("未修改的编辑直接离开，修改后的草稿才要求确认", () => {
   expect(screen.getByRole("textbox", { name: "标准名" })).toHaveValue("新名字");
   confirm.mockRestore();
 });
+
+it("搜索时即时过滤结果，输入框保持输入内容，且全部标签下不含原生标签", () => {
+  const tags: PoolTag[] = [
+    { id: "1", name: "魔法少女", category: "特质", parents: [], excludes: [], aliases: ["魔女"], enabled: true },
+    { id: "2", name: "魔法世界", category: "背景", parents: [], excludes: [], aliases: [], enabled: true },
+    { id: "3", name: "原生魔法", category: "原生", parents: [], excludes: [], aliases: [], enabled: true },
+  ];
+  render(<TagPoolBrowser tags={tags} categories={["特质", "背景", "原生"]} canManage={false} onSave={vi.fn()} />);
+
+  expect(screen.getByRole("button", { name: "魔法少女" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "魔法世界" })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "原生魔法" })).not.toBeInTheDocument();
+
+  const searchInput = screen.getByRole("textbox", { name: "搜索标签名称或别名" });
+  fireEvent.change(searchInput, { target: { value: "魔女" } });
+  expect(searchInput).toHaveValue("魔女");
+  expect(screen.getByRole("button", { name: /魔法少女/ })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /魔法世界/ })).not.toBeInTheDocument();
+});

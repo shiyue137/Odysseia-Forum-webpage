@@ -63,7 +63,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
   // ponytail: 仅排序已加载的标签；完整分类排序需后端在分页前支持拼音排序。
   const visible = tags.filter((tag) =>
     (category === "全部" ? tag.category !== "原生" : tag.category === category) &&
-    (onFilter || !query.trim() || [tag.name, ...tag.aliases].some((name) => name.toLowerCase().includes(query.trim().toLowerCase()))),
+    (!query.trim() || [tag.name, ...tag.aliases].some((name) => name.toLowerCase().includes(query.trim().toLowerCase()))),
   ).sort((a, b) => nameCollator.compare(a.name, b.name) || nameCollator.compare(a.id, b.id));
 
   function selectTag(tag: PoolTag) {
