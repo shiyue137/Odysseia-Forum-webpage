@@ -26,6 +26,17 @@ export const customTagsApi = {
   categories: async () => (await apiClient.get<Schema["TagCategoryResponse"][]>("/tags/categories")).data,
   pool: async (params: { q: string; category?: number; selectable: boolean; include_deleted: boolean; offset: number }, signal?: AbortSignal) =>
     (await apiClient.get<PoolItem[]>("/tags", { params, signal })).data,
+  poolAll: async (params: { q: string; category?: number; selectable: boolean; include_deleted: boolean }, signal?: AbortSignal) => {
+    let offset = 0;
+    const all: PoolItem[] = [];
+    while (true) {
+      const page = (await apiClient.get<PoolItem[]>("/tags", { params: { ...params, offset }, signal })).data;
+      all.push(...page);
+      if (page.length < 100) break;
+      offset += page.length;
+    }
+    return all;
+  },
   relations: async () => (await apiClient.get<TagRelation[]>("/tags/relations")).data,
   create: async (body: Schema["TagCreateRequest"]) => (await apiClient.post<Schema["TagResponse"]>("/tags", body)).data,
   update: async (id: string, body: Schema["TagUpdateRequest"]) => (await apiClient.patch<Schema["TagResponse"]>(`/tags/${id}`, body)).data,

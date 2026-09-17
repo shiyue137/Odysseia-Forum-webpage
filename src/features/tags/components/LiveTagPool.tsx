@@ -6,6 +6,7 @@ import { customTagsApi, tagError } from "../api/customTagsApi";
 import { useTagRole } from "../hooks/useTagRole";
 import { TagPoolBrowser, type PoolTag } from "./TagPoolBrowser";
 import { Checkbox } from "@/shared/ui/Checkbox";
+import { WordLoader } from "@/shared/ui/loaders/WordLoader";
 import { TagRelationFields } from "./TagRelationFields";
 import { savePoolTag } from "../lib/savePoolTag";
 import { customTagSearchQuery } from "@/shared/lib/searchTokenizer";
@@ -32,15 +33,13 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
   const categories = useQuery({ queryKey: ["custom-tags", "categories"], queryFn: customTagsApi.categories });
   const relations = useQuery({ queryKey: ["custom-tags", "relations"], queryFn: customTagsApi.relations });
   const category = categories.data?.find((item) => item.name === filter.category)?.value;
-  const pool = useInfiniteQuery({
+  const pool = useQuery({
     queryKey: ["custom-tags", "pool", query, category, !!onToggle, includeDeleted && canManage],
-    queryFn: ({ pageParam, signal }) => customTagsApi.pool({
-      q: query, category, selectable: !!onToggle, include_deleted: includeDeleted && canManage, offset: pageParam,
+    queryFn: ({ signal }) => customTagsApi.poolAll({
+      q: query, category, selectable: !!onToggle, include_deleted: includeDeleted && canManage,
     }, signal),
-    initialPageParam: 0,
-    getNextPageParam: (page, pages) => page.length === 100 ? pages.reduce((sum, items) => sum + items.length, 0) : undefined,
   });
-  const items = pool.data?.pages.flat() ?? [];
+  const items = pool.data ?? [];
   const filteredItems = onToggle ? items.filter((item) => item.source !== "discord") : items;
   const seenDiscordNames = new Set<string>();
   const tags: PoolTag[] = [];
@@ -65,17 +64,27 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
     onSettled: () => client.invalidateQueries({ queryKey: ["custom-tags"] }),
   });
   const errors = [categories.error, relations.error, pool.error, save.error].filter(Boolean);
+
+  if (pool.isLoading || categories.isLoading) {
+    return (
+      <div className="flex h-full min-h-60 flex-1 flex-col items-center justify-center py-16">
+        <WordLoader className="scale-75 sm:scale-90 md:scale-100 opacity-90" />
+        <p className="mt-8 animate-pulse text-xs tracking-wider text-(--od-text-tertiary)">
+          正在载入标签池…
+        </p>
+      </div>
+    );
+  }
+
   return <div className="flex h-full min-h-0 flex-col">
     {!onToggle && role.isError && <p role="alert" className="p-4 text-sm">管理身份读取失败：{tagError(role.error).message} <button className={action} onClick={() => void role.refetch()}>重试</button></p>}
     <TagPoolBrowser tags={tags} categories={[...(categories.data ?? []).map((item) => item.name), ...(!onToggle ? ["原生"] : [])]}
       parentEdges={relations.data?.filter((edge) => edge.kind === "implies")}
       hideHeader
       toolbar={canManage ? <Checkbox checked={includeDeleted} onChange={(e) => setIncludeDeleted(e.target.checked)} label="包含已删除标签" /> : undefined}
-      listFooter={(pool.isFetching || pool.isError || pool.hasNextPage) && <div className="flex min-h-10 flex-wrap items-center justify-center gap-3 pt-4">
-        {pool.isFetching && <span role="status" className="text-xs text-(--od-text-tertiary)">正在加载…</span>}
-        {pool.isError && <button className={action} onClick={() => void pool.refetch()}>重新加载</button>}
-        {pool.hasNextPage && <button className={action} disabled={pool.isFetchingNextPage} onClick={() => void pool.fetchNextPage()}>加载更多标签</button>}
-      </div>}
+      listFooter={pool.isError ? <div className="flex min-h-10 items-center justify-center pt-4">
+        <button className={action} onClick={() => void pool.refetch()}>重新加载</button>
+      </div> : undefined}
       canManage={canManage} onSave={(tag) => save.mutateAsync(tag)} busy={busy || save.isPending}
       relationEditor={(draft, onChange) => <TagRelationFields draft={draft} tags={tags} onChange={onChange} />}
       onFilter={(q, nextCategory) => setFilter({ q, category: nextCategory })}
