@@ -38,7 +38,7 @@ beforeEach(() => {
 describe("帖子标签编辑", () => {
   it("申请记录优先展示已加载标签名称，未知名称明确保留 ID", async () => {
     vi.mocked(customTagsApi.proposals).mockResolvedValue(["7914", "9999"].map((id) => ({
-      id, tag_id: id, status: "pending", reason: null, created_at: "2026-09-15T01:00:00Z", due_at: "2026-09-22T01:00:00Z", resolved_at: null,
+      id, tag_id: id, tag_name: id === "7914" ? "兽耳" : "", status: "pending", reason: null, created_at: "2026-09-15T01:00:00Z", due_at: "2026-09-22T01:00:00Z", resolved_at: null,
     })));
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(["custom-tags", "pool", ""], { pages: [[{ id: "7914", name: "兽耳" }]], pageParams: [0] });
@@ -89,7 +89,7 @@ describe("帖子标签编辑", () => {
     expect(customTagsApi.replace).not.toHaveBeenCalled();
   });
   it("详情标签名称触发搜索，赞踩不触发搜索", async () => {
-    const tag = { id: "7914", name: "兽耳", source: "custom" as const, discord_tag_id: null, category: 1, category_name: "癖好", enabled: true, deleted_at: null, readonly: false as const, binding_id: "81", upvotes: 0, downvotes: 0, my_vote: 0 as const };
+    const tag = { id: "7914", name: "兽耳", source: "custom" as const, discord_tag_id: null, category: 1, category_name: "癖好", enabled: true, deleted_at: null, binding_source: "local" as const, readonly: false as const, binding_id: "81", upvotes: 0, downvotes: 0, my_vote: 0 as const };
     vi.mocked(customTagsApi.target).mockResolvedValue({ version: "v1", tags: [tag] });
     vi.mocked(customTagsApi.vote).mockResolvedValue({ version: "v2", tags: [tag] });
     mount();
@@ -130,7 +130,7 @@ describe("帖子标签编辑", () => {
     viewer.id = "reader";
     vi.mocked(customTagsApi.propose).mockImplementation(async (_target, id) => {
       if (id.endsWith("2")) throw new Error("停用");
-      return { id: "1", tag_id: id, status: "pending", reason: null, created_at: "", due_at: "", resolved_at: null };
+      return { id: "1", tag_id: id, tag_name: "测试标签", status: "pending", reason: null, created_at: "", due_at: "", resolved_at: null };
     });
     mount();
     await waitFor(() => expect(screen.getByRole("button", { name: "提议标签" })).toBeEnabled());

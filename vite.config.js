@@ -39,11 +39,6 @@ export default defineConfig(({ mode }) => {
                     target: env.VITE_BACKEND_URL || 'https://forum.shimmerday.top',
                     changeOrigin: true,
                     rewrite: (path) => path.replace(/^\/api/, ''),
-                    configure: mode === 'tag-test' ? (proxy) => {
-                        // Cookie 不按端口隔离；测试模式仅使用自己 origin 中的 Bearer token。
-                        proxy.on('proxyReq', (request) => request.removeHeader('cookie'));
-                        proxy.on('proxyRes', (response) => { delete response.headers['set-cookie']; });
-                    } : undefined,
                 },
             },
         },

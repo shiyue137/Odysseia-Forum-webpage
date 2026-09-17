@@ -6,6 +6,7 @@ type Schema = components["schemas"];
 export type PoolItem = Schema["TagPoolItemResponse-Output"];
 export type TagRelation = Schema["TagRelationResponse"];
 export type TargetTags = Schema["TargetTagsResponse"];
+export type CustomTagSnapshot = Schema["CustomTagSnapshotResponse-Output"];
 export type TagTarget = { type: "thread" | "booklist"; id: string };
 const targetPath = (target: TagTarget) => `/tags/${target.type}/${encodeURIComponent(target.id)}`;
 

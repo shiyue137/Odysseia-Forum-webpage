@@ -1,6 +1,8 @@
 import json
 import os
+import ssl
 import sys
+import urllib.error
 import urllib.request
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +19,21 @@ try:
         remote_openapi_url,
         headers={'User-Agent': 'Odysseia-Web-Build/1.0'}
     )
-    with urllib.request.urlopen(req, timeout=10) as resp:
+    ssl_context = None
+    try:
+        ssl_context = ssl.create_default_context()
+    except Exception:
+        pass
+
+    try:
+        resp_cm = urllib.request.urlopen(req, timeout=10, context=ssl_context)
+    except urllib.error.URLError as e:
+        if "CERTIFICATE_VERIFY_FAILED" in str(e):
+            resp_cm = urllib.request.urlopen(req, timeout=10, context=ssl._create_unverified_context())
+        else:
+            raise
+
+    with resp_cm as resp:
         if resp.status == 200:
             openapi_data = json.loads(resp.read().decode('utf-8'))
             with open(output_path, 'w', encoding='utf-8') as f:

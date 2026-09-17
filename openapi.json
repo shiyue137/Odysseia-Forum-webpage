@@ -1165,8 +1165,10 @@
             "required": true,
             "schema": {
               "type": "integer",
+              "description": "要标记已读的通知内部 ID，取自通知列表的 id；仅可操作当前用户自己的通知",
               "title": "Notification Id"
-            }
+            },
+            "description": "要标记已读的通知内部 ID，取自通知列表的 id；仅可操作当前用户自己的通知"
           }
         ],
         "responses": {
@@ -1645,10 +1647,10 @@
                   "type": "null"
                 }
               ],
-              "description": "频道ID列表，可重复传入；不传则仅获取全局Banner",
+              "description": "频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终追加全局Banner",
               "title": "Channel Ids"
             },
-            "description": "频道ID列表，可重复传入；不传则仅获取全局Banner"
+            "description": "频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终追加全局Banner"
           },
           {
             "name": "channel_id",
@@ -2015,8 +2017,10 @@
                   "type": "null"
                 }
               ],
+              "description": "按书单自身绑定的标签内部 ID 筛选，不继承单内帖子的标签；多个值使用重复查询参数，接受十进制字符串或整数；按 tag_logic 组合",
               "title": "Include Tag Ids"
-            }
+            },
+            "description": "按书单自身绑定的标签内部 ID 筛选，不继承单内帖子的标签；多个值使用重复查询参数，接受十进制字符串或整数；按 tag_logic 组合"
           },
           {
             "name": "exclude_tag_ids",
@@ -2041,8 +2045,10 @@
                   "type": "null"
                 }
               ],
+              "description": "排除自身绑定任一指定标签的书单；传标签内部 ID，多个值使用重复查询参数，接受十进制字符串或整数",
               "title": "Exclude Tag Ids"
-            }
+            },
+            "description": "排除自身绑定任一指定标签的书单；传标签内部 ID，多个值使用重复查询参数，接受十进制字符串或整数"
           },
           {
             "name": "tag_logic",
@@ -2054,9 +2060,11 @@
                 "or"
               ],
               "type": "string",
+              "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件",
               "default": "and",
               "title": "Tag Logic"
-            }
+            },
+            "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件"
           },
           {
             "name": "owner_id",
@@ -2261,8 +2269,10 @@
                   "type": "null"
                 }
               ],
+              "description": "按书单自身绑定的标签内部 ID 筛选，不继承单内帖子的标签；多个值使用重复查询参数，接受十进制字符串或整数；按 tag_logic 组合",
               "title": "Include Tag Ids"
-            }
+            },
+            "description": "按书单自身绑定的标签内部 ID 筛选，不继承单内帖子的标签；多个值使用重复查询参数，接受十进制字符串或整数；按 tag_logic 组合"
           },
           {
             "name": "exclude_tag_ids",
@@ -2287,8 +2297,10 @@
                   "type": "null"
                 }
               ],
+              "description": "排除自身绑定任一指定标签的书单；传标签内部 ID，多个值使用重复查询参数，接受十进制字符串或整数",
               "title": "Exclude Tag Ids"
-            }
+            },
+            "description": "排除自身绑定任一指定标签的书单；传标签内部 ID，多个值使用重复查询参数，接受十进制字符串或整数"
           },
           {
             "name": "tag_logic",
@@ -2300,9 +2312,11 @@
                 "or"
               ],
               "type": "string",
+              "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件",
               "default": "and",
               "title": "Tag Logic"
-            }
+            },
+            "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件"
           },
           {
             "name": "is_public",
@@ -3247,7 +3261,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Categories",
+        "summary": "获取标签分类列表",
         "description": "返回稳定分类枚举。",
         "operationId": "categories_v1_tags_categories_get",
         "responses": {
@@ -3278,7 +3292,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Pool",
+        "summary": "搜索标签池",
         "description": "按标准名或别名分页搜索标签池。",
         "operationId": "pool_v1_tags_get",
         "security": [
@@ -3294,9 +3308,11 @@
             "schema": {
               "type": "string",
               "maxLength": 200,
+              "description": "标签搜索关键词：对标准名或别名进行不区分大小写的包含匹配；留空则不按名称筛选，返回标准名",
               "default": "",
               "title": "Q"
-            }
+            },
+            "description": "标签搜索关键词：对标准名或别名进行不区分大小写的包含匹配；留空则不按名称筛选，返回标准名"
           },
           {
             "name": "category",
@@ -3313,8 +3329,10 @@
                   "type": "null"
                 }
               ],
+              "description": "按分类筛选：1=癖好、2=作品、3=角色、4=特质、5=情节、6=背景、7=玩法；省略则包含所有分类及未分类标签",
               "title": "Category"
-            }
+            },
+            "description": "按分类筛选：1=癖好、2=作品、3=角色、4=特质、5=情节、6=背景、7=玩法；省略则包含所有分类及未分类标签"
           },
           {
             "name": "selectable",
@@ -3322,9 +3340,11 @@
             "required": false,
             "schema": {
               "type": "boolean",
+              "description": "是否仅返回已启用标签；true 为仅已启用，false 同时包含停用标签。是否包含软删除记录由 include_deleted 独立控制；不检查具体帖子的容量或挂标权限",
               "default": true,
               "title": "Selectable"
-            }
+            },
+            "description": "是否仅返回已启用标签；true 为仅已启用，false 同时包含停用标签。是否包含软删除记录由 include_deleted 独立控制；不检查具体帖子的容量或挂标权限"
           },
           {
             "name": "include_deleted",
@@ -3332,9 +3352,11 @@
             "required": false,
             "schema": {
               "type": "boolean",
+              "description": "是否包含软删除标签；默认不包含，传 true 仅限 BOT 管理员，仍受 selectable 等筛选条件约束",
               "default": false,
               "title": "Include Deleted"
-            }
+            },
+            "description": "是否包含软删除标签；默认不包含，传 true 仅限 BOT 管理员，仍受 selectable 等筛选条件约束"
           },
           {
             "name": "offset",
@@ -3343,9 +3365,11 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
+              "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等",
               "default": 0,
               "title": "Offset"
-            }
+            },
+            "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等"
           }
         ],
         "responses": {
@@ -3426,7 +3450,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Relations",
+        "summary": "获取标签关系列表",
         "description": "提供全部直接关系边，层级由前端计算。",
         "operationId": "relations_v1_tags_relations_get",
         "responses": {
@@ -3481,8 +3505,10 @@
                   "exclusiveMinimum": 0
                 }
               ],
+              "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0",
               "title": "Tag Id"
-            }
+            },
+            "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0"
           }
         ],
         "requestBody": {
@@ -3546,8 +3572,10 @@
                   "exclusiveMinimum": 0
                 }
               ],
+              "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0",
               "title": "Tag Id"
-            }
+            },
+            "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0"
           }
         ],
         "responses": {
@@ -3603,8 +3631,10 @@
                   "exclusiveMinimum": 0
                 }
               ],
+              "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0",
               "title": "Tag Id"
-            }
+            },
+            "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0"
           }
         ],
         "responses": {
@@ -3660,8 +3690,10 @@
                   "exclusiveMinimum": 0
                 }
               ],
+              "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0",
               "title": "Tag Id"
-            }
+            },
+            "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0"
           }
         ],
         "requestBody": {
@@ -3727,8 +3759,10 @@
                   "exclusiveMinimum": 0
                 }
               ],
+              "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0",
               "title": "Tag Id"
-            }
+            },
+            "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0"
           }
         ],
         "requestBody": {
@@ -3789,8 +3823,10 @@
                 "excludes"
               ],
               "type": "string",
+              "description": "关系类型：implies=包含或触发关系，excludes=互斥关系",
               "title": "Kind"
-            }
+            },
+            "description": "关系类型：implies=包含或触发关系，excludes=互斥关系"
           },
           {
             "name": "tag_id",
@@ -3807,8 +3843,10 @@
                   "exclusiveMinimum": 0
                 }
               ],
+              "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0",
               "title": "Tag Id"
-            }
+            },
+            "description": "标签实体的内部 ID，非 Discord 标签 ID；接受十进制字符串或整数，必须大于 0"
           },
           {
             "name": "target_tag_id",
@@ -3825,8 +3863,10 @@
                   "exclusiveMinimum": 0
                 }
               ],
+              "description": "关系另一端的标签内部 ID，非 Discord 标签 ID；implies 表示当前标签触发此标签，excludes 表示两者互斥；接受十进制字符串或整数，必须大于 0",
               "title": "Target Tag Id"
-            }
+            },
+            "description": "关系另一端的标签内部 ID，非 Discord 标签 ID；implies 表示当前标签触发此标签，excludes 表示两者互斥；接受十进制字符串或整数，必须大于 0"
           }
         ],
         "responses": {
@@ -3858,7 +3898,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Read",
+        "summary": "获取帖子或书单的标签",
         "description": "读取原生标签、自定义标签、票数和版本。",
         "operationId": "read_v1_tags__target_type___target_id__get",
         "security": [
@@ -3877,8 +3917,10 @@
                 "booklist"
               ],
               "type": "string",
+              "description": "绑定目标类型：thread=帖子，booklist=书单",
               "title": "Target Type"
-            }
+            },
+            "description": "绑定目标类型：thread=帖子，booklist=书单"
           },
           {
             "name": "target_id",
@@ -3893,8 +3935,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数",
               "title": "Target Id"
-            }
+            },
+            "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数"
           }
         ],
         "responses": {
@@ -3924,8 +3968,8 @@
         "tags": [
           "标签"
         ],
-        "summary": "Replace",
-        "description": "作者或管理组替换完整自定义标签集合。",
+        "summary": "替换帖子或书单的本地标签",
+        "description": "作者或管理组替换完整本地绑定集合；帖子限自定义实体，书单也可绑定 DC 实体。",
         "operationId": "replace_v1_tags__target_type___target_id__put",
         "security": [
           {
@@ -3943,8 +3987,10 @@
                 "booklist"
               ],
               "type": "string",
+              "description": "绑定目标类型：thread=帖子，booklist=书单",
               "title": "Target Type"
-            }
+            },
+            "description": "绑定目标类型：thread=帖子，booklist=书单"
           },
           {
             "name": "target_id",
@@ -3959,8 +4005,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数",
               "title": "Target Id"
-            }
+            },
+            "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数"
           }
         ],
         "requestBody": {
@@ -4002,7 +4050,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Propose",
+        "summary": "提议添加标签",
         "description": "提议一个标签，提交后开始七天审核期。",
         "operationId": "propose_v1_tags__target_type___target_id__proposals_post",
         "security": [
@@ -4021,8 +4069,10 @@
                 "booklist"
               ],
               "type": "string",
+              "description": "绑定目标类型：thread=帖子，booklist=书单",
               "title": "Target Type"
-            }
+            },
+            "description": "绑定目标类型：thread=帖子，booklist=书单"
           },
           {
             "name": "target_id",
@@ -4037,8 +4087,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数",
               "title": "Target Id"
-            }
+            },
+            "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数"
           }
         ],
         "requestBody": {
@@ -4078,7 +4130,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Proposals",
+        "summary": "获取标签申请历史或审核队列",
         "description": "读取本人申请或作者审核队列。",
         "operationId": "proposals_v1_tags__target_type___target_id__proposals_get",
         "security": [
@@ -4097,8 +4149,10 @@
                 "booklist"
               ],
               "type": "string",
+              "description": "绑定目标类型：thread=帖子，booklist=书单",
               "title": "Target Type"
-            }
+            },
+            "description": "绑定目标类型：thread=帖子，booklist=书单"
           },
           {
             "name": "target_id",
@@ -4113,8 +4167,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数",
               "title": "Target Id"
-            }
+            },
+            "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数"
           },
           {
             "name": "review_queue",
@@ -4122,9 +4178,11 @@
             "required": false,
             "schema": {
               "type": "boolean",
+              "description": "false 返回本人的标签申请历史（含各状态）；true 返回此目标的待审核申请，仅作者或有权限的管理人员可查",
               "default": false,
               "title": "Review Queue"
-            }
+            },
+            "description": "false 返回本人的标签申请历史（含各状态）；true 返回此目标的待审核申请，仅作者或有权限的管理人员可查"
           },
           {
             "name": "offset",
@@ -4133,9 +4191,11 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
+              "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等",
               "default": 0,
               "title": "Offset"
-            }
+            },
+            "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等"
           }
         ],
         "responses": {
@@ -4171,7 +4231,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Review",
+        "summary": "审核标签添加申请",
         "description": "同意或拒绝待审核提议。",
         "operationId": "review_v1_tags__target_type___target_id__proposals__proposal_id__put",
         "security": [
@@ -4190,8 +4250,10 @@
                 "booklist"
               ],
               "type": "string",
+              "description": "绑定目标类型：thread=帖子，booklist=书单",
               "title": "Target Type"
-            }
+            },
+            "description": "绑定目标类型：thread=帖子，booklist=书单"
           },
           {
             "name": "target_id",
@@ -4206,8 +4268,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数",
               "title": "Target Id"
-            }
+            },
+            "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数"
           },
           {
             "name": "proposal_id",
@@ -4222,8 +4286,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "标签添加申请的内部 ID，取自申请接口响应；接受十进制字符串或整数",
               "title": "Proposal Id"
-            }
+            },
+            "description": "标签添加申请的内部 ID，取自申请接口响应；接受十进制字符串或整数"
           }
         ],
         "requestBody": {
@@ -4265,7 +4331,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Vote",
+        "summary": "设置标签赞踩或撤票",
         "description": "设置赞、踩或撤票，旧轮次不可继续投票。",
         "operationId": "vote_v1_tags__target_type___target_id__votes__binding_id__put",
         "security": [
@@ -4284,8 +4350,10 @@
                 "booklist"
               ],
               "type": "string",
+              "description": "绑定目标类型：thread=帖子，booklist=书单",
               "title": "Target Type"
-            }
+            },
+            "description": "绑定目标类型：thread=帖子，booklist=书单"
           },
           {
             "name": "target_id",
@@ -4300,8 +4368,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数",
               "title": "Target Id"
-            }
+            },
+            "description": "目标 ID：帖子传 Discord 帖子 ID，书单传内部书单 ID；接受十进制字符串或整数"
           },
           {
             "name": "binding_id",
@@ -4316,8 +4386,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "本轮标签绑定 ID，取自标签快照的 binding_id，不是标签 ID；接受十进制字符串或整数，已结束轮次不能投票",
               "title": "Binding Id"
-            }
+            },
+            "description": "本轮标签绑定 ID，取自标签快照的 binding_id，不是标签 ID；接受十进制字符串或整数，已结束轮次不能投票"
           }
         ],
         "requestBody": {
@@ -4359,7 +4431,7 @@
         "tags": [
           "标签"
         ],
-        "summary": "Audit",
+        "summary": "查询标签操作记录",
         "description": "管理人员在授权范围内查询操作记录。",
         "operationId": "audit_v1_tags__target_type___target_id__audit_get",
         "security": [
@@ -4379,8 +4451,10 @@
                 "tag"
               ],
               "type": "string",
+              "description": "审计目标类型：thread=帖子，booklist=书单，tag=标签池实体；标签池审计仅 BOT 管理员可查",
               "title": "Target Type"
-            }
+            },
+            "description": "审计目标类型：thread=帖子，booklist=书单，tag=标签池实体；标签池审计仅 BOT 管理员可查"
           },
           {
             "name": "target_id",
@@ -4395,8 +4469,10 @@
                   "type": "integer"
                 }
               ],
+              "description": "审计目标 ID：thread 传 Discord 帖子 ID，booklist 传内部书单 ID，tag 传内部标签 ID；接受十进制字符串或整数",
               "title": "Target Id"
-            }
+            },
+            "description": "审计目标 ID：thread 传 Discord 帖子 ID，booklist 传内部书单 ID，tag 传内部标签 ID；接受十进制字符串或整数"
           },
           {
             "name": "offset",
@@ -4405,9 +4481,11 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
+              "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等",
               "default": 0,
               "title": "Offset"
-            }
+            },
+            "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等"
           }
         ],
         "responses": {
@@ -6227,7 +6305,7 @@
             },
             "type": "array",
             "title": "Custom Tags",
-            "description": "书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
+            "description": "书单自身当前生效的本地绑定标签列表（可包含 DC 标签实体），包含内部 ID、标准名、分类、绑定轮次及正负票数"
           },
           "description": {
             "anyOf": [
@@ -7163,7 +7241,7 @@
             },
             "type": "array",
             "title": "Custom Tags",
-            "description": "书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
+            "description": "书单自身当前生效的本地绑定标签列表（可包含 DC 标签实体），包含内部 ID、标准名、分类、绑定轮次及正负票数"
           },
           "description": {
             "anyOf": [
@@ -7331,7 +7409,7 @@
             },
             "type": "array",
             "title": "Custom Tags",
-            "description": "书单自身当前生效的自定义标签列表，包含内部 ID、标准名、分类、绑定轮次及正负票数"
+            "description": "书单自身当前生效的本地绑定标签列表（可包含 DC 标签实体），包含内部 ID、标准名、分类、绑定轮次及正负票数"
           },
           "description": {
             "anyOf": [
@@ -7761,10 +7839,18 @@
             "title": "Category Name",
             "description": "频道所属类别名称"
           },
+          "tag_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tag Ids",
+            "description": "该频道分组包含的全部标签内部 ID；tag_id 仅保留代表 ID 兼容旧端"
+          },
           "tag_id": {
             "type": "integer",
             "title": "Tag Id",
-            "description": "标签的 Discord ID（虚拟标签为 0）"
+            "description": "分组代表标签的内部 ID（虚拟标签为 0），完整集合见 tag_ids"
           },
           "thread_count": {
             "type": "integer",
@@ -7850,6 +7936,14 @@
             "title": "Category Name",
             "description": "频道所属类别名称"
           },
+          "tag_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tag Ids",
+            "description": "该频道分组包含的全部标签内部 ID；tag_id 仅保留代表 ID 兼容旧端"
+          },
           "tag_id": {
             "anyOf": [
               {
@@ -7860,7 +7954,7 @@
               }
             ],
             "title": "Tag Id",
-            "description": "标签的 Discord ID（虚拟标签为 0）"
+            "description": "分组代表标签的内部 ID（虚拟标签为 0），完整集合见 tag_ids"
           },
           "thread_count": {
             "type": "integer",
@@ -7897,20 +7991,37 @@
             "description": "标签标准名，不含分类前缀"
           },
           "category": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Category",
             "description": "分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法"
           },
           "category_name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Category Name",
             "description": "分类枚举对应的中文名称"
           },
           "source": {
             "type": "string",
-            "const": "custom",
+            "enum": [
+              "discord",
+              "custom"
+            ],
             "title": "Source",
-            "description": "标签来源，固定为 custom"
+            "description": "标签实体来源，与本地绑定来源独立"
           },
           "enabled": {
             "type": "boolean",
@@ -7946,7 +8057,7 @@
           "downvotes"
         ],
         "title": "CustomTagBindingResponse",
-        "description": "帖子或书单当前生效的自定义标签绑定信息。"
+        "description": "帖子或书单当前生效的本地标签绑定信息。"
       },
       "CustomTagSnapshotResponse-Input": {
         "properties": {
@@ -7962,9 +8073,12 @@
           },
           "source": {
             "type": "string",
-            "const": "custom",
+            "enum": [
+              "discord",
+              "custom"
+            ],
             "title": "Source",
-            "description": "来源固定为 custom"
+            "description": "标签实体来源，可为 discord 或 custom"
           },
           "discord_tag_id": {
             "anyOf": [
@@ -7976,7 +8090,7 @@
               }
             ],
             "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
           },
           "category": {
             "anyOf": [
@@ -7988,7 +8102,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生标签为空"
+            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
           },
           "category_name": {
             "anyOf": [
@@ -8000,7 +8114,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生标签为空"
+            "description": "分类中文名；原生及未分类转换标签为空"
           },
           "enabled": {
             "type": "boolean",
@@ -8020,6 +8134,12 @@
             "title": "Deleted At",
             "description": "软删除时间（UTC）；未删除时为空"
           },
+          "binding_source": {
+            "type": "string",
+            "const": "local",
+            "title": "Binding Source",
+            "description": "绑定来源，用于区分只读同步和本地治理"
+          },
           "readonly": {
             "type": "boolean",
             "const": false,
@@ -8062,6 +8182,7 @@
           "category_name",
           "enabled",
           "deleted_at",
+          "binding_source",
           "readonly",
           "binding_id",
           "upvotes",
@@ -8069,7 +8190,7 @@
           "my_vote"
         ],
         "title": "CustomTagSnapshotResponse",
-        "description": "目标上的自定义标签及当前用户投票。"
+        "description": "目标上的本地标签绑定及当前用户投票。"
       },
       "CustomTagSnapshotResponse-Output": {
         "properties": {
@@ -8085,9 +8206,12 @@
           },
           "source": {
             "type": "string",
-            "const": "custom",
+            "enum": [
+              "discord",
+              "custom"
+            ],
             "title": "Source",
-            "description": "来源固定为 custom"
+            "description": "标签实体来源，可为 discord 或 custom"
           },
           "discord_tag_id": {
             "anyOf": [
@@ -8099,7 +8223,7 @@
               }
             ],
             "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
           },
           "category": {
             "anyOf": [
@@ -8111,7 +8235,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生标签为空"
+            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
           },
           "category_name": {
             "anyOf": [
@@ -8123,7 +8247,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生标签为空"
+            "description": "分类中文名；原生及未分类转换标签为空"
           },
           "enabled": {
             "type": "boolean",
@@ -8142,6 +8266,12 @@
             "title": "Deleted At",
             "description": "软删除时间（UTC）；未删除时为空"
           },
+          "binding_source": {
+            "type": "string",
+            "const": "local",
+            "title": "Binding Source",
+            "description": "绑定来源，用于区分只读同步和本地治理"
+          },
           "readonly": {
             "type": "boolean",
             "const": false,
@@ -8184,6 +8314,7 @@
           "category_name",
           "enabled",
           "deleted_at",
+          "binding_source",
           "readonly",
           "binding_id",
           "upvotes",
@@ -8191,7 +8322,7 @@
           "my_vote"
         ],
         "title": "CustomTagSnapshotResponse",
-        "description": "目标上的自定义标签及当前用户投票。"
+        "description": "目标上的本地标签绑定及当前用户投票。"
       },
       "DiscoveryRailsResponse": {
         "properties": {
@@ -9109,7 +9240,7 @@
               }
             ],
             "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
           },
           "category": {
             "anyOf": [
@@ -9121,7 +9252,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生标签为空"
+            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
           },
           "category_name": {
             "anyOf": [
@@ -9133,7 +9264,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生标签为空"
+            "description": "分类中文名；原生及未分类转换标签为空"
           },
           "enabled": {
             "type": "boolean",
@@ -9153,6 +9284,12 @@
             "title": "Deleted At",
             "description": "软删除时间（UTC）；未删除时为空"
           },
+          "binding_source": {
+            "type": "string",
+            "const": "discord_sync",
+            "title": "Binding Source",
+            "description": "绑定来源，用于区分只读同步和本地治理"
+          },
           "readonly": {
             "type": "boolean",
             "const": true,
@@ -9170,6 +9307,7 @@
           "category_name",
           "enabled",
           "deleted_at",
+          "binding_source",
           "readonly"
         ],
         "title": "NativeTagSnapshotResponse",
@@ -9203,7 +9341,7 @@
               }
             ],
             "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
           },
           "category": {
             "anyOf": [
@@ -9215,7 +9353,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生标签为空"
+            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
           },
           "category_name": {
             "anyOf": [
@@ -9227,7 +9365,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生标签为空"
+            "description": "分类中文名；原生及未分类转换标签为空"
           },
           "enabled": {
             "type": "boolean",
@@ -9246,6 +9384,12 @@
             "title": "Deleted At",
             "description": "软删除时间（UTC）；未删除时为空"
           },
+          "binding_source": {
+            "type": "string",
+            "const": "discord_sync",
+            "title": "Binding Source",
+            "description": "绑定来源，用于区分只读同步和本地治理"
+          },
           "readonly": {
             "type": "boolean",
             "const": true,
@@ -9263,6 +9407,7 @@
           "category_name",
           "enabled",
           "deleted_at",
+          "binding_source",
           "readonly"
         ],
         "title": "NativeTagSnapshotResponse",
@@ -10082,7 +10227,7 @@
             "type": "integer",
             "minimum": 0.0,
             "title": "Offset",
-            "description": "结果的偏移数",
+            "description": "在筛选及排除条件生效后的结果中跳过的记录数，不是页码；默认 0。例如 limit=20 时前三页分别传 0、20、40，计算公式为（页码-1）×limit；若用 exclude_thread_ids 排除已加载帖子，通常保持 offset=0，避免重复跳过",
             "default": 0
           },
           "debug_timing": {
@@ -10172,6 +10317,14 @@
             "type": "array",
             "title": "Booklists",
             "description": "匹配的书单 (最多3个)"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagResponse"
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "匹配标准名或别名的可用标签，始终展示标准名"
           }
         },
         "type": "object",
@@ -10492,7 +10645,7 @@
               }
             ],
             "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
           },
           "category": {
             "anyOf": [
@@ -10504,7 +10657,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生标签为空"
+            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
           },
           "category_name": {
             "anyOf": [
@@ -10516,7 +10669,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生标签为空"
+            "description": "分类中文名；原生及未分类转换标签为空"
           },
           "enabled": {
             "type": "boolean",
@@ -10591,7 +10744,7 @@
               }
             ],
             "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
           },
           "category": {
             "anyOf": [
@@ -10603,7 +10756,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生标签为空"
+            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
           },
           "category_name": {
             "anyOf": [
@@ -10615,7 +10768,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生标签为空"
+            "description": "分类中文名；原生及未分类转换标签为空"
           },
           "enabled": {
             "type": "boolean",
@@ -10672,7 +10825,7 @@
               }
             ],
             "title": "Tag Id",
-            "description": "提议添加的自定义标签内部 ID，必须来自可用标签池"
+            "description": "提议添加的标签内部 ID，必须来自可用标签池；帖子仅允许自定义实体，书单也允许 DC 实体；接受十进制字符串或整数，非 Discord 标签 ID"
           }
         },
         "type": "object",
@@ -10693,6 +10846,11 @@
             "type": "string",
             "title": "Tag Id",
             "description": "提议标签内部 ID，以十进制字符串返回"
+          },
+          "tag_name": {
+            "type": "string",
+            "title": "Tag Name",
+            "description": "申请标签的当前标准名"
           },
           "status": {
             "type": "string",
@@ -10744,6 +10902,7 @@
         "required": [
           "id",
           "tag_id",
+          "tag_name",
           "status",
           "reason",
           "created_at",
@@ -10850,7 +11009,7 @@
               }
             ],
             "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；自定义标签为空"
+            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
           },
           "category": {
             "anyOf": [
@@ -10862,7 +11021,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生标签为空"
+            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
           },
           "category_name": {
             "anyOf": [
@@ -10874,7 +11033,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生标签为空"
+            "description": "分类中文名；原生及未分类转换标签为空"
           },
           "enabled": {
             "type": "boolean",
@@ -10944,7 +11103,7 @@
             "type": "array",
             "maxItems": 100,
             "title": "Tag Ids",
-            "description": "目标完整自定义标签内部 ID 集合，不含原生标签；未传入的现有自定义标签将解绑，空列表表示全部解绑"
+            "description": "目标完整本地绑定标签内部 ID 集合，接受十进制字符串或整数；帖子仅允许自定义实体，书单也允许 DC 实体；不提交 discord_sync 只读绑定，未传入的本地绑定将解绑，空列表清空本地绑定"
           }
         },
         "type": "object",
@@ -10953,7 +11112,7 @@
           "tag_ids"
         ],
         "title": "TagSelectionRequest",
-        "description": "作者提交的完整自定义标签集合。"
+        "description": "作者或管理组提交的完整本地绑定标签集合。"
       },
       "TagStatItem-Input": {
         "properties": {
@@ -10961,6 +11120,44 @@
             "type": "string",
             "title": "Tag Name",
             "description": "标签名称"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "统计分组来源：discord、custom 或 virtual",
+            "default": "discord"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "自定义分类；原生或未分类时为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名"
+          },
+          "tag_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tag Ids",
+            "description": "本组实体内部 ID，均为字符串；虚拟标签为空"
           },
           "total_thread_count": {
             "type": "integer",
@@ -10991,6 +11188,44 @@
             "type": "string",
             "title": "Tag Name",
             "description": "标签名称"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "统计分组来源：discord、custom 或 virtual",
+            "default": "discord"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "自定义分类；原生或未分类时为空"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "分类中文名"
+          },
+          "tag_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tag Ids",
+            "description": "本组实体内部 ID，均为字符串；虚拟标签为空"
           },
           "total_thread_count": {
             "type": "integer",
@@ -11144,16 +11379,16 @@
                 }
               ],
               "discriminator": {
-                "propertyName": "source",
+                "propertyName": "binding_source",
                 "mapping": {
-                  "custom": "#/components/schemas/CustomTagSnapshotResponse-Output",
-                  "discord": "#/components/schemas/NativeTagSnapshotResponse-Output"
+                  "discord_sync": "#/components/schemas/NativeTagSnapshotResponse-Output",
+                  "local": "#/components/schemas/CustomTagSnapshotResponse-Output"
                 }
               }
             },
             "type": "array",
             "title": "Tags",
-            "description": "当前生效的原生和自定义标签；按 source 区分结构，无标签时为空数组"
+            "description": "当前生效的原生和自定义标签；按 binding_source 区分结构，无标签时为空数组"
           }
         },
         "type": "object",

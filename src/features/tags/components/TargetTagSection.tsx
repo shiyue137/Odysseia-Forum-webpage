@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
 import { Check, ClipboardList, Pencil, Plus, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { customTagsApi, tagError, type TagTarget, type TargetTags, type PoolItem } from "../api/customTagsApi";
+import { customTagsApi, tagError, type TagTarget, type TargetTags, type PoolItem, type CustomTagSnapshot } from "../api/customTagsApi";
 import { useTagRole } from "../hooks/useTagRole";
 import { LiveTagPool } from "./LiveTagPool";
 import type { PoolTag } from "./TagPoolBrowser";
@@ -36,13 +36,13 @@ export function TargetTagSection({ target, ownerId, children, onSearch, targetLa
     onSuccess: (data) => { client.setQueryData(targetKey(target, user?.id), data.snapshot); setEditing(data); },
   });
   const proposals = useInfiniteQuery({
-    queryKey: ["custom-tags", "proposals", target.type, target.id, user?.id, canEdit && reviewQueue],
+    queryKey: ["custom-tags", "proposals", target.type, target.id, canEdit && reviewQueue],
     queryFn: ({ pageParam }) => customTagsApi.proposals(target, canEdit && reviewQueue, pageParam),
     enabled: historyOpen && isAuthenticated, initialPageParam: 0,
     getNextPageParam: (page, pages) => page.length === 100 ? pages.flat().length : undefined,
   });
   if (!isAuthenticated) return <div className="mb-6 flex flex-wrap gap-2">{children}</div>;
-  const custom = snapshot.data?.tags.filter((tag) => tag.source === "custom") ?? [];
+  const custom = (snapshot.data?.tags ?? []).filter((tag): tag is CustomTagSnapshot => tag.binding_source === "local");
   // ponytail: 申请 API 暂缺名称；仅复用已加载数据，后端补充 tag_name 后移除此查询缓存查找。
   const proposalNames = new Map<string, string>();
   for (const [, data] of client.getQueriesData<InfiniteData<PoolItem[]>>({

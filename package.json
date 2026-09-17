@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:tag-test": "vite --config vite.config.ts --mode tag-test --host 127.0.0.1 --port 3001 --strictPort",
     "build": "tsc -b && vite build",
     "build:analyze": "ANALYZE_BUNDLE=true vite build",
     "preview": "vite preview",
@@ -13,7 +12,6 @@
     "lint:ox": "oxlint . --deny-warnings",
     "lint:styles": "stylelint \"src/**/*.{css,tsx}\" --allow-empty-input",
     "gen:api": "python3 scripts/export_openapi.py && npx openapi-typescript openapi.json -o src/shared/types/openapi.d.ts",
-    "gen:api:tag-test": "VITE_BACKEND_URL=http://23.238.110.155:10810 python3 scripts/export_openapi.py --remote-only && pnpm exec openapi-typescript openapi.json -o src/shared/types/openapi.d.ts",
     "test": "vitest",
     "test:run": "vitest run --reporter=dot",
     "test:ui": "vitest --ui",
