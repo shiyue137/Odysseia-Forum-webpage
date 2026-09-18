@@ -5,13 +5,13 @@ import { TagRelationFields } from "./TagRelationFields";
 import type { PoolTag } from "./TagPoolBrowser";
 
 vi.mock("../api/customTagsApi", () => ({
-  customTagsApi: { pool: vi.fn(async () => [{ id: "12", name: "幻想", category_name: "背景", source: "custom" }]) },
+  customTagsApi: { pool: vi.fn(async () => [{ id: "12", name: "幻想", category_name: "背景", source: "discord" }]) },
   tagError: () => ({ message: "失败" }),
 }));
 
 it("空输入聚焦提供候选，选择与拖入只修改草稿，拒绝未知拖入 ID", async () => {
   const draft: PoolTag = { id: "11", name: "标签", category: "背景", parents: [], excludes: [], aliases: [], enabled: true };
-  const parent = { ...draft, id: "12", name: "幻想", source: "custom" as const };
+  const parent = { ...draft, id: "12", name: "幻想", source: "discord" as const };
   const onChange = vi.fn();
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
     <TagRelationFields draft={draft} tags={[parent]} onChange={onChange} />

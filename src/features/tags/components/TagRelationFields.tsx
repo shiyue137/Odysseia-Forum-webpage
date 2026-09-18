@@ -46,7 +46,7 @@ function RelationField({ label, ids, selfId, tags, onChange }: {
     initialPageParam: 0,
     getNextPageParam: (page, pages) => page.length === 100 ? pages.flat().length : undefined,
   });
-  const candidates = results.data?.pages?.flat().filter((tag) => tag.source === "custom" && tag.id !== selfId) ?? [];
+  const candidates = results.data?.pages?.flat().filter((tag) => tag.id !== selfId && !tag.deleted_at) ?? [];
   return <div ref={fieldRef} className={`text-sm ${dragging ? "outline-2 outline-dashed outline-(--od-accent) outline-offset-4" : ""}`}
     onKeyDown={(event) => { if (event.key === "Escape" && open) { event.stopPropagation(); setOpen(false); } }}
     onDragOver={(event) => {
@@ -59,7 +59,7 @@ function RelationField({ label, ids, selfId, tags, onChange }: {
       const id = event.dataTransfer.getData("application/x-odysseia-tag");
       if (!id) return;
       event.preventDefault();
-      const tag = tags.find((item) => item.id === id && item.source !== "discord" && !item.deleted);
+      const tag = tags.find((item) => item.id === id && !item.deleted);
       if (!tag || id === selfId || ids.includes(id)) return;
       setNames((current) => ({ ...current, [id]: tag.name }));
       onChange([...ids, id]);
@@ -77,7 +77,7 @@ function RelationField({ label, ids, selfId, tags, onChange }: {
     </label>
     {open && <div className="mt-2 flex max-h-44 flex-col gap-1 overflow-y-auto">
       {results.isFetching && <p role="status" className="py-2 text-xs text-(--od-text-tertiary)">正在查找…</p>}
-      {candidates.map((tag) => <Checkbox key={tag.id} className="flex min-h-10 items-center py-2" checked={ids.includes(tag.id)} label={`${tag.name} · ${tag.category_name}`}
+      {candidates.map((tag) => <Checkbox key={tag.id} className="flex min-h-10 items-center py-2" checked={ids.includes(tag.id)} label={`${tag.name} · ${tag.category_name ?? "未分类"}`}
         onChange={() => { setNames((current) => ({ ...current, [tag.id]: tag.name })); onChange(ids.includes(tag.id) ? ids.filter((id) => id !== tag.id) : [...ids, tag.id]); }} />)}
       {results.isSuccess && !candidates.length && <p className="py-2 text-xs text-(--od-text-tertiary)">没有匹配的标签</p>}
       {results.isError && <p role="alert" className="py-2 text-xs text-(--od-error)">{tagError(results.error).message}</p>}

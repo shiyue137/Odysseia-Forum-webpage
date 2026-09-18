@@ -60,21 +60,36 @@ it("未修改的编辑直接离开，修改后的草稿才要求确认", () => {
   confirm.mockRestore();
 });
 
-it("搜索时即时过滤结果，输入框保持输入内容，且全部标签下不含原生标签", () => {
+it("全部标签包含未分类的 DC 标准实体，搜索时即时过滤结果", () => {
   const tags: PoolTag[] = [
     { id: "1", name: "魔法少女", category: "特质", parents: [], excludes: [], aliases: ["魔女"], enabled: true },
     { id: "2", name: "魔法世界", category: "背景", parents: [], excludes: [], aliases: [], enabled: true },
-    { id: "3", name: "原生魔法", category: "原生", parents: [], excludes: [], aliases: [], enabled: true },
+    { id: "3", name: "原生魔法", source: "discord", category: "未分类", parents: [], excludes: [], aliases: [], enabled: true },
   ];
-  render(<TagPoolBrowser tags={tags} categories={["特质", "背景", "原生"]} canManage={false} onSave={vi.fn()} />);
+  render(<TagPoolBrowser tags={tags} categories={["特质", "背景", "未分类"]} canManage={false} onSave={vi.fn()} />);
 
   expect(screen.getByRole("button", { name: "魔法少女" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "魔法世界" })).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: "原生魔法" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "原生魔法" })).toBeInTheDocument();
 
   const searchInput = screen.getByRole("textbox", { name: "搜索标签名称或别名" });
   fireEvent.change(searchInput, { target: { value: "魔女" } });
   expect(searchInput).toHaveValue("魔女");
   expect(screen.getByRole("button", { name: /魔法少女/ })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /魔法世界/ })).not.toBeInTheDocument();
+});
+
+it("DC 标准实体可进入统一编辑和多选，保留多个来源明细", () => {
+  const tag: PoolTag = { id: "1", name: "纯爱", source: "discord", category: "未分类", parents: [], excludes: [], aliases: [], enabled: true,
+    discordSources: [{ id: "10", discord_tag_id: "111", channel_id: "222", name: "纯爱" }, { id: "11", discord_tag_id: "333", channel_id: "444", name: "纯爱" }] };
+  const onToggle = vi.fn();
+  render(<TagPoolBrowser tags={[tag]} categories={["癖好", "未分类"]} canManage onSave={vi.fn()} onToggle={onToggle} selectedIds={[]} />);
+  expect(screen.getByRole("checkbox", { name: "选择纯爱" })).toBeEnabled();
+  fireEvent.click(screen.getByRole("checkbox", { name: "选择纯爱" }));
+  expect(onToggle).toHaveBeenCalledWith(tag);
+  fireEvent.click(screen.getByRole("button", { name: "纯爱" }));
+  expect(screen.getByText("频道 222 · Discord 标签 111")).toBeInTheDocument();
+  expect(screen.getByText("频道 444 · Discord 标签 333")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "编辑" }));
+  expect(screen.getByRole("textbox", { name: "标准名" })).toHaveValue("纯爱");
 });

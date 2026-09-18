@@ -30,12 +30,13 @@ import {
   YESTERDAY_POPULAR_LABEL,
 } from "@/features/search/lib/searchPresets";
 import { chooseSuggestedTags } from "@/features/search/lib/searchDiscoveryTags";
+import type { components } from "@/shared/types/openapi";
 
 export type SearchSuggestionAction =
   | { type: "append"; value: string }
   | {
       type: "add_token";
-      tokenType: "tag" | "author";
+      tokenType: "tag" | "tagid" | "author";
       value: string;
       mode: "include" | "exclude";
     }
@@ -56,6 +57,7 @@ interface SearchSuggestionsProps {
   booklists?: ApiSearchSuggestionBooklist[];
   history?: SearchHistoryItem[];
   suggestedTags?: string[];
+  tagEntities?: components["schemas"]["TagResponse"][];
   preferredTags?: string[];
   onSelect: (action: SearchSuggestionAction) => void;
   onClose: () => void;
@@ -75,6 +77,7 @@ export function SearchSuggestions({
   booklists = [],
   history = [],
   suggestedTags = [],
+  tagEntities = [],
   preferredTags = [],
   onSelect,
   onClose,
@@ -117,11 +120,12 @@ export function SearchSuggestions({
       }
     | {
         key: string;
-        type: "tag" | "channel" | "author";
+        type: "tag" | "tagid" | "channel" | "author";
         display: string;
         value: string;
         icon: typeof Hash | typeof MessageCircle | typeof User | typeof Flame;
         avatar?: string | null;
+        sourceLabel?: string;
       }
     | {
         key: string;
@@ -209,20 +213,29 @@ export function SearchSuggestions({
       });
       flatItems.push(presetItem, ...popularTags);
     } else {
-      const relevantTags: SuggestionItem[] = availableTags
+      const payload = tokenizeSearchPayload(currentQuery);
+      const selectedIds = new Set([...payload.includeTagIds, ...payload.excludeTagIds]);
+      const standardNames = new Set(tagEntities.map((tag) => tag.name));
+      const standardTags: SuggestionItem[] = tagEntities.filter((tag) => !selectedIds.has(tag.id)).slice(0, 5).map((tag) => ({
+        key: `tag-id-${tag.id}`, type: "tagid", display: tag.name,
+        value: `${tag.id}|${encodeURIComponent(tag.name)}`, icon: Hash,
+        sourceLabel: tag.source === "discord" ? `DC · ${tag.discord_sources?.length ?? 0} 个来源` : tag.category_name ?? "未分类",
+      }));
+      const relevantTags: SuggestionItem[] = [...standardTags, ...availableTags
         .filter(
           (tag) =>
+            !standardNames.has(tag) &&
             !existingTagNames.includes(tag) &&
             tag.toLowerCase().includes(queryLower),
         )
         .slice(0, 5)
         .map((tag, index) => ({
           key: `tag-${tag}-${index}`,
-          type: "tag",
+          type: "tag" as const,
           display: tag,
           value: tag,
           icon: Hash,
-        }));
+        }))].slice(0, 5);
       if (relevantTags.length > 0) {
         sectionedGroups.push({
           title: "相关标签",
@@ -320,6 +333,7 @@ export function SearchSuggestions({
     randomTags,
     queryText,
     suggestedTags,
+    tagEntities,
     threads,
   ]);
 
@@ -350,7 +364,7 @@ export function SearchSuggestions({
       return;
     }
 
-    if (item.type === "tag" || item.type === "author") {
+    if (item.type === "tag" || item.type === "tagid" || item.type === "author") {
       onSelect({
         type: "add_token",
         tokenType: item.type,
@@ -481,6 +495,7 @@ export function SearchSuggestions({
                         <span className="truncate text-sm font-medium">
                           {item.display}
                         </span>
+                        {"sourceLabel" in item && item.sourceLabel && <span className="shrink-0 text-xs text-(--od-text-tertiary)">{item.sourceLabel}</span>}
                         {item.type === "history" &&
                           describeSearchHistoryContext(item.historyItem) && (
                             <span className="truncate text-[11px] text-(--od-text-tertiary)">
@@ -490,7 +505,7 @@ export function SearchSuggestions({
                       </div>
                     )}
 
-                    {(item.type === "tag" || item.type === "author") && (
+                    {(item.type === "tag" || item.type === "tagid" || item.type === "author") && (
                       <div className="flex shrink-0 items-center gap-1">
                         <button
                           type="button"

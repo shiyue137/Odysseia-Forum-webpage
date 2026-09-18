@@ -1,19 +1,25 @@
 import { customTagsApi, tagError, type TagRelation } from "../api/customTagsApi";
 import type { PoolTag } from "../components/TagPoolBrowser";
 
-export async function savePoolTag(draft: PoolTag, category: number): Promise<{ tag: PoolTag; error?: string }> {
+export async function savePoolTag(draft: PoolTag, category?: number, original?: PoolTag): Promise<{ tag: PoolTag; error?: string }> {
   let tag = { ...draft };
   let stage = "基本信息";
   try {
     const aliases = tag.aliases.map((name) => name.trim()).filter(Boolean);
     if (!tag.id) {
+      if (category === undefined) throw new Error("请选择有效分类");
       const created = await customTagsApi.create({ name: tag.name, category, aliases });
       // 后续步骤失败也保留新 ID，重试不得再次创建实体。
       tag = { ...tag, id: created.id };
     } else {
-      await customTagsApi.update(tag.id, { name: tag.name, category, enabled: tag.enabled });
+      const changes = {
+        ...(!original || original.name !== tag.name ? { name: tag.name } : {}),
+        ...(category !== undefined && (!original || original.category !== tag.category) ? { category } : {}),
+        ...(!original || original.enabled !== tag.enabled ? { enabled: tag.enabled } : {}),
+      };
+      if (Object.keys(changes).length) await customTagsApi.update(tag.id, changes);
       stage = "别名";
-      await customTagsApi.aliases(tag.id, aliases);
+      if (!original || JSON.stringify(original.aliases) !== JSON.stringify(aliases)) await customTagsApi.aliases(tag.id, aliases);
     }
     stage = "标签关系";
     const current = await customTagsApi.relations();

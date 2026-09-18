@@ -5,6 +5,7 @@ import { Checkbox } from "@/shared/ui/Checkbox";
 import { Select } from "@/shared/ui/Select";
 import { ContextMenu, ContextMenuTrigger, ContextMenuButton, ContextMenuContent, ContextMenuItem } from "@/shared/ui/ContextMenu";
 import { TagRelationTree, type ParentEdge } from "./TagRelationTree";
+import type { components } from "@/shared/types/openapi";
 
 export interface PoolTag {
   id: string;
@@ -16,6 +17,7 @@ export interface PoolTag {
   enabled: boolean;
   source?: "discord" | "custom";
   deleted?: boolean;
+  discordSources?: components["schemas"]["DiscordTagSourceResponse"][];
 }
 
 interface TagPoolBrowserProps {
@@ -62,7 +64,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
   const selected = tags.find((tag) => tag.id === selectedId);
   // ponytail: 仅排序已加载的标签；完整分类排序需后端在分页前支持拼音排序。
   const visible = tags.filter((tag) =>
-    (category === "全部" ? tag.category !== "原生" : tag.category === category) &&
+    (category === "全部" || tag.category === category) &&
     (!query.trim() || [tag.name, ...tag.aliases].some((name) => name.toLowerCase().includes(query.trim().toLowerCase()))),
   ).sort((a, b) => nameCollator.compare(a.name, b.name) || nameCollator.compare(a.id, b.id));
 
@@ -77,7 +79,9 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
   function createTag(parent?: PoolTag) {
     if (draftChanged && !window.confirm("放弃当前未保存的标签编辑？")) return;
     setSaveError("");
-    const next = { id: "", name: "", category: parent?.category ?? categories.find((name) => name !== "原生") ?? "", aliases: [], parents: parent ? [parent.id] : [], excludes: [], enabled: true };
+    const initialCategory = parent && parent.category !== "未分类"
+      ? parent.category : categories.find((name) => name !== "未分类") ?? "";
+    const next = { id: "", name: "", category: initialCategory, aliases: [], parents: parent ? [parent.id] : [], excludes: [], enabled: true };
     draftBaseline.current = JSON.stringify(next);
     setDraft(next);
     setMobileDetail(true);
@@ -90,11 +94,11 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
   }
 
   function selectionDisabled(tag: PoolTag) {
-    return busy || disabledIds?.includes(tag.id) || tag.source === "discord" || ((!tag.enabled || tag.deleted) && !selectedIds?.includes(tag.id));
+    return busy || disabledIds?.includes(tag.id) || ((!tag.enabled || tag.deleted) && !selectedIds?.includes(tag.id));
   }
 
   function renderRow(tag: PoolTag) {
-    const manageable = canManage && tag.source !== "discord" && !tag.deleted;
+    const manageable = canManage && !tag.deleted;
     const row = (
         <div
           draggable={manageable && !busy}
@@ -105,7 +109,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
           className={`tag-pool-row flex min-h-10 items-center rounded-md ${selectedId === tag.id ? "tag-pool-row-selected" : ""}`}
         >
           {onToggle && <Checkbox className="shrink-0 p-3" aria-label={`选择${tag.name}`}
-            checked={!!(selectedIds?.includes(tag.id) || disabledIds?.includes(tag.id) || tag.source === "discord")}
+            checked={!!(selectedIds?.includes(tag.id) || disabledIds?.includes(tag.id))}
             disabled={selectionDisabled(tag)}
             onChange={() => onToggle(tag)} />}
           {!onToggle && <span className="w-2 shrink-0" />}
@@ -141,7 +145,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
         const related = tags.find((tag) => tag.id === id);
         if (!related) return <span key={id} className="break-all text-xs text-(--od-text-tertiary)">标签 #{id}（未加载）</span>;
         return <div key={id} className="inline-flex items-center gap-1 rounded-full border border-(--od-border) px-2">
-          {selectable && onToggle && <Checkbox aria-label={`选择${related.name}`} checked={!!(selectedIds?.includes(id) || disabledIds?.includes(id) || related.source === "discord")}
+          {selectable && onToggle && <Checkbox aria-label={`选择${related.name}`} checked={!!(selectedIds?.includes(id) || disabledIds?.includes(id))}
             disabled={selectionDisabled(related)} onChange={() => onToggle(related)} />}
           <button type="button" className={buttonClass} onClick={() => selectTag(related)}>{related.name}<ChevronRight size={14} /></button>
         </div>;
@@ -152,7 +156,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
   return (
     <div className="tag-pool-browser mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col">
       {!hideHeader && !onToggle && <header className="od-page-heading flex shrink-0 items-center justify-between gap-3">
-        <div><h1 className="text-xl font-semibold">标签池</h1><p className="mt-1 text-xs text-(--od-text-tertiary)">{onFilter ? "已加载 " : ""}{tags.filter((t) => t.category !== "原生").length} 个标签 · {categories.filter((name) => name !== "原生").length} 个分类</p></div>
+        <div><h1 className="text-xl font-semibold">标签池</h1><p className="mt-1 text-xs text-(--od-text-tertiary)">{onFilter ? "已加载 " : ""}{tags.length} 个标签 · {categories.filter((name) => name !== "未分类").length} 个分类</p></div>
       </header>}
       {(canManage || toolbar) && <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 pb-5 pt-2">
         <div className="flex flex-wrap items-center gap-3 text-xs text-(--od-text-tertiary)">{toolbar}</div>
@@ -224,7 +228,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
               <fieldset disabled={busy}>
               <h2 className="mb-6 text-lg font-semibold">{draft.id ? "编辑标签" : "新增标签"}</h2>
               <label className="mb-5 block text-sm">标准名<input required maxLength={100} value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} className="od-ghost-input mt-2 min-h-11 w-full" /></label>
-              <div className="mb-5 text-sm"><label htmlFor="pool-tag-category">分类</label><Select id="pool-tag-category" value={draft.category} options={categories.filter((name) => name !== "原生").map((name) => ({ value: name, label: name }))} onChange={(category) => setDraft({ ...draft, category })} className="mt-2" /></div>
+              <div className="mb-5 text-sm"><label htmlFor="pool-tag-category">分类</label><Select id="pool-tag-category" value={draft.category} options={categories.filter((name) => name !== "未分类" || (!!draft.id && draft.category === "未分类")).map((name) => ({ value: name, label: name }))} onChange={(category) => setDraft({ ...draft, category })} className="mt-2" /></div>
               <label className="mb-5 block text-sm">别名<textarea rows={2} placeholder="每行一个别名" value={draft.aliases.join("\n")} onChange={(event) => setDraft({ ...draft, aliases: event.target.value.split("\n") })} className="od-ghost-input mt-2 w-full resize-none" /></label>
               {relationEditor?.(draft, setDraft)}
               {draft.id && <Checkbox className="mt-4" checked={draft.enabled} onChange={(event) => setDraft({ ...draft, enabled: event.target.checked })} label="启用" />}
@@ -238,6 +242,11 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
               <h2 className="mt-2 break-words text-xl font-semibold">{selected.name}</h2>
               <p className="mt-2 text-xs text-(--od-text-tertiary)">{selected.deleted ? "已删除" : selected.enabled ? "已启用" : "已停用"} · {selected.source === "discord" ? "Discord 原生标签" : "自定义标签"}</p>
               <dl className="mt-5 space-y-4">
+                {!!selected.discordSources?.length && <div><dt className="mb-2 text-xs text-(--od-text-tertiary)">DC 来源</dt><dd className="space-y-2">
+                  {selected.discordSources.map((source) => <div key={source.id} className="break-all text-xs">
+                    <span>{source.name}</span><span className="ml-2 text-(--od-text-tertiary)">频道 {source.channel_id} · Discord 标签 {source.discord_tag_id}</span>
+                  </div>)}
+                </dd></div>}
                 <div><dt className="mb-2 text-xs text-(--od-text-tertiary)">别名</dt><dd className="break-words text-sm">{selected.aliases.filter(Boolean).join(" · ") || "暂无"}</dd></div>
                 <div><dt className="mb-2 text-xs text-(--od-text-tertiary)">上级标签</dt><dd>{relationLinks(selected.parents, true)}</dd></div>
                 <div><dt className="mb-2 text-xs text-(--od-text-tertiary)">下级标签</dt><dd>{relationLinks(tags.filter((tag) => tag.parents.includes(selected.id)).map((tag) => tag.id), true)}</dd></div>
@@ -248,7 +257,7 @@ export function TagPoolBrowser({ tags, parentEdges, categories, canManage, onSav
                 onSelect={selectTag} />
               <div className="mt-5 flex flex-wrap gap-2">
                 {!onToggle && <button type="button" className={`${buttonClass} border border-(--od-border)`} onClick={() => onSearch ? onSearch(selected) : setSearchTarget(selected.name)}><Search size={17} />搜索相关帖子</button>}
-                {canManage && selected.source !== "discord" && !selected.deleted && <button type="button" className={buttonClass} onClick={() => { setSaveError(""); draftBaseline.current = JSON.stringify(selected); setDraft({ ...selected }); }}><Pencil size={16} />编辑</button>}
+                {canManage && !selected.deleted && <button type="button" className={buttonClass} onClick={() => { setSaveError(""); draftBaseline.current = JSON.stringify(selected); setDraft({ ...selected }); }}><Pencil size={16} />编辑</button>}
               </div>
               {extraDetails?.(selected)}
               {searchTarget && <p role="status" className="mt-4 break-words text-sm text-(--od-text-secondary)">模拟搜索：{searchTarget}（未发送请求）</p>}

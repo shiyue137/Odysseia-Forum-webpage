@@ -22,6 +22,9 @@ function axios429(retryAfter?: string, url = "/search/") {
 }
 
 describe("rateLimit", () => {
+  it("标签 ID 失效不自动重试原查询", () => {
+    expect(shouldRetryQuery(0, { isAxiosError: true, response: { status: 409, data: { detail: { code: "tags_changed" } } } })).toBe(false);
+  });
   beforeEach(() => resetRateLimitStateForTests());
 
   it("解析秒数和 HTTP 日期格式的 Retry-After", () => {

@@ -7,6 +7,7 @@ export type PoolItem = Schema["TagPoolItemResponse-Output"];
 export type TagRelation = Schema["TagRelationResponse"];
 export type TargetTags = Schema["TargetTagsResponse"];
 export type CustomTagSnapshot = Schema["CustomTagSnapshotResponse-Output"];
+export type MergePreview = Schema["TagMergePreviewResponse"];
 export type TagTarget = { type: "thread" | "booklist"; id: string };
 const targetPath = (target: TagTarget) => `/tags/${target.type}/${encodeURIComponent(target.id)}`;
 
@@ -24,9 +25,9 @@ export function tagError(error: unknown): { code?: string; message: string } {
 export const customTagsApi = {
   role: async () => (await apiClient.get<Schema["UserRole"]>("/meta/role")).data,
   categories: async () => (await apiClient.get<Schema["TagCategoryResponse"][]>("/tags/categories")).data,
-  pool: async (params: { q: string; category?: number; selectable: boolean; include_deleted: boolean; offset: number }, signal?: AbortSignal) =>
+  pool: async (params: { q: string; category?: number; source?: "custom" | "discord"; selectable: boolean; include_deleted: boolean; offset: number }, signal?: AbortSignal) =>
     (await apiClient.get<PoolItem[]>("/tags", { params, signal })).data,
-  poolAll: async (params: { q: string; category?: number; selectable: boolean; include_deleted: boolean }, signal?: AbortSignal) => {
+  poolAll: async (params: { q: string; category?: number; source?: "custom" | "discord"; selectable: boolean; include_deleted: boolean }, signal?: AbortSignal) => {
     let offset = 0;
     const all: PoolItem[] = [];
     while (true) {
@@ -38,6 +39,10 @@ export const customTagsApi = {
     return all;
   },
   relations: async () => (await apiClient.get<TagRelation[]>("/tags/relations")).data,
+  mergePreview: async (id: string, target_tag_id: string) =>
+    (await apiClient.get<MergePreview>(`/tags/${id}/merge-preview`, { params: { target_tag_id } })).data,
+  merge: async (id: string, body: Schema["TagMergeRequest"]) =>
+    (await apiClient.post<Schema["TagResponse"]>(`/tags/${id}/merge`, body)).data,
   create: async (body: Schema["TagCreateRequest"]) => (await apiClient.post<Schema["TagResponse"]>("/tags", body)).data,
   update: async (id: string, body: Schema["TagUpdateRequest"]) => (await apiClient.patch<Schema["TagResponse"]>(`/tags/${id}`, body)).data,
   aliases: async (id: string, aliases: string[]) => (await apiClient.put(`/tags/${id}/aliases`, { aliases })).data,

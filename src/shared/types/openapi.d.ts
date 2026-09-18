@@ -1145,6 +1145,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/tags/{tag_id}/merge-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 预检标签合并
+         * @description 仅 BOT 管理员可预检，返回影响数量及冲突，不修改数据。
+         */
+        get: operations["merge_preview_v1_tags__tag_id__merge_preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{tag_id}/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 合并同名标签
+         * @description 仅 BOT 管理员可执行，重新检查版本及冲突，保留历史审计。
+         */
+        post: operations["merge_tags_v1_tags__tag_id__merge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/tags/{tag_id}": {
         parameters: {
             query?: never;
@@ -3290,6 +3330,20 @@ export interface components {
              * @description 当前绑定轮次的负向票数
              */
             downvotes: number;
+            /**
+             * Binding Source
+             * @description 绑定来源固定为 local；即使标签来源为 DC，也按本地权限治理
+             * @default local
+             * @constant
+             */
+            binding_source: "local";
+            /**
+             * Readonly
+             * @description 本地绑定不是 DC 只读绑定；仍需按当前用户权限操作
+             * @default false
+             * @constant
+             */
+            readonly: false;
         };
         /**
          * CustomTagSnapshotResponse
@@ -3313,18 +3367,18 @@ export interface components {
              */
             source: "discord" | "custom";
             /**
-             * Discord Tag Id
-             * @description Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID
+             * Discord Sources
+             * @description 当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id
              */
-            discord_tag_id: string | null;
+            discord_sources?: components["schemas"]["DiscordTagSourceResponse"][];
             /**
              * Category
-             * @description 分类枚举值 1–7；原生及未分类转换标签为空
+             * @description 分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类
              */
             category: number | null;
             /**
              * Category Name
-             * @description 分类中文名；原生及未分类转换标签为空
+             * @description 分类中文名；未分类时为空
              */
             category_name: string | null;
             /**
@@ -3393,18 +3447,18 @@ export interface components {
              */
             source: "discord" | "custom";
             /**
-             * Discord Tag Id
-             * @description Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID
+             * Discord Sources
+             * @description 当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id
              */
-            discord_tag_id: string | null;
+            discord_sources?: components["schemas"]["DiscordTagSourceResponse"][];
             /**
              * Category
-             * @description 分类枚举值 1–7；原生及未分类转换标签为空
+             * @description 分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类
              */
             category: number | null;
             /**
              * Category Name
-             * @description 分类中文名；原生及未分类转换标签为空
+             * @description 分类中文名；未分类时为空
              */
             category_name: string | null;
             /**
@@ -3449,6 +3503,32 @@ export interface components {
              * @enum {integer}
              */
             my_vote: -1 | 0 | 1;
+        };
+        /**
+         * DiscordTagSourceResponse
+         * @description 标准概念当前有效的 DC 来源，历史来源通过审计追溯。
+         */
+        DiscordTagSourceResponse: {
+            /**
+             * Id
+             * @description 来源记录内部 ID
+             */
+            id: string;
+            /**
+             * Discord Tag Id
+             * @description Discord 原生标签 ID
+             */
+            discord_tag_id: string;
+            /**
+             * Channel Id
+             * @description 来源频道 ID；历史未知频道为空，完整同步后补齐
+             */
+            channel_id: string | null;
+            /**
+             * Name
+             * @description DC 原始名称
+             */
+            name: string;
         };
         /**
          * DiscoveryRailsResponse
@@ -4012,18 +4092,18 @@ export interface components {
              */
             source: "discord";
             /**
-             * Discord Tag Id
-             * @description Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID
+             * Discord Sources
+             * @description 当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id
              */
-            discord_tag_id: string | null;
+            discord_sources?: components["schemas"]["DiscordTagSourceResponse"][];
             /**
              * Category
-             * @description 分类枚举值 1–7；原生及未分类转换标签为空
+             * @description 分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类
              */
             category: number | null;
             /**
              * Category Name
-             * @description 分类中文名；原生及未分类转换标签为空
+             * @description 分类中文名；未分类时为空
              */
             category_name: string | null;
             /**
@@ -4048,6 +4128,11 @@ export interface components {
              * @constant
              */
             readonly: true;
+            /**
+             * Discord Source Id
+             * @description 此帖子绑定所依据的 DC 来源记录 ID，可在 discord_sources 中定位
+             */
+            discord_source_id: string;
         };
         /**
          * NativeTagSnapshotResponse
@@ -4071,18 +4156,18 @@ export interface components {
              */
             source: "discord";
             /**
-             * Discord Tag Id
-             * @description Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID
+             * Discord Sources
+             * @description 当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id
              */
-            discord_tag_id: string | null;
+            discord_sources?: components["schemas"]["DiscordTagSourceResponse"][];
             /**
              * Category
-             * @description 分类枚举值 1–7；原生及未分类转换标签为空
+             * @description 分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类
              */
             category: number | null;
             /**
              * Category Name
-             * @description 分类中文名；原生及未分类转换标签为空
+             * @description 分类中文名；未分类时为空
              */
             category_name: string | null;
             /**
@@ -4106,6 +4191,11 @@ export interface components {
              * @constant
              */
             readonly: true;
+            /**
+             * Discord Source Id
+             * @description 此帖子绑定所依据的 DC 来源记录 ID，可在 discord_sources 中定位
+             */
+            discord_source_id: string;
         };
         /**
          * NotificationItem
@@ -4412,7 +4502,7 @@ export interface components {
             channel_ids?: (number | string)[] | null;
             /**
              * Include Tags
-             * @description 必须包含的标签名列表
+             * @description 包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；每个名称对应的实体组内任一命中，不同名称按 tag_logic 组合，与 ID 条件共同生效
              */
             include_tags?: string[];
             /**
@@ -4427,7 +4517,7 @@ export interface components {
             exclude_tag_ids?: (string | number)[];
             /**
              * Exclude Tags
-             * @description 必须排除的标签名列表
+             * @description 排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一实体即排除
              */
             exclude_tags?: string[];
             /**
@@ -4796,6 +4886,78 @@ export interface components {
             name: string;
         };
         /**
+         * TagMergePreviewResponse
+         * @description 合并预检结果；执行时重新检查权限、版本和冲突。
+         */
+        TagMergePreviewResponse: {
+            /**
+             * Source Tag Id
+             * @description 即将软删除的标签 ID
+             */
+            source_tag_id: string;
+            /**
+             * Target Tag Id
+             * @description 合并后保留的标签 ID
+             */
+            target_tag_id: string;
+            /**
+             * Source Name
+             * @description 旧标签标准名
+             */
+            source_name: string;
+            /**
+             * Target Name
+             * @description 保留标签标准名，必须与旧标签完全相同
+             */
+            target_name: string;
+            /**
+             * Version
+             * @description 预检版本，执行时原样传回
+             */
+            version: string;
+            /**
+             * Can Merge
+             * @description 当前是否满足合并条件
+             */
+            can_merge: boolean;
+            /**
+             * Conflicts
+             * @description 阻止合并的中文原因，无冲突时为空
+             */
+            conflicts: string[];
+            /**
+             * Binding Count
+             * @description 旧标签受影响的有效绑定数量
+             */
+            binding_count: number;
+            /**
+             * Proposal Count
+             * @description 旧标签即将结束的待审核申请数量
+             */
+            proposal_count: number;
+            /**
+             * Relation Count
+             * @description 旧标签涉及的关系数量
+             */
+            relation_count: number;
+        };
+        /**
+         * TagMergeRequest
+         * @description 提交需保留的标准标签和已确认的预检版本。
+         */
+        TagMergeRequest: {
+            /**
+             * Target Tag Id
+             * @description 合并后保留的标签内部 ID；涉及 DC 概念时必须保留 DC 标签
+             */
+            target_tag_id: string | number;
+            /**
+             * Version
+             * @description 合并预检返回的版本，原样提交；数据变化返回 409，需重新预检
+             */
+            version: string;
+        };
+        /**
          * TagPoolItemResponse
          * @description 标签池中的标签及其检索别名。
          */
@@ -4817,18 +4979,18 @@ export interface components {
              */
             source: "discord" | "custom";
             /**
-             * Discord Tag Id
-             * @description Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID
+             * Discord Sources
+             * @description 当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id
              */
-            discord_tag_id: string | null;
+            discord_sources?: components["schemas"]["DiscordTagSourceResponse"][];
             /**
              * Category
-             * @description 分类枚举值 1–7；原生及未分类转换标签为空
+             * @description 分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类
              */
             category: number | null;
             /**
              * Category Name
-             * @description 分类中文名；原生及未分类转换标签为空
+             * @description 分类中文名；未分类时为空
              */
             category_name: string | null;
             /**
@@ -4869,18 +5031,18 @@ export interface components {
              */
             source: "discord" | "custom";
             /**
-             * Discord Tag Id
-             * @description Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID
+             * Discord Sources
+             * @description 当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id
              */
-            discord_tag_id: string | null;
+            discord_sources?: components["schemas"]["DiscordTagSourceResponse"][];
             /**
              * Category
-             * @description 分类枚举值 1–7；原生及未分类转换标签为空
+             * @description 分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类
              */
             category: number | null;
             /**
              * Category Name
-             * @description 分类中文名；原生及未分类转换标签为空
+             * @description 分类中文名；未分类时为空
              */
             category_name: string | null;
             /**
@@ -5018,18 +5180,18 @@ export interface components {
              */
             source: "discord" | "custom";
             /**
-             * Discord Tag Id
-             * @description Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID
+             * Discord Sources
+             * @description 当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id
              */
-            discord_tag_id: string | null;
+            discord_sources?: components["schemas"]["DiscordTagSourceResponse"][];
             /**
              * Category
-             * @description 分类枚举值 1–7；原生及未分类转换标签为空
+             * @description 分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类
              */
             category: number | null;
             /**
              * Category Name
-             * @description 分类中文名；原生及未分类转换标签为空
+             * @description 分类中文名；未分类时为空
              */
             category_name: string | null;
             /**
@@ -5240,6 +5402,17 @@ export interface components {
              * @description 当前生效的原生和自定义标签；按 binding_source 区分结构，无标签时为空数组
              */
             tags: (components["schemas"]["NativeTagSnapshotResponse-Output"] | components["schemas"]["CustomTagSnapshotResponse-Output"])[];
+            /**
+             * Over Limit
+             * @description 当前标签总数是否超过 12；DC 同步允许保留超限状态，本地新增仍需校验
+             * @default false
+             */
+            over_limit: boolean;
+            /**
+             * Conflicting Pairs
+             * @description 当前互斥标签内部 ID 对；存在历史冲突时允许删除，本地新增必须消除冲突
+             */
+            conflicting_pairs?: string[][];
         };
         /**
          * ThreadDetail
@@ -7149,11 +7322,15 @@ export interface operations {
     list_public_booklists_v1_booklist_list_page_get: {
         parameters: {
             query?: {
+                /** @description 包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；多个值使用重复参数，按 tag_logic 组合；与 ID 筛选共同生效 */
+                include_tags?: string[] | null;
+                /** @description 排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一即排除；只匹配书单自身绑定 */
+                exclude_tags?: string[] | null;
                 /** @description 按书单自身绑定的标签内部 ID 筛选，不继承单内帖子的标签；多个值使用重复查询参数，接受十进制字符串或整数；按 tag_logic 组合 */
                 include_tag_ids?: (string | number)[] | null;
                 /** @description 排除自身绑定任一指定标签的书单；传标签内部 ID，多个值使用重复查询参数，接受十进制字符串或整数 */
                 exclude_tag_ids?: (string | number)[] | null;
-                /** @description 包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件 */
+                /** @description 包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；分别作用于 include_tags 和 include_tag_ids，两组条件共同生效，不改变排除条件 */
                 tag_logic?: "and" | "or";
                 /** @description 创建者用户ID */
                 owner_id?: number | null;
@@ -7203,11 +7380,15 @@ export interface operations {
     list_my_booklists_v1_booklist_my_list_page_get: {
         parameters: {
             query?: {
+                /** @description 包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；多个值使用重复参数，按 tag_logic 组合；与 ID 筛选共同生效 */
+                include_tags?: string[] | null;
+                /** @description 排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一即排除；只匹配书单自身绑定 */
+                exclude_tags?: string[] | null;
                 /** @description 按书单自身绑定的标签内部 ID 筛选，不继承单内帖子的标签；多个值使用重复查询参数，接受十进制字符串或整数；按 tag_logic 组合 */
                 include_tag_ids?: (string | number)[] | null;
                 /** @description 排除自身绑定任一指定标签的书单；传标签内部 ID，多个值使用重复查询参数，接受十进制字符串或整数 */
                 exclude_tag_ids?: (string | number)[] | null;
-                /** @description 包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件 */
+                /** @description 包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；分别作用于 include_tags 和 include_tag_ids，两组条件共同生效，不改变排除条件 */
                 tag_logic?: "and" | "or";
                 /** @description 筛选公开状态 (不传则不筛选) */
                 is_public?: boolean | null;
@@ -7667,6 +7848,8 @@ export interface operations {
             query?: {
                 /** @description 标签搜索关键词：对标准名或别名进行不区分大小写的包含匹配；留空则不按名称筛选，返回标准名 */
                 q?: string;
+                /** @description 按标签实体当前来源筛选：custom=自定义标签（含 DC 删除后转换的标签），discord=DC 原生标签；省略则返回两种来源，筛选在分页前生效 */
+                source?: ("custom" | "discord") | null;
                 /** @description 按分类筛选：1=癖好、2=作品、3=角色、4=特质、5=情节、6=背景、7=玩法；省略则包含所有分类及未分类标签 */
                 category?: number | null;
                 /** @description 是否仅返回已启用标签；true 为仅已启用，false 同时包含停用标签。是否包含软删除记录由 include_deleted 独立控制；不检查具体帖子的容量或挂标权限 */
@@ -7751,6 +7934,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagRelationResponse"][];
+                };
+            };
+        };
+    };
+    merge_preview_v1_tags__tag_id__merge_preview_get: {
+        parameters: {
+            query: {
+                /** @description 合并后保留的标签内部 ID */
+                target_tag_id: string | number;
+            };
+            header?: never;
+            path: {
+                /** @description 待软删除的旧标签内部 ID */
+                tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagMergePreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    merge_tags_v1_tags__tag_id__merge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 合并后软删除的标签内部 ID，旧 ID 后续提示刷新 */
+                tag_id: string | number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagMergeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -14,6 +14,7 @@ import { usePreviewStore } from "@/features/search/store/previewStore";
 import { GUILD_ID } from "@/shared/config/channelCategories.private";
 import { useThemeSettings } from "@/shared/hooks/useSettings";
 import { SearchTokenInput } from "@/shared/ui/SearchTokenInput";
+import { setTokenMode, tokensToQuery } from "@/shared/lib/searchTokenizer";
 import { AnimatedIcon } from "@/shared/ui/animation/AnimatedIcon";
 import {
   ArrowLeft,
@@ -227,7 +228,7 @@ export function TopBar({
     preferredTags,
     channelTagGroups,
     suggestionAuthors,
-    suggestionTags,
+    suggestionTagEntities,
     suggestionThreads,
     suggestionBooklists,
     suggestionQuery,
@@ -296,6 +297,8 @@ export function TopBar({
       if (action.type === "add_token") {
         if (action.tokenType === "author") {
           selectAuthorToken(action.value, action.mode);
+        } else if (action.tokenType === "tagid") {
+          updateQueryFromTokenMutation((tokens) => setTokenMode(tokensToQuery(tokens), "tagid", action.value, action.mode));
         } else {
           toggleTagToken(action.value, action.mode);
         }
@@ -327,6 +330,7 @@ export function TopBar({
       selectAuthorToken,
       setPreviewThreadId,
       toggleTagToken,
+      updateQueryFromTokenMutation,
     ],
   );
 
@@ -652,7 +656,7 @@ export function TopBar({
                       authors={suggestionAuthors}
                       threads={suggestionThreads}
                       booklists={suggestionBooklists}
-                      suggestedTags={suggestionQuery ? suggestionTags : []}
+                      tagEntities={suggestionQuery ? suggestionTagEntities : []}
                       history={historyItems}
                       onSelect={handleSuggestionSelect}
                       onRemoveHistory={(item) => {

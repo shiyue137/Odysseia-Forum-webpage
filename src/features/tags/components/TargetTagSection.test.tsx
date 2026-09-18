@@ -17,7 +17,7 @@ vi.mock("./LiveTagPool", () => ({
     <div><button onClick={() => onToggle({ id: "90071992547409931", name: "标签甲" })}>选择甲</button><button onClick={() => onToggle({ id: "90071992547409932", name: "标签乙" })}>选择乙</button></div>,
 }));
 
-const initial: TargetTags = { version: "v1", tags: [] };
+const initial: TargetTags = { version: "v1", tags: [], over_limit: false, conflicting_pairs: [] };
 const target = { type: "thread" as const, id: "1234567890123456789" };
 const onSearch = vi.fn();
 function mount(subject: { type: "thread" | "booklist"; id: string } = target, targetLabel?: string) {
@@ -36,20 +36,45 @@ beforeEach(() => {
 });
 
 describe("帖子标签编辑", () => {
-  it("申请记录优先展示已加载标签名称，未知名称明确保留 ID", async () => {
+  it.each(["thread", "booklist"] as const)("DC 实体本地绑定可编辑，%s 完整替换保留本地 ID，不提交同步绑定", async (type) => {
+    const local = { id: "7914", name: "本地DC", source: "discord" as const, discord_sources: [], category: null, category_name: null, enabled: true, deleted_at: null,
+      binding_source: "local" as const, readonly: false as const, binding_id: "81", upvotes: 0, downvotes: 0, my_vote: 0 as const };
+    const synced = { id: "90071992547409931", name: "同步标签", source: "discord" as const, discord_sources: [],
+      category: null, category_name: null, enabled: true, deleted_at: null, binding_source: "discord_sync" as const, readonly: true as const, discord_source_id: "10" };
+    const tags = type === "thread" ? [local, synced] : [local];
+    vi.mocked(customTagsApi.target).mockResolvedValue({ ...initial, tags, over_limit: true, conflicting_pairs: [["7914", synced.id]] });
+    vi.mocked(customTagsApi.replace).mockResolvedValue(initial);
+    const subject = { type, id: "77" };
+    mount(subject);
+    await waitFor(() => expect(screen.getByRole("button", { name: "管理标签" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "管理标签" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByRole("button", { name: "本地DC" })).toBeInTheDocument();
+    if (type === "thread") fireEvent.click(within(dialog).getByRole("button", { name: "选择甲" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "保存标签" }));
+    await waitFor(() => expect(customTagsApi.replace).toHaveBeenCalledWith(subject, "v1", ["7914"]));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "管理标签" }));
+    const reopened = await screen.findByRole("dialog");
+    fireEvent.click(within(reopened).getByRole("button", { name: "本地DC" }));
+    expect(within(reopened).getByRole("button", { name: "保存标签" })).toBeEnabled();
+    fireEvent.click(within(reopened).getByRole("button", { name: "保存标签" }));
+    await waitFor(() => expect(customTagsApi.replace).toHaveBeenLastCalledWith(subject, "v1", []));
+  });
+  it("申请记录直接使用后端名称并解释合并失败原因", async () => {
     vi.mocked(customTagsApi.proposals).mockResolvedValue(["7914", "9999"].map((id) => ({
-      id, tag_id: id, tag_name: id === "7914" ? "兽耳" : "", status: "pending", reason: null, created_at: "2026-09-15T01:00:00Z", due_at: "2026-09-22T01:00:00Z", resolved_at: null,
+      id, tag_id: id, tag_name: id === "7914" ? "兽耳" : "合并旧标签", status: id === "7914" ? "pending" : "failed", reason: id === "7914" ? null : "tag_merged", created_at: "2026-09-15T01:00:00Z", due_at: "2026-09-22T01:00:00Z", resolved_at: null,
     })));
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(["custom-tags", "pool", ""], { pages: [[{ id: "7914", name: "兽耳" }]], pageParams: [0] });
     render(<QueryClientProvider client={client}><TargetTagSection target={target} ownerId="author" onSearch={onSearch} /></QueryClientProvider>);
     fireEvent.click(screen.getByRole("button", { name: "申请记录" }));
     expect(await screen.findByText("兽耳 · 待审核")).toBeInTheDocument();
-    expect(screen.getByText("标签 #9999（名称未提供） · 待审核")).toBeInTheDocument();
+    expect(screen.getByText("合并旧标签 · 生效失败")).toBeInTheDocument();
+    expect(screen.getByText("标签已合并，原申请已结束，请重新选择标签提交。")).toBeInTheDocument();
   });
   it.each(["书单", "赛事"])("%s管理与提议统一使用 booklist 目标", async (label) => {
     const subject = { type: "booklist" as const, id: "77" };
-    vi.mocked(customTagsApi.replace).mockResolvedValue({ version: "v2", tags: [] });
+    vi.mocked(customTagsApi.replace).mockResolvedValue({ ...initial, version: "v2" });
     mount(subject, label);
     await waitFor(() => expect(screen.getByRole("button", { name: "管理标签" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "管理标签" }));
@@ -89,9 +114,9 @@ describe("帖子标签编辑", () => {
     expect(customTagsApi.replace).not.toHaveBeenCalled();
   });
   it("详情标签名称触发搜索，赞踩不触发搜索", async () => {
-    const tag = { id: "7914", name: "兽耳", source: "custom" as const, discord_tag_id: null, category: 1, category_name: "癖好", enabled: true, deleted_at: null, binding_source: "local" as const, readonly: false as const, binding_id: "81", upvotes: 0, downvotes: 0, my_vote: 0 as const };
-    vi.mocked(customTagsApi.target).mockResolvedValue({ version: "v1", tags: [tag] });
-    vi.mocked(customTagsApi.vote).mockResolvedValue({ version: "v2", tags: [tag] });
+    const tag = { id: "7914", name: "兽耳", source: "discord" as const, discord_sources: [], category: 1, category_name: "癖好", enabled: true, deleted_at: null, binding_source: "local" as const, readonly: false as const, binding_id: "81", upvotes: 0, downvotes: 0, my_vote: 0 as const };
+    vi.mocked(customTagsApi.target).mockResolvedValue({ ...initial, tags: [tag] });
+    vi.mocked(customTagsApi.vote).mockResolvedValue({ ...initial, version: "v2", tags: [tag] });
     mount();
     fireEvent.click(await screen.findByRole("button", { name: "搜索标签兽耳" }));
     expect(onSearch).toHaveBeenCalledWith(tag);
@@ -101,7 +126,7 @@ describe("帖子标签编辑", () => {
     expect(onSearch).not.toHaveBeenCalled();
   });
   it("保留大整数 ID 与原版本，完整替换只提交用户选择", async () => {
-    vi.mocked(customTagsApi.replace).mockResolvedValue({ version: "v2", tags: [] });
+    vi.mocked(customTagsApi.replace).mockResolvedValue({ ...initial, version: "v2" });
     mount();
     await waitFor(() => expect(screen.getByRole("button", { name: "管理标签" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "管理标签" }));
@@ -113,12 +138,12 @@ describe("帖子标签编辑", () => {
 
   it("版本冲突不自动重试，保留选择并要求核对最新集合", async () => {
     const error = new AxiosError("conflict", undefined, undefined, undefined, { status: 409, data: { detail: { code: "stale_version", message: "标签已变化" } } } as never);
-    vi.mocked(customTagsApi.replace).mockRejectedValueOnce(error).mockResolvedValue({ version: "v3", tags: [] });
+    vi.mocked(customTagsApi.replace).mockRejectedValueOnce(error).mockResolvedValue({ ...initial, version: "v3" });
     mount();
     await waitFor(() => expect(screen.getByRole("button", { name: "管理标签" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "管理标签" }));
     fireEvent.click(await screen.findByRole("button", { name: "选择甲" }));
-    vi.mocked(customTagsApi.target).mockResolvedValue({ version: "v2", tags: [] });
+    vi.mocked(customTagsApi.target).mockResolvedValue({ ...initial, version: "v2" });
     fireEvent.click(screen.getByRole("button", { name: "保存标签" }));
     fireEvent.click(await screen.findByRole("button", { name: "已核对，以当前选择替换" }));
     expect(customTagsApi.replace).toHaveBeenCalledTimes(1);

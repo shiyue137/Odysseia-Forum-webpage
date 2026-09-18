@@ -1995,6 +1995,48 @@
         ],
         "parameters": [
           {
+            "name": "include_tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；多个值使用重复参数，按 tag_logic 组合；与 ID 筛选共同生效",
+              "title": "Include Tags"
+            },
+            "description": "包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；多个值使用重复参数，按 tag_logic 组合；与 ID 筛选共同生效"
+          },
+          {
+            "name": "exclude_tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一即排除；只匹配书单自身绑定",
+              "title": "Exclude Tags"
+            },
+            "description": "排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一即排除；只匹配书单自身绑定"
+          },
+          {
             "name": "include_tag_ids",
             "in": "query",
             "required": false,
@@ -2060,11 +2102,11 @@
                 "or"
               ],
               "type": "string",
-              "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件",
+              "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；分别作用于 include_tags 和 include_tag_ids，两组条件共同生效，不改变排除条件",
               "default": "and",
               "title": "Tag Logic"
             },
-            "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件"
+            "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；分别作用于 include_tags 和 include_tag_ids，两组条件共同生效，不改变排除条件"
           },
           {
             "name": "owner_id",
@@ -2247,6 +2289,48 @@
         ],
         "parameters": [
           {
+            "name": "include_tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；多个值使用重复参数，按 tag_logic 组合；与 ID 筛选共同生效",
+              "title": "Include Tags"
+            },
+            "description": "包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；多个值使用重复参数，按 tag_logic 组合；与 ID 筛选共同生效"
+          },
+          {
+            "name": "exclude_tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一即排除；只匹配书单自身绑定",
+              "title": "Exclude Tags"
+            },
+            "description": "排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一即排除；只匹配书单自身绑定"
+          },
+          {
             "name": "include_tag_ids",
             "in": "query",
             "required": false,
@@ -2312,11 +2396,11 @@
                 "or"
               ],
               "type": "string",
-              "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件",
+              "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；分别作用于 include_tags 和 include_tag_ids，两组条件共同生效，不改变排除条件",
               "default": "and",
               "title": "Tag Logic"
             },
-            "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；仅作用于 include_tag_ids，不改变排除条件"
+            "description": "包含标签的组合逻辑：and 要求全部命中，or 要求至少命中一个；分别作用于 include_tags 和 include_tag_ids，两组条件共同生效，不改变排除条件"
           },
           {
             "name": "is_public",
@@ -3315,6 +3399,28 @@
             "description": "标签搜索关键词：对标准名或别名进行不区分大小写的包含匹配；留空则不按名称筛选，返回标准名"
           },
           {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "custom",
+                    "discord"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "按标签实体当前来源筛选：custom=自定义标签（含 DC 删除后转换的标签），discord=DC 原生标签；省略则返回两种来源，筛选在分页前生效",
+              "title": "Source"
+            },
+            "description": "按标签实体当前来源筛选：custom=自定义标签（含 DC 删除后转换的标签），discord=DC 原生标签；省略则返回两种来源，筛选在分页前生效"
+          },
+          {
             "name": "category",
             "in": "query",
             "required": false,
@@ -3474,6 +3580,154 @@
             "HTTPBearer": []
           }
         ]
+      }
+    },
+    "/v1/tags/{tag_id}/merge-preview": {
+      "get": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "预检标签合并",
+        "description": "仅 BOT 管理员可预检，返回影响数量及冲突，不修改数据。",
+        "operationId": "merge_preview_v1_tags__tag_id__merge_preview_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "description": "待软删除的旧标签内部 ID",
+              "title": "Tag Id"
+            },
+            "description": "待软删除的旧标签内部 ID"
+          },
+          {
+            "name": "target_tag_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "description": "合并后保留的标签内部 ID",
+              "title": "Target Tag Id"
+            },
+            "description": "合并后保留的标签内部 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagMergePreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tags/{tag_id}/merge": {
+      "post": {
+        "tags": [
+          "标签"
+        ],
+        "summary": "合并同名标签",
+        "description": "仅 BOT 管理员可执行，重新检查版本及冲突，保留历史审计。",
+        "operationId": "merge_tags_v1_tags__tag_id__merge_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\+?0*[1-9][0-9]*$"
+                },
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              ],
+              "description": "合并后软删除的标签内部 ID，旧 ID 后续提示刷新",
+              "title": "Tag Id"
+            },
+            "description": "合并后软删除的标签内部 ID，旧 ID 后续提示刷新"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagMergeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/tags/{tag_id}": {
@@ -8042,6 +8296,20 @@
             "type": "integer",
             "title": "Downvotes",
             "description": "当前绑定轮次的负向票数"
+          },
+          "binding_source": {
+            "type": "string",
+            "const": "local",
+            "title": "Binding Source",
+            "description": "绑定来源固定为 local；即使标签来源为 DC，也按本地权限治理",
+            "default": "local"
+          },
+          "readonly": {
+            "type": "boolean",
+            "const": false,
+            "title": "Readonly",
+            "description": "本地绑定不是 DC 只读绑定；仍需按当前用户权限操作",
+            "default": false
           }
         },
         "type": "object",
@@ -8080,17 +8348,13 @@
             "title": "Source",
             "description": "标签实体来源，可为 discord 或 custom"
           },
-          "discord_tag_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
+          "discord_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DiscordTagSourceResponse"
+            },
+            "type": "array",
+            "title": "Discord Sources",
+            "description": "当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id"
           },
           "category": {
             "anyOf": [
@@ -8102,7 +8366,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
+            "description": "分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类"
           },
           "category_name": {
             "anyOf": [
@@ -8114,7 +8378,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生及未分类转换标签为空"
+            "description": "分类中文名；未分类时为空"
           },
           "enabled": {
             "type": "boolean",
@@ -8177,7 +8441,6 @@
           "id",
           "name",
           "source",
-          "discord_tag_id",
           "category",
           "category_name",
           "enabled",
@@ -8213,17 +8476,13 @@
             "title": "Source",
             "description": "标签实体来源，可为 discord 或 custom"
           },
-          "discord_tag_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
+          "discord_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DiscordTagSourceResponse"
+            },
+            "type": "array",
+            "title": "Discord Sources",
+            "description": "当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id"
           },
           "category": {
             "anyOf": [
@@ -8235,7 +8494,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
+            "description": "分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类"
           },
           "category_name": {
             "anyOf": [
@@ -8247,7 +8506,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生及未分类转换标签为空"
+            "description": "分类中文名；未分类时为空"
           },
           "enabled": {
             "type": "boolean",
@@ -8309,7 +8568,6 @@
           "id",
           "name",
           "source",
-          "discord_tag_id",
           "category",
           "category_name",
           "enabled",
@@ -8323,6 +8581,46 @@
         ],
         "title": "CustomTagSnapshotResponse",
         "description": "目标上的本地标签绑定及当前用户投票。"
+      },
+      "DiscordTagSourceResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "来源记录内部 ID"
+          },
+          "discord_tag_id": {
+            "type": "string",
+            "title": "Discord Tag Id",
+            "description": "Discord 原生标签 ID"
+          },
+          "channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Id",
+            "description": "来源频道 ID；历史未知频道为空，完整同步后补齐"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "DC 原始名称"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "discord_tag_id",
+          "channel_id",
+          "name"
+        ],
+        "title": "DiscordTagSourceResponse",
+        "description": "标准概念当前有效的 DC 来源，历史来源通过审计追溯。"
       },
       "DiscoveryRailsResponse": {
         "properties": {
@@ -9230,17 +9528,13 @@
             "title": "Source",
             "description": "来源固定为 discord"
           },
-          "discord_tag_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
+          "discord_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DiscordTagSourceResponse"
+            },
+            "type": "array",
+            "title": "Discord Sources",
+            "description": "当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id"
           },
           "category": {
             "anyOf": [
@@ -9252,7 +9546,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
+            "description": "分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类"
           },
           "category_name": {
             "anyOf": [
@@ -9264,7 +9558,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生及未分类转换标签为空"
+            "description": "分类中文名；未分类时为空"
           },
           "enabled": {
             "type": "boolean",
@@ -9295,6 +9589,11 @@
             "const": true,
             "title": "Readonly",
             "description": "固定为 true，原生标签在本项目不可修改"
+          },
+          "discord_source_id": {
+            "type": "string",
+            "title": "Discord Source Id",
+            "description": "此帖子绑定所依据的 DC 来源记录 ID，可在 discord_sources 中定位"
           }
         },
         "type": "object",
@@ -9302,13 +9601,13 @@
           "id",
           "name",
           "source",
-          "discord_tag_id",
           "category",
           "category_name",
           "enabled",
           "deleted_at",
           "binding_source",
-          "readonly"
+          "readonly",
+          "discord_source_id"
         ],
         "title": "NativeTagSnapshotResponse",
         "description": "目标上的只读 Discord 原生标签。"
@@ -9331,17 +9630,13 @@
             "title": "Source",
             "description": "来源固定为 discord"
           },
-          "discord_tag_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
+          "discord_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DiscordTagSourceResponse"
+            },
+            "type": "array",
+            "title": "Discord Sources",
+            "description": "当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id"
           },
           "category": {
             "anyOf": [
@@ -9353,7 +9648,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
+            "description": "分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类"
           },
           "category_name": {
             "anyOf": [
@@ -9365,7 +9660,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生及未分类转换标签为空"
+            "description": "分类中文名；未分类时为空"
           },
           "enabled": {
             "type": "boolean",
@@ -9395,6 +9690,11 @@
             "const": true,
             "title": "Readonly",
             "description": "固定为 true，原生标签在本项目不可修改"
+          },
+          "discord_source_id": {
+            "type": "string",
+            "title": "Discord Source Id",
+            "description": "此帖子绑定所依据的 DC 来源记录 ID，可在 discord_sources 中定位"
           }
         },
         "type": "object",
@@ -9402,13 +9702,13 @@
           "id",
           "name",
           "source",
-          "discord_tag_id",
           "category",
           "category_name",
           "enabled",
           "deleted_at",
           "binding_source",
-          "readonly"
+          "readonly",
+          "discord_source_id"
         ],
         "title": "NativeTagSnapshotResponse",
         "description": "目标上的只读 Discord 原生标签。"
@@ -9945,7 +10245,7 @@
             },
             "type": "array",
             "title": "Include Tags",
-            "description": "必须包含的标签名列表"
+            "description": "包含的标签标准名或别名；标准名完整匹配，别名完整匹配且忽略大小写；每个名称对应的实体组内任一命中，不同名称按 tag_logic 组合，与 ID 条件共同生效"
           },
           "include_tag_ids": {
             "items": {
@@ -9985,7 +10285,7 @@
             },
             "type": "array",
             "title": "Exclude Tags",
-            "description": "必须排除的标签名列表"
+            "description": "排除的标签标准名或别名；别名完整匹配且忽略大小写，命中任一实体即排除"
           },
           "tag_logic": {
             "type": "string",
@@ -10614,6 +10914,108 @@
         "title": "TagDetail",
         "description": "标签的基础信息模型"
       },
+      "TagMergePreviewResponse": {
+        "properties": {
+          "source_tag_id": {
+            "type": "string",
+            "title": "Source Tag Id",
+            "description": "即将软删除的标签 ID"
+          },
+          "target_tag_id": {
+            "type": "string",
+            "title": "Target Tag Id",
+            "description": "合并后保留的标签 ID"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name",
+            "description": "旧标签标准名"
+          },
+          "target_name": {
+            "type": "string",
+            "title": "Target Name",
+            "description": "保留标签标准名，必须与旧标签完全相同"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "预检版本，执行时原样传回"
+          },
+          "can_merge": {
+            "type": "boolean",
+            "title": "Can Merge",
+            "description": "当前是否满足合并条件"
+          },
+          "conflicts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Conflicts",
+            "description": "阻止合并的中文原因，无冲突时为空"
+          },
+          "binding_count": {
+            "type": "integer",
+            "title": "Binding Count",
+            "description": "旧标签受影响的有效绑定数量"
+          },
+          "proposal_count": {
+            "type": "integer",
+            "title": "Proposal Count",
+            "description": "旧标签即将结束的待审核申请数量"
+          },
+          "relation_count": {
+            "type": "integer",
+            "title": "Relation Count",
+            "description": "旧标签涉及的关系数量"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_tag_id",
+          "target_tag_id",
+          "source_name",
+          "target_name",
+          "version",
+          "can_merge",
+          "conflicts",
+          "binding_count",
+          "proposal_count",
+          "relation_count"
+        ],
+        "title": "TagMergePreviewResponse",
+        "description": "合并预检结果；执行时重新检查权限、版本和冲突。"
+      },
+      "TagMergeRequest": {
+        "properties": {
+          "target_tag_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\+?0*[1-9][0-9]*$"
+              },
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              }
+            ],
+            "title": "Target Tag Id",
+            "description": "合并后保留的标签内部 ID；涉及 DC 概念时必须保留 DC 标签"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "合并预检返回的版本，原样提交；数据变化返回 409，需重新预检"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_tag_id",
+          "version"
+        ],
+        "title": "TagMergeRequest",
+        "description": "提交需保留的标准标签和已确认的预检版本。"
+      },
       "TagPoolItemResponse-Input": {
         "properties": {
           "id": {
@@ -10635,17 +11037,13 @@
             "title": "Source",
             "description": "来源：discord 为原生标签，custom 为自定义标签"
           },
-          "discord_tag_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
+          "discord_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DiscordTagSourceResponse"
+            },
+            "type": "array",
+            "title": "Discord Sources",
+            "description": "当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id"
           },
           "category": {
             "anyOf": [
@@ -10657,7 +11055,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
+            "description": "分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类"
           },
           "category_name": {
             "anyOf": [
@@ -10669,7 +11067,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生及未分类转换标签为空"
+            "description": "分类中文名；未分类时为空"
           },
           "enabled": {
             "type": "boolean",
@@ -10703,7 +11101,6 @@
           "id",
           "name",
           "source",
-          "discord_tag_id",
           "category",
           "category_name",
           "enabled",
@@ -10734,17 +11131,13 @@
             "title": "Source",
             "description": "来源：discord 为原生标签，custom 为自定义标签"
           },
-          "discord_tag_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
+          "discord_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DiscordTagSourceResponse"
+            },
+            "type": "array",
+            "title": "Discord Sources",
+            "description": "当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id"
           },
           "category": {
             "anyOf": [
@@ -10756,7 +11149,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
+            "description": "分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类"
           },
           "category_name": {
             "anyOf": [
@@ -10768,7 +11161,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生及未分类转换标签为空"
+            "description": "分类中文名；未分类时为空"
           },
           "enabled": {
             "type": "boolean",
@@ -10801,7 +11194,6 @@
           "id",
           "name",
           "source",
-          "discord_tag_id",
           "category",
           "category_name",
           "enabled",
@@ -10999,17 +11391,13 @@
             "title": "Source",
             "description": "来源：discord 为原生标签，custom 为自定义标签"
           },
-          "discord_tag_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Discord Tag Id",
-            "description": "Discord 原生标签 ID，以字符串返回；新建自定义标签为空，DC 转换标签保留原始 ID"
+          "discord_sources": {
+            "items": {
+              "$ref": "#/components/schemas/DiscordTagSourceResponse"
+            },
+            "type": "array",
+            "title": "Discord Sources",
+            "description": "当前有效 DC 来源列表；标准概念可对应多个频道，不再提供单个 discord_tag_id"
           },
           "category": {
             "anyOf": [
@@ -11021,7 +11409,7 @@
               }
             ],
             "title": "Category",
-            "description": "分类枚举值 1–7；原生及未分类转换标签为空"
+            "description": "分类枚举值 1–7；DC 概念和转换标签可暂未分类，为空时显示未分类"
           },
           "category_name": {
             "anyOf": [
@@ -11033,7 +11421,7 @@
               }
             ],
             "title": "Category Name",
-            "description": "分类中文名；原生及未分类转换标签为空"
+            "description": "分类中文名；未分类时为空"
           },
           "enabled": {
             "type": "boolean",
@@ -11058,7 +11446,6 @@
           "id",
           "name",
           "source",
-          "discord_tag_id",
           "category",
           "category_name",
           "enabled",
@@ -11389,6 +11776,23 @@
             "type": "array",
             "title": "Tags",
             "description": "当前生效的原生和自定义标签；按 binding_source 区分结构，无标签时为空数组"
+          },
+          "over_limit": {
+            "type": "boolean",
+            "title": "Over Limit",
+            "description": "当前标签总数是否超过 12；DC 同步允许保留超限状态，本地新增仍需校验",
+            "default": false
+          },
+          "conflicting_pairs": {
+            "items": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Conflicting Pairs",
+            "description": "当前互斥标签内部 ID 对；存在历史冲突时允许删除，本地新增必须消除冲突"
           }
         },
         "type": "object",

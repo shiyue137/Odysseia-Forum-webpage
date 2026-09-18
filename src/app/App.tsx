@@ -28,6 +28,9 @@ import { configureImageRecovery } from '@/shared/lib/imageRecovery';
 import { router } from './router';
 import { useMascotStore } from '@/features/mascot/store/mascotStore';
 import { OmicronLoader } from '@/shared/ui/loaders/OmicronLoader';
+import { isTagsChangedError } from '@/shared/api/tagErrors';
+import { refreshTagCandidates } from '@/features/tags/lib/refreshTagCandidates';
+import { toast } from 'sonner';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -44,6 +47,19 @@ const queryClient = new QueryClient({
       const rateLimit = getRateLimitInfo(error);
       if (rateLimit) {
         if (!isSilentPreloadRateLimit(error)) notifyRateLimit(rateLimit);
+        return;
+      }
+
+      if (isTagsChangedError(error)) {
+        toast.error('标签已发生变化，请刷新候选后重新选择。', {
+          id: 'tags-changed',
+          action: { label: '刷新候选', onClick: () => {
+            void refreshTagCandidates(queryClient).then(
+              () => toast.success('候选已刷新，请移除失效条件后重新选择。'),
+              () => toast.error('候选刷新失败，请稍后重试。'),
+            );
+          } },
+        });
         return;
       }
 

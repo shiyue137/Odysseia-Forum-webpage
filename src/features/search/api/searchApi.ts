@@ -8,6 +8,7 @@ import {
   type RateLimitOrigin,
 } from '@/shared/api/rateLimit';
 import { tokenizeSearchPayload } from '@/shared/lib/searchTokenizer';
+import type { components } from '@/shared/types/openapi';
 
 export type UISortMethod =
   | 'relevance'
@@ -67,6 +68,7 @@ export interface SearchSuggestionBooklist {
 }
 
 export interface SearchSuggestionResponse {
+  tags?: components["schemas"]["TagResponse"][];
   authors?: SearchSuggestionAuthor[];
   threads?: SearchSuggestionThread[];
   booklists?: SearchSuggestionBooklist[];

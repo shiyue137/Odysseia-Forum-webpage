@@ -191,8 +191,7 @@ export function useSearchAutocomplete({
     [suggestionsData?.authors],
   );
 
-  // 新 API 不包含标签建议，标签补全依赖 channelTagCatalog
-  const suggestionTags = useMemo(() => [] as string[], []);
+  const suggestionTagEntities = useMemo(() => suggestionsData?.tags ?? [], [suggestionsData?.tags]);
 
   const suggestionBooklists = useMemo(
     () => suggestionsData?.booklists || [],
@@ -206,7 +205,7 @@ export function useSearchAutocomplete({
     channelTagGroups,
     discoveryPreferenceContext,
     suggestionAuthors,
-    suggestionTags,
+    suggestionTagEntities,
     suggestionThreads,
     suggestionBooklists,
     suggestionQuery,

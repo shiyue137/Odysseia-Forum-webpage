@@ -17,6 +17,14 @@ beforeEach(() => {
 });
 
 describe("标签与关系保存", () => {
+  it("未分类 DC 标准实体可以只维护别名和关系，不重写未修改的基本字段", async () => {
+    const original: PoolTag = { ...draft, id: "7", source: "discord", category: "未分类", aliases: [], parents: [] };
+    const result = await savePoolTag({ ...original, aliases: ["旧名称"], parents: ["8"] }, undefined, original);
+    expect(result.error).toBeUndefined();
+    expect(customTagsApi.update).not.toHaveBeenCalled();
+    expect(customTagsApi.aliases).toHaveBeenCalledWith("7", ["旧名称"]);
+    expect(customTagsApi.addRelation).toHaveBeenCalledWith("7", "8", "implies");
+  });
   it("创建时保存名称、分类、别名和所选关系", async () => {
     const result = await savePoolTag(draft, 3);
     expect(result.error).toBeUndefined();

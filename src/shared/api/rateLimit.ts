@@ -116,10 +116,11 @@ export function shouldRetryQuery(
   failureCount: number,
   error: unknown,
 ): boolean {
-  if (getRateLimitInfo(error)) return false;
+  if (getRateLimitInfo(error) || isTagsChangedError(error)) return false;
   return failureCount < 1;
 }
 
 export function resetRateLimitStateForTests() {
   cooldowns.clear();
 }
+import { isTagsChangedError } from "./tagErrors";

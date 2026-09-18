@@ -10,6 +10,7 @@ import { WordLoader } from "@/shared/ui/loaders/WordLoader";
 import { TagRelationFields } from "./TagRelationFields";
 import { savePoolTag } from "../lib/savePoolTag";
 import { customTagSearchQuery } from "@/shared/lib/searchTokenizer";
+import { TagMergeActions } from "./TagMergeActions";
 
 const action = "inline-flex min-h-10 items-center gap-2 rounded-md border border-(--od-border) px-3 text-xs disabled:opacity-50";
 
@@ -31,18 +32,15 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
     queryFn: ({ signal }) => customTagsApi.poolAll({
       q: "", selectable: !!onToggle, include_deleted: includeDeleted && canManage,
     }, signal),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
   const items = pool.data ?? [];
-  const filteredItems = onToggle ? items.filter((item) => item.source !== "discord") : items;
-  const seenDiscordNames = new Set<string>();
   const tags: PoolTag[] = [];
-  for (const item of filteredItems) {
-    if (item.source === "discord") {
-      if (seenDiscordNames.has(item.name)) continue;
-      seenDiscordNames.add(item.name);
-    }
+  for (const item of items) {
     tags.push({
-      id: item.id, name: item.name, category: item.category_name ?? "原生",
+      id: item.id, name: item.name, category: item.category_name ?? "未分类",
+      discordSources: item.discord_sources ?? [],
       enabled: item.enabled, deleted: !!item.deleted_at, source: item.source, aliases: item.aliases,
       parents: (relations.data ?? []).filter((edge) => edge.kind === "implies" && edge.source_id === item.id).map((edge) => edge.target_id),
       excludes: (relations.data ?? []).filter((edge) => edge.kind === "excludes" && (edge.source_id === item.id || edge.target_id === item.id)).map((edge) => edge.source_id === item.id ? edge.target_id : edge.source_id),
@@ -51,8 +49,8 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
   const save = useMutation({
     mutationFn: async (tag: PoolTag) => {
       const categoryValue = categories.data?.find((item) => item.name === tag.category)?.value;
-      if (!categoryValue) throw new Error("请选择有效分类");
-      return savePoolTag(tag, categoryValue);
+      if (!categoryValue && (!tag.id || tag.category !== "未分类")) throw new Error("请选择有效分类");
+      return savePoolTag(tag, categoryValue, tags.find((item) => item.id === tag.id));
     },
     onSettled: () => client.invalidateQueries({ queryKey: ["custom-tags"] }),
   });
@@ -71,7 +69,7 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
 
   return <div className="flex h-full min-h-0 flex-col">
     {!onToggle && role.isError && <p role="alert" className="p-4 text-sm">管理身份读取失败：{tagError(role.error).message} <button className={action} onClick={() => void role.refetch()}>重试</button></p>}
-    <TagPoolBrowser tags={tags} categories={[...(categories.data ?? []).map((item) => item.name), ...(!onToggle ? ["原生"] : [])]}
+    <TagPoolBrowser tags={tags} categories={[...(categories.data ?? []).map((item) => item.name), "未分类"]}
       parentEdges={relations.data?.filter((edge) => edge.kind === "implies")}
       hideHeader
       toolbar={canManage ? <Checkbox checked={includeDeleted} onChange={(e) => setIncludeDeleted(e.target.checked)} label="包含已删除标签" /> : undefined}
@@ -82,7 +80,10 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
       relationEditor={(draft, onChange) => <TagRelationFields draft={draft} tags={tags} onChange={onChange} />}
       onSearch={(tag) => navigate(`/search?${new URLSearchParams({ q: customTagSearchQuery(tag) })}`)}
       selectedIds={selectedIds} disabledIds={disabledIds} onToggle={onToggle}
-      extraDetails={canManage ? (tag) => tag.source === "custom" ? <TagAdminActions key={tag.id} tag={tag} /> : null : undefined}
+      extraDetails={canManage ? (tag) => <div key={tag.id}>
+        <TagAdminActions tag={tag} />
+        <TagMergeActions tag={tag} tags={tags} />
+      </div> : undefined}
       error={errors.map((error) => tagError(error).message).join("；")} />
   </div>;
 }

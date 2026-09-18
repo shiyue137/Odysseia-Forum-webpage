@@ -366,6 +366,7 @@ export function SearchPage() {
   return (
     <div className="flex min-h-full min-w-0 max-w-full flex-col overflow-x-clip">
       <div className="min-w-0 max-w-full flex-1 overflow-x-clip p-4 animate-in fade-in duration-500 sm:p-6 lg:p-8">
+        {isTagsChangedError(isThreadTab ? infiniteQueryState.error : booklistQuery.error) && <TagsChangedNotice />}
         <div className="od-page-heading mb-6 flex min-w-0 max-w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div data-tour="search-header" className="flex min-w-0 items-center justify-center text-center sm:justify-start sm:text-left">
             <div className="min-w-0">
@@ -725,3 +726,5 @@ export function SearchPage() {
     </div>
   );
 }
+import { isTagsChangedError } from "@/shared/api/tagErrors";
+import { TagsChangedNotice } from "@/features/tags/components/TagsChangedNotice";
