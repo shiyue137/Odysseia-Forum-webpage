@@ -8,7 +8,13 @@ export async function savePoolTag(draft: PoolTag, category?: number, original?: 
     const aliases = tag.aliases.map((name) => name.trim()).filter(Boolean);
     if (!tag.id) {
       if (category === undefined) throw new Error("请选择有效分类");
-      const created = await customTagsApi.create({ name: tag.name, category, aliases });
+      const created = await customTagsApi.create({
+        name: tag.name,
+        description: "",
+        category,
+        is_abyss: false,
+        aliases,
+      });
       // 后续步骤失败也保留新 ID，重试不得再次创建实体。
       tag = { ...tag, id: created.id };
     } else {

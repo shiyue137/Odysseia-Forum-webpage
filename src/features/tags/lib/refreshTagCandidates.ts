@@ -9,8 +9,8 @@ export async function refreshTagCandidates(client: QueryClient) {
     refetchType: "all",
   });
   await client.fetchQuery({
-    queryKey: ["custom-tags", "pool", false, false],
-    queryFn: ({ signal }) => customTagsApi.poolAll({ q: "", selectable: false, include_deleted: false }, signal),
+    queryKey: ["custom-tags", "pool", false, false, undefined],
+    queryFn: ({ signal }) => customTagsApi.pool({ q: "", selectable: false, include_deleted: false }, signal),
     staleTime: 0,
   });
 }

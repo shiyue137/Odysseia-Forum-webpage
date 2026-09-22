@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { Checkbox } from "@/shared/ui/Checkbox";
 import { customTagsApi, tagError } from "../api/customTagsApi";
@@ -39,14 +39,12 @@ function RelationField({ label, ids, selfId, tags, onChange }: {
     const timer = window.setTimeout(() => setQuery(input.trim()), 250);
     return () => window.clearTimeout(timer);
   }, [input]);
-  const results = useInfiniteQuery({
+  const results = useQuery({
     queryKey: ["custom-tags", "relation-candidates", query],
-    queryFn: ({ pageParam, signal }) => customTagsApi.pool({ q: query, selectable: false, include_deleted: false, offset: pageParam }, signal),
+    queryFn: ({ signal }) => customTagsApi.pool({ q: query, selectable: false, include_deleted: false }, signal),
     enabled: open,
-    initialPageParam: 0,
-    getNextPageParam: (page, pages) => page.length === 100 ? pages.flat().length : undefined,
   });
-  const candidates = results.data?.pages?.flat().filter((tag) => tag.id !== selfId && !tag.deleted_at) ?? [];
+  const candidates = results.data?.results.filter((tag) => tag.id !== selfId && !tag.deleted_at) ?? [];
   return <div ref={fieldRef} className={`text-sm ${dragging ? "outline-2 outline-dashed outline-(--od-accent) outline-offset-4" : ""}`}
     onKeyDown={(event) => { if (event.key === "Escape" && open) { event.stopPropagation(); setOpen(false); } }}
     onDragOver={(event) => {
@@ -81,7 +79,6 @@ function RelationField({ label, ids, selfId, tags, onChange }: {
         onChange={() => { setNames((current) => ({ ...current, [tag.id]: tag.name })); onChange(ids.includes(tag.id) ? ids.filter((id) => id !== tag.id) : [...ids, tag.id]); }} />)}
       {results.isSuccess && !candidates.length && <p className="py-2 text-xs text-(--od-text-tertiary)">没有匹配的标签</p>}
       {results.isError && <p role="alert" className="py-2 text-xs text-(--od-error)">{tagError(results.error).message}</p>}
-      {results.hasNextPage && <button type="button" className="od-inline-action od-inline-action-ghost" disabled={results.isFetchingNextPage} onClick={() => void results.fetchNextPage()}>加载更多</button>}
     </div>}
   </div>;
 }

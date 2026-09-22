@@ -1647,10 +1647,10 @@
                   "type": "null"
                 }
               ],
-              "description": "频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终追加全局Banner",
+              "description": "频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终合并全局Banner",
               "title": "Channel Ids"
             },
-            "description": "频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终追加全局Banner"
+            "description": "频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终合并全局Banner"
           },
           {
             "name": "channel_id",
@@ -3377,7 +3377,7 @@
           "标签"
         ],
         "summary": "搜索标签池",
-        "description": "按标准名或别名分页搜索标签池。",
+        "description": "按标准名或别名搜索并返回完整标签池。",
         "operationId": "pool_v1_tags_get",
         "security": [
           {
@@ -3463,19 +3463,6 @@
               "title": "Include Deleted"
             },
             "description": "是否包含软删除标签；默认不包含，传 true 仅限 BOT 管理员，仍受 selectable 等筛选条件约束"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等",
-              "default": 0,
-              "title": "Offset"
-            },
-            "description": "分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等"
           }
         ],
         "responses": {
@@ -3484,11 +3471,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TagPoolItemResponse-Output"
-                  },
-                  "title": "Response Pool V1 Tags Get"
+                  "$ref": "#/components/schemas/TagPoolResponse"
                 }
               }
             }
@@ -8244,6 +8227,11 @@
             "title": "Name",
             "description": "标签标准名，不含分类前缀"
           },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；既有绑定仍正常展示"
+          },
           "category": {
             "anyOf": [
               {
@@ -8316,6 +8304,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "category",
           "category_name",
           "source",
@@ -8338,6 +8327,17 @@
             "type": "string",
             "title": "Name",
             "description": "标准名，不含分类前缀"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "标签含义的纯文本说明；未填写时为空字符串",
+            "default": ""
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；该标识不改变既有绑定的展示"
           },
           "source": {
             "type": "string",
@@ -8440,6 +8440,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "source",
           "category",
           "category_name",
@@ -8466,6 +8467,17 @@
             "type": "string",
             "title": "Name",
             "description": "标准名，不含分类前缀"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "标签含义的纯文本说明；未填写时为空字符串",
+            "default": ""
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；该标识不改变既有绑定的展示"
           },
           "source": {
             "type": "string",
@@ -8567,6 +8579,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "source",
           "category",
           "category_name",
@@ -9522,6 +9535,17 @@
             "title": "Name",
             "description": "标准名，不含分类前缀"
           },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "标签含义的纯文本说明；未填写时为空字符串",
+            "default": ""
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；该标识不改变既有绑定的展示"
+          },
           "source": {
             "type": "string",
             "const": "discord",
@@ -9600,6 +9624,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "source",
           "category",
           "category_name",
@@ -9623,6 +9648,17 @@
             "type": "string",
             "title": "Name",
             "description": "标准名，不含分类前缀"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "标签含义的纯文本说明；未填写时为空字符串",
+            "default": ""
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；该标识不改变既有绑定的展示"
           },
           "source": {
             "type": "string",
@@ -9701,6 +9737,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "source",
           "category",
           "category_name",
@@ -10837,12 +10874,25 @@
             "title": "Name",
             "description": "标签标准名，不含分类前缀；同名概念使用括号后缀限定上下文"
           },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "description": "标签含义的纯文本说明，最多 2000 字；空字符串表示未填写",
+            "default": ""
+          },
           "category": {
             "type": "integer",
             "maximum": 7.0,
             "minimum": 1.0,
             "title": "Category",
             "description": "分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法"
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；默认创建为正常向",
+            "default": false
           },
           "aliases": {
             "items": {
@@ -10936,6 +10986,16 @@
             "title": "Target Name",
             "description": "保留标签标准名，必须与旧标签完全相同"
           },
+          "source_is_abyss": {
+            "type": "boolean",
+            "title": "Source Is Abyss",
+            "description": "待合并旧标签是否为深渊向"
+          },
+          "target_is_abyss": {
+            "type": "boolean",
+            "title": "Target Is Abyss",
+            "description": "保留标签是否为深渊向"
+          },
           "version": {
             "type": "string",
             "title": "Version",
@@ -10976,6 +11036,8 @@
           "target_tag_id",
           "source_name",
           "target_name",
+          "source_is_abyss",
+          "target_is_abyss",
           "version",
           "can_merge",
           "conflicts",
@@ -11027,6 +11089,17 @@
             "type": "string",
             "title": "Name",
             "description": "标准名，不含分类前缀"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "标签含义的纯文本说明；未填写时为空字符串",
+            "default": ""
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；该标识不改变既有绑定的展示"
           },
           "source": {
             "type": "string",
@@ -11100,6 +11173,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "source",
           "category",
           "category_name",
@@ -11121,6 +11195,17 @@
             "type": "string",
             "title": "Name",
             "description": "标准名，不含分类前缀"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "标签含义的纯文本说明；未填写时为空字符串",
+            "default": ""
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；该标识不改变既有绑定的展示"
           },
           "source": {
             "type": "string",
@@ -11193,6 +11278,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "source",
           "category",
           "category_name",
@@ -11202,6 +11288,30 @@
         ],
         "title": "TagPoolItemResponse",
         "description": "标签池中的标签及其检索别名。"
+      },
+      "TagPoolResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/TagPoolItemResponse-Output"
+            },
+            "type": "array",
+            "title": "Results",
+            "description": "完整标签列表"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "当前权限与筛选条件下的标签总数"
+          }
+        },
+        "type": "object",
+        "required": [
+          "results",
+          "total"
+        ],
+        "title": "TagPoolResponse",
+        "description": "返回当前筛选条件下的完整标签池。"
       },
       "TagProposalRequest": {
         "properties": {
@@ -11243,6 +11353,11 @@
             "type": "string",
             "title": "Tag Name",
             "description": "申请标签的当前标准名"
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "申请标签是否为深渊向 TAG"
           },
           "status": {
             "type": "string",
@@ -11295,6 +11410,7 @@
           "id",
           "tag_id",
           "tag_name",
+          "is_abyss",
           "status",
           "reason",
           "created_at",
@@ -11382,6 +11498,17 @@
             "title": "Name",
             "description": "标准名，不含分类前缀"
           },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "标签含义的纯文本说明；未填写时为空字符串",
+            "default": ""
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；该标识不改变既有绑定的展示"
+          },
           "source": {
             "type": "string",
             "enum": [
@@ -11445,6 +11572,7 @@
         "required": [
           "id",
           "name",
+          "is_abyss",
           "source",
           "category",
           "category_name",
@@ -11508,6 +11636,11 @@
             "title": "Tag Name",
             "description": "标签名称"
           },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG"
+          },
           "source": {
             "type": "string",
             "title": "Source",
@@ -11563,6 +11696,7 @@
         "type": "object",
         "required": [
           "tag_name",
+          "is_abyss",
           "total_thread_count",
           "channel_info"
         ],
@@ -11575,6 +11709,11 @@
             "type": "string",
             "title": "Tag Name",
             "description": "标签名称"
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG"
           },
           "source": {
             "type": "string",
@@ -11631,6 +11770,7 @@
         "type": "object",
         "required": [
           "tag_name",
+          "is_abyss",
           "total_thread_count",
           "channel_info"
         ],
@@ -11721,12 +11861,23 @@
             "type": "boolean",
             "title": "Enabled",
             "description": "true=启用，false=停用；未传保持原值，不允许显式 null；恢复软删除标签需使用恢复接口"
+          },
+          "is_abyss": {
+            "type": "boolean",
+            "title": "Is Abyss",
+            "description": "是否为深渊向 TAG；未传保持原值，不允许显式 null"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Description",
+            "description": "标签含义的纯文本说明，最多 2000 字；未传保持原值，空字符串清空，不允许 null"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "title": "TagUpdateRequest",
-        "description": "部分更新名称、分类或启用状态，禁止空更新与显式空值。"
+        "description": "部分更新名称、描述、分类或启用状态，禁止空更新与显式空值。"
       },
       "TagVoteRequest": {
         "properties": {

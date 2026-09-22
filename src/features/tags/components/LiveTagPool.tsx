@@ -14,11 +14,12 @@ import { TagMergeActions } from "./TagMergeActions";
 
 const action = "inline-flex min-h-10 items-center gap-2 rounded-md border border-(--od-border) px-3 text-xs disabled:opacity-50";
 
-export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }: {
+export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false, source }: {
   selectedIds?: string[];
   disabledIds?: string[];
   onToggle?: (tag: PoolTag) => void;
   busy?: boolean;
+  source?: "custom" | "discord";
 }) {
   const navigate = useNavigate();
   const client = useQueryClient();
@@ -28,14 +29,14 @@ export function LiveTagPool({ selectedIds, disabledIds, onToggle, busy = false }
   const categories = useQuery({ queryKey: ["custom-tags", "categories"], queryFn: customTagsApi.categories });
   const relations = useQuery({ queryKey: ["custom-tags", "relations"], queryFn: customTagsApi.relations });
   const pool = useQuery({
-    queryKey: ["custom-tags", "pool", !!onToggle, includeDeleted && canManage],
-    queryFn: ({ signal }) => customTagsApi.poolAll({
-      q: "", selectable: !!onToggle, include_deleted: includeDeleted && canManage,
+    queryKey: ["custom-tags", "pool", !!onToggle, includeDeleted && canManage, source],
+    queryFn: ({ signal }) => customTagsApi.pool({
+      q: "", source, selectable: !!onToggle, include_deleted: includeDeleted && canManage,
     }, signal),
-    staleTime: 0,
+    staleTime: 60_000,
     refetchOnWindowFocus: true,
   });
-  const items = pool.data ?? [];
+  const items = pool.data?.results ?? [];
   const tags: PoolTag[] = [];
   for (const item of items) {
     tags.push({
