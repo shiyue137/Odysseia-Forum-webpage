@@ -28,7 +28,13 @@ describe("标签与关系保存", () => {
   it("创建时保存名称、分类、别名和所选关系", async () => {
     const result = await savePoolTag(draft, 3);
     expect(result.error).toBeUndefined();
-    expect(customTagsApi.create).toHaveBeenCalledWith({ name: "新标签", category: 3, aliases: ["别名"] });
+    expect(customTagsApi.create).toHaveBeenCalledWith({
+      name: "新标签",
+      description: "",
+      category: 3,
+      is_abyss: false,
+      aliases: ["别名"],
+    });
     expect(customTagsApi.addRelation).toHaveBeenCalledWith("90071992547409931", "1", "implies");
     expect(customTagsApi.addRelation).toHaveBeenCalledWith("90071992547409931", "2", "implies");
   });

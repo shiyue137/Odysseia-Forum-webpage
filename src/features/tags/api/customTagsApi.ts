@@ -4,6 +4,7 @@ import type { components } from "@/shared/types/openapi";
 
 type Schema = components["schemas"];
 export type PoolItem = Schema["TagPoolItemResponse-Output"];
+export type TagPoolResponse = Schema["TagPoolResponse"];
 export type TagRelation = Schema["TagRelationResponse"];
 export type TargetTags = Schema["TargetTagsResponse"];
 export type CustomTagSnapshot = Schema["CustomTagSnapshotResponse-Output"];
@@ -25,19 +26,8 @@ export function tagError(error: unknown): { code?: string; message: string } {
 export const customTagsApi = {
   role: async () => (await apiClient.get<Schema["UserRole"]>("/meta/role")).data,
   categories: async () => (await apiClient.get<Schema["TagCategoryResponse"][]>("/tags/categories")).data,
-  pool: async (params: { q: string; category?: number; source?: "custom" | "discord"; selectable: boolean; include_deleted: boolean; offset: number }, signal?: AbortSignal) =>
-    (await apiClient.get<PoolItem[]>("/tags", { params, signal })).data,
-  poolAll: async (params: { q: string; category?: number; source?: "custom" | "discord"; selectable: boolean; include_deleted: boolean }, signal?: AbortSignal) => {
-    let offset = 0;
-    const all: PoolItem[] = [];
-    while (true) {
-      const page = (await apiClient.get<PoolItem[]>("/tags", { params: { ...params, offset }, signal })).data;
-      all.push(...page);
-      if (page.length < 100) break;
-      offset += page.length;
-    }
-    return all;
-  },
+  pool: async (params: { q: string; category?: number; source?: "custom" | "discord"; selectable: boolean; include_deleted: boolean }, signal?: AbortSignal) =>
+    (await apiClient.get<TagPoolResponse>("/tags", { params, signal })).data,
   relations: async () => (await apiClient.get<TagRelation[]>("/tags/relations")).data,
   mergePreview: async (id: string, target_tag_id: string) =>
     (await apiClient.get<MergePreview>(`/tags/${id}/merge-preview`, { params: { target_tag_id } })).data,

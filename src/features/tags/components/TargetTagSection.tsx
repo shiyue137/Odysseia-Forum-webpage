@@ -165,7 +165,8 @@ function TagSelectionDialog({ target, targetLabel, initial, canEdit, onClose, on
         <button className={action} disabled={submit.isPending} aria-label="关闭标签选择" onClick={onClose}><X size={17} /></button>
       </header>
       <div className="min-h-0 flex-1 px-4 py-4 sm:px-6">
-        <LiveTagPool selectedIds={[...selected.keys()]} disabledIds={canEdit ? readonlyIds : existingIds} onToggle={toggle} busy={submit.isPending} />
+        <LiveTagPool selectedIds={[...selected.keys()]} disabledIds={canEdit ? readonlyIds : existingIds} onToggle={toggle} busy={submit.isPending}
+          source={target.type === "thread" ? "custom" : undefined} />
       </div>
       <footer className="max-h-[35dvh] shrink-0 overflow-y-auto border-t border-(--od-border) p-4">
         <div className="mb-3 flex flex-wrap gap-2">{[...selected].map(([id, name]) => <button key={id} className={action} disabled={submit.isPending} onClick={() => setSelected((current) => { const next = new Map(current); next.delete(id); return next; })}>{name}<X size={12} /></button>)}</div>

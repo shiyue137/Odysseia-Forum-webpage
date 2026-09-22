@@ -17,6 +17,7 @@ vi.mock("@/shared/ui/Select", () => ({
 const source: PoolTag = { id: "1", name: "纯爱", source: "custom", category: "情节", enabled: true, aliases: [], parents: [], excludes: [] };
 const kept: PoolTag = { ...source, id: "90071992547409931", source: "discord" };
 const preview: MergePreview = { source_tag_id: source.id, target_tag_id: kept.id, source_name: source.name, target_name: kept.name,
+  source_is_abyss: false, target_is_abyss: false,
   version: "v1", can_merge: true, conflicts: [], binding_count: 8, proposal_count: 2, relation_count: 3 };
 beforeEach(() => {
   vi.resetAllMocks();

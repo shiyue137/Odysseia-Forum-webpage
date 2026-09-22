@@ -1110,7 +1110,7 @@ export interface paths {
         };
         /**
          * 搜索标签池
-         * @description 按标准名或别名分页搜索标签池。
+         * @description 按标准名或别名搜索并返回完整标签池。
          */
         get: operations["pool_v1_tags_get"];
         put?: never;
@@ -3295,6 +3295,11 @@ export interface components {
              */
             name: string;
             /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；既有绑定仍正常展示
+             */
+            is_abyss: boolean;
+            /**
              * Category
              * @description 分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法
              */
@@ -3360,6 +3365,17 @@ export interface components {
              * @description 标准名，不含分类前缀
              */
             name: string;
+            /**
+             * Description
+             * @description 标签含义的纯文本说明；未填写时为空字符串
+             * @default
+             */
+            description: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；该标识不改变既有绑定的展示
+             */
+            is_abyss: boolean;
             /**
              * Source
              * @description 标签实体来源，可为 discord 或 custom
@@ -3440,6 +3456,17 @@ export interface components {
              * @description 标准名，不含分类前缀
              */
             name: string;
+            /**
+             * Description
+             * @description 标签含义的纯文本说明；未填写时为空字符串
+             * @default
+             */
+            description: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；该标识不改变既有绑定的展示
+             */
+            is_abyss: boolean;
             /**
              * Source
              * @description 标签实体来源，可为 discord 或 custom
@@ -4086,6 +4113,17 @@ export interface components {
              */
             name: string;
             /**
+             * Description
+             * @description 标签含义的纯文本说明；未填写时为空字符串
+             * @default
+             */
+            description: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；该标识不改变既有绑定的展示
+             */
+            is_abyss: boolean;
+            /**
              * Source
              * @description 来源固定为 discord
              * @constant
@@ -4149,6 +4187,17 @@ export interface components {
              * @description 标准名，不含分类前缀
              */
             name: string;
+            /**
+             * Description
+             * @description 标签含义的纯文本说明；未填写时为空字符串
+             * @default
+             */
+            description: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；该标识不改变既有绑定的展示
+             */
+            is_abyss: boolean;
             /**
              * Source
              * @description 来源固定为 discord
@@ -4843,10 +4892,22 @@ export interface components {
              */
             name: string;
             /**
+             * Description
+             * @description 标签含义的纯文本说明，最多 2000 字；空字符串表示未填写
+             * @default
+             */
+            description: string;
+            /**
              * Category
              * @description 分类枚举：1=癖好，2=作品，3=角色，4=特质，5=情节，6=背景，7=玩法
              */
             category: number;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；默认创建为正常向
+             * @default false
+             */
+            is_abyss: boolean;
             /**
              * Aliases
              * @description 检索别名列表，可被多个标准标签共用；未传时不添加别名
@@ -4911,6 +4972,16 @@ export interface components {
              */
             target_name: string;
             /**
+             * Source Is Abyss
+             * @description 待合并旧标签是否为深渊向
+             */
+            source_is_abyss: boolean;
+            /**
+             * Target Is Abyss
+             * @description 保留标签是否为深渊向
+             */
+            target_is_abyss: boolean;
+            /**
              * Version
              * @description 预检版本，执行时原样传回
              */
@@ -4973,6 +5044,17 @@ export interface components {
              */
             name: string;
             /**
+             * Description
+             * @description 标签含义的纯文本说明；未填写时为空字符串
+             * @default
+             */
+            description: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；该标识不改变既有绑定的展示
+             */
+            is_abyss: boolean;
+            /**
              * Source
              * @description 来源：discord 为原生标签，custom 为自定义标签
              * @enum {string}
@@ -5025,6 +5107,17 @@ export interface components {
              */
             name: string;
             /**
+             * Description
+             * @description 标签含义的纯文本说明；未填写时为空字符串
+             * @default
+             */
+            description: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；该标识不改变既有绑定的展示
+             */
+            is_abyss: boolean;
+            /**
              * Source
              * @description 来源：discord 为原生标签，custom 为自定义标签
              * @enum {string}
@@ -5062,6 +5155,22 @@ export interface components {
             aliases: string[];
         };
         /**
+         * TagPoolResponse
+         * @description 返回当前筛选条件下的完整标签池。
+         */
+        TagPoolResponse: {
+            /**
+             * Results
+             * @description 完整标签列表
+             */
+            results: components["schemas"]["TagPoolItemResponse-Output"][];
+            /**
+             * Total
+             * @description 当前权限与筛选条件下的标签总数
+             */
+            total: number;
+        };
+        /**
          * TagProposalRequest
          * @description 单标签提议请求。
          */
@@ -5092,6 +5201,11 @@ export interface components {
              * @description 申请标签的当前标准名
              */
             tag_name: string;
+            /**
+             * Is Abyss
+             * @description 申请标签是否为深渊向 TAG
+             */
+            is_abyss: boolean;
             /**
              * Status
              * @description pending 待审核，approved 通过，rejected 拒绝，failed 生效校验失败
@@ -5174,6 +5288,17 @@ export interface components {
              */
             name: string;
             /**
+             * Description
+             * @description 标签含义的纯文本说明；未填写时为空字符串
+             * @default
+             */
+            description: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；该标识不改变既有绑定的展示
+             */
+            is_abyss: boolean;
+            /**
              * Source
              * @description 来源：discord 为原生标签，custom 为自定义标签
              * @enum {string}
@@ -5243,6 +5368,11 @@ export interface components {
              */
             tag_name: string;
             /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG
+             */
+            is_abyss: boolean;
+            /**
              * Source
              * @description 统计分组来源：discord、custom 或 virtual
              * @default discord
@@ -5284,6 +5414,11 @@ export interface components {
              * @description 标签名称
              */
             tag_name: string;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG
+             */
+            is_abyss: boolean;
             /**
              * Source
              * @description 统计分组来源：discord、custom 或 virtual
@@ -5356,7 +5491,7 @@ export interface components {
         };
         /**
          * TagUpdateRequest
-         * @description 部分更新名称、分类或启用状态，禁止空更新与显式空值。
+         * @description 部分更新名称、描述、分类或启用状态，禁止空更新与显式空值。
          */
         TagUpdateRequest: {
             /**
@@ -5374,6 +5509,16 @@ export interface components {
              * @description true=启用，false=停用；未传保持原值，不允许显式 null；恢复软删除标签需使用恢复接口
              */
             enabled?: boolean;
+            /**
+             * Is Abyss
+             * @description 是否为深渊向 TAG；未传保持原值，不允许显式 null
+             */
+            is_abyss?: boolean;
+            /**
+             * Description
+             * @description 标签含义的纯文本说明，最多 2000 字；未传保持原值，空字符串清空，不允许 null
+             */
+            description?: string;
         };
         /**
          * TagVoteRequest
@@ -7174,7 +7319,7 @@ export interface operations {
     get_active_banners_v1_banner_active_get: {
         parameters: {
             query?: {
-                /** @description 频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终追加全局Banner */
+                /** @description 频道ID列表，可重复传入；优先于偏好频道。不传时使用偏好频道，偏好为空则返回全部；始终合并全局Banner */
                 channel_ids?: (number | string)[] | null;
                 /** @description 兼容旧调用的单个频道ID；传入后合并到channel_ids */
                 channel_id?: number | string | null;
@@ -7856,8 +8001,6 @@ export interface operations {
                 selectable?: boolean;
                 /** @description 是否包含软删除标签；默认不包含，传 true 仅限 BOT 管理员，仍受 selectable 等筛选条件约束 */
                 include_deleted?: boolean;
-                /** @description 分页跳过的记录数，不是页码；默认 0，每次最多返回 100 条，下一页可传 100、200 等 */
-                offset?: number;
             };
             header?: never;
             path?: never;
@@ -7871,7 +8014,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TagPoolItemResponse-Output"][];
+                    "application/json": components["schemas"]["TagPoolResponse"];
                 };
             };
             /** @description Validation Error */

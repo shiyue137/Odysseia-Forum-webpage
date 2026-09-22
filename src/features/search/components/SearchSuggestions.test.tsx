@@ -7,7 +7,7 @@ describe('搜索建议键盘操作', () => {
   it('同名 DC 来源聚合为标准 ID 建议，包含与排除使用 ID token', () => {
     const onSelect = vi.fn();
     render(<SearchSuggestions currentQuery="纯" availableTags={["纯爱"]} onSelect={onSelect} onClose={vi.fn()}
-      tagEntities={[{ id: "90071992547409931", name: "纯爱", source: "discord", category: null, category_name: null, enabled: true, deleted_at: null,
+      tagEntities={[{ id: "90071992547409931", name: "纯爱", description: "", is_abyss: false, source: "discord", category: null, category_name: null, enabled: true, deleted_at: null,
         discord_sources: [{ id: "1", discord_tag_id: "111", channel_id: "222", name: "纯爱" }, { id: "2", discord_tag_id: "333", channel_id: "444", name: "纯爱" }] }]} />);
     expect(screen.getAllByText("纯爱")).toHaveLength(1);
     expect(screen.getByText("DC · 2 个来源")).toBeInTheDocument();
